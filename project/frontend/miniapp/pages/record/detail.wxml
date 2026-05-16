@@ -1,0 +1,52 @@
+<scroll-view class="page" scroll-y>
+  <view wx:if="{{gathering}}" class="detail">
+    <view class="hero">
+      <text class="hero-title">{{gathering.title}}</text>
+      <view class="hero-meta">
+        <text class="hero-time">{{formatTime(gathering.dateTime)}}</text>
+        <text class="hero-location">{{gathering.location.name}}</text>
+      </view>
+    </view>
+
+    <view class="info-cards">
+      <view class="info-item">
+        <text class="info-label">总消费</text>
+        <text class="info-value accent">{{gathering.totalCost}}元</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">人均</text>
+        <text class="info-value">{{avgCost}}元</text>
+      </view>
+      <view wx:if="{{gathering.moodScore}}" class="info-item">
+        <text class="info-label">满意度</text>
+        <text class="info-value">{{starDisplay}}</text>
+      </view>
+    </view>
+
+    <view class="section-card">
+      <text class="section-title">参与人员</text>
+      <view class="participant-row">
+        <view wx:for="{{gathering.participants}}" wx:key="index" class="participant-badge {{item === gathering.payer ? 'payer' : ''}}">
+          <text class="participant-name">{{item}}</text>
+          <text wx:if="{{item === gathering.payer}}" class="payer-tag">买单</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{gathering.moodTags && gathering.moodTags.length}}" class="section-card">
+      <text class="section-title">心情标签</text>
+      <view class="tag-row">
+        <text wx:for="{{gathering.moodTags}}" wx:key="*this" class="mood-badge">{{item}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{gathering.note}}" class="section-card">
+      <text class="section-title">备注</text>
+      <text class="note-text">{{gathering.note}}</text>
+    </view>
+  </view>
+
+  <view wx:if="!gathering" class="loading">
+    <text>加载中...</text>
+  </view>
+</scroll-view>

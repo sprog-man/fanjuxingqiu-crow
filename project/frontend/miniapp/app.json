@@ -1,0 +1,67 @@
+{
+  "pages": [
+    "pages/eat/index",
+    "pages/pay/index",
+    "pages/record/index",
+    "pages/record/create",
+    "pages/record/detail",
+    "pages/mine/relation",
+    "pages/mine/album",
+    "pages/mine/buddies",
+    "pages/map/index",
+    "pages/mine/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "饭局星球",
+    "navigationBarBackgroundColor": "#ffffff"
+  },
+  "tabBar": {
+    "color": "#5F5E5A",
+    "selectedColor": "#D85A30",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/eat/index",
+        "text": "吃什么",
+        "iconPath": "images/tab-eat.png",
+        "selectedIconPath": "images/tab-eat-active.png"
+      },
+      {
+        "pagePath": "pages/pay/index",
+        "text": "谁买单",
+        "iconPath": "images/tab-pay.png",
+        "selectedIconPath": "images/tab-pay-active.png"
+      },
+      {
+        "pagePath": "pages/record/index",
+        "text": "记录本",
+        "iconPath": "images/tab-record.png",
+        "selectedIconPath": "images/tab-record-active.png"
+      },
+      {
+        "pagePath": "pages/map/index",
+        "text": "地图",
+        "iconPath": "images/tab-map.png",
+        "selectedIconPath": "images/tab-map-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "images/tab-mine.png",
+        "selectedIconPath": "images/tab-mine-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于自动定位打卡城市"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

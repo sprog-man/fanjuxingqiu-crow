@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>饭局星球 · 管理后台</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <!-- Login Page -->
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">🍽️</div>
+      <h1>饭局星球 · 管理后台</h1>
+      <p class="login-desc">请输入管理员账号密码</p>
+      <input id="loginUser" class="form-input" placeholder="用户名" style="margin-bottom:10px">
+      <input id="loginPass" class="form-input" type="password" placeholder="密码" style="margin-bottom:16px">
+      <div id="loginError" class="login-error"></div>
+      <button class="btn btn-primary login-btn" onclick="doLogin()">登 录</button>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminLayout" class="admin-layout" style="display:none">
+    <aside class="sidebar">
+      <div class="sidebar-logo">🍽️ 饭局星球</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-page="dashboard" href="#dashboard">📊 数据概览</a>
+        <a class="nav-item" data-page="gatherings" href="#gatherings">📋 聚餐记录</a>
+        <a class="nav-item" data-page="users" href="#users">👥 用户管理</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="adminUser"></span>
+        <a href="#" onclick="doLogout()" style="color:rgba(255,255,255,0.5);text-decoration:none;margin-left:12px;font-size:12px">退出</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section id="page-dashboard" class="page active">
+        <h1 class="page-title">数据概览</h1>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-value" id="statTotal">-</div><div class="stat-label">总聚餐次数</div></div>
+          <div class="stat-card"><div class="stat-value" id="statCost">-</div><div class="stat-label">总消费(元)</div></div>
+        <div class="stat-card"><div class="stat-value" id="statAvg">-</div><div class="stat-label">平均消费</div></div>
+        </div>
+        <h2 class="section-title">最近记录</h2>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>名称</th><th>时间</th><th>地点</th><th>金额</th><th>参与人</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+      </section>
+
+      <section id="page-gatherings" class="page">
+        <h1 class="page-title">聚餐记录</h1>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>名称</th><th>时间</th><th>地点</th><th>金额</th><th>参与人</th><th>心情</th></tr></thead><tbody id="gatheringsBody"></tbody></table></div>
+      </section>
+
+      <section id="page-users" class="page">
+        <h1 class="page-title">用户管理</h1>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+          <div class="stat-card"><div class="stat-value" id="userTotal">-</div><div class="stat-label">总用户数</div></div>
+          <div class="stat-card"><div class="stat-value" id="userToday">-</div><div class="stat-label">今日新增</div></div>
+        </div>
+
+        <div class="chart-box">
+          <div class="chart-header">
+            <text class="section-title" style="margin:0">用户增长趋势</text>
+            <div class="chart-tabs">
+              <span class="chart-tab" data-days="7" onclick="switchChart(7)">7天</span>
+              <span class="chart-tab" data-days="15" onclick="switchChart(15)">15天</span>
+              <span class="chart-tab active" data-days="30" onclick="switchChart(30)">30天</span>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <span><span class="legend-dot new"></span> 新增用户</span>
+            <span><span class="legend-dot total"></span> 累计用户</span>
+          </div>
+          <div class="chart-wrap" id="userChartWrap"></div>
+          <div id="chartError" class="chart-error" style="display:none">加载失败</div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:12px"><table class="data-table"><thead><tr><th>昵称</th><th>OpenID</th><th>头像</th><th>口味偏好</th><th>好友数</th><th>注册时间</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+</body>
+</html>

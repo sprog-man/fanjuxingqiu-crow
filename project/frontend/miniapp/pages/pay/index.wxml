@@ -1,0 +1,325 @@
+<scroll-view class="page" scroll-y>
+  <view class="header">
+    <text class="header-title">谁买单</text>
+    <text class="header-sub">让运气决定这一顿谁请客</text>
+  </view>
+
+  <!-- Game Tabs -->
+  <view class="game-tabs">
+    <view class="game-tab {{activeTab === 'draw' ? 'active' : ''}}" data-tab="draw" bindtap="switchTab">
+      <text>🎯</text>
+      <text>抽签</text>
+    </view>
+    <view class="game-tab {{activeTab === 'games' ? 'active' : ''}}" data-tab="games" bindtap="switchTab">
+      <text>🎮</text>
+      <text>小游戏</text>
+    </view>
+    <view class="game-tab {{activeTab === 'aa' ? 'active' : ''}}" data-tab="aa" bindtap="switchTab">
+      <text>💰</text>
+      <text>AA记账</text>
+    </view>
+  </view>
+
+  <!-- ========== 抽签 ========== -->
+  <view wx:if="{{activeTab === 'draw'}}" class="game-content">
+    <view class="input-section">
+      <view class="input-row">
+        <input class="name-input" placeholder="输入姓名" value="{{inputName}}" data-field="inputName" bindinput="onInput" bindconfirm="addPlayer" />
+        <button class="add-btn" bindtap="addPlayer">添加</button>
+      </view>
+      <view class="buddy-shortcut" bindtap="openDrawBuddy"><text>👥 从饭搭子中选择</text></view>
+      <view class="player-list">
+        <view wx:for="{{players}}" wx:key="index" class="player-tag">
+          <text>{{item}}</text>
+          <text class="player-remove" data-index="{{index}}" bindtap="removePlayer">×</text>
+        </view>
+      </view>
+      <text wx:if="{{players.length < 2}}" class="hint">至少需要 2 人参与</text>
+    </view>
+    <view class="draw-area">
+      <view class="draw-box" bindtap="startDraw">
+        <view class="draw-cards">
+          <view wx:for="{{players}}" wx:key="index"
+            class="draw-card {{drawing && drawIndex === index ? 'fly-out' : ''}} {{drawResult === item ? 'winner' : ''}} {{drawResult && drawResult !== item ? 'dim' : ''}}">
+            <text class="draw-card-name">{{item}}</text>
+          </view>
+        </view>
+        <view wx:if="!drawResult && !drawing" class="draw-hint">
+          <text class="draw-hint-icon">👆</text>
+          <text>点击开始抽签</text>
+        </view>
+      </view>
+      <view wx:if="{{drawResult}}" class="result-box">
+        <text class="result-label">🎉 恭喜</text>
+        <text class="result-name">{{drawResult}}</text>
+        <text class="result-desc">本次请客！</text>
+        <button class="reset-btn" bindtap="resetDraw">重新抽签</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 小游戏 ========== -->
+  <view wx:if="{{activeTab === 'games'}}" class="game-content">
+    <view wx:if="{{!currentGame}}" class="game-picker">
+      <view class="picker-card" data-game="croc" bindtap="pickGame">
+        <view class="picker-icon">🐊</view>
+        <text class="picker-name">鳄鱼牙齿</text>
+        <text class="picker-desc">轮流按牙齿，按到机关的人买单</text>
+      </view>
+      <view class="picker-card" data-game="pirate" bindtap="pickGame">
+        <view class="picker-icon">🏴‍☠️</view>
+        <text class="picker-name">海盗插刀</text>
+        <text class="picker-desc">往木桶里插刀，触发海盗的人买单</text>
+      </view>
+    </view>
+
+    <view wx:if="{{currentGame === 'croc'}}">
+      <view class="game-header">
+        <text class="back-btn" bindtap="backToPicker">← 返回</text>
+        <text class="game-title">🐊 鳄鱼牙齿</text>
+      </view>
+      <view class="input-section">
+        <view class="input-row">
+          <input class="name-input" placeholder="输入姓名" value="{{gameInput}}" data-field="gameInput" bindinput="onInput" bindconfirm="addGamePlayer" />
+          <button class="add-btn" bindtap="addGamePlayer">添加</button>
+        </view>
+        <view class="buddy-shortcut" bindtap="openGameBuddy"><text>👥 从饭搭子中选择</text></view>
+        <view class="player-list">
+          <view wx:for="{{gamePlayers}}" wx:key="index" class="player-tag">
+            <text>{{item}}</text>
+            <text class="player-remove" data-index="{{index}}" bindtap="removeGamePlayer">×</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{gamePlayers.length >= 2 && !gameOver}}" class="game-status">
+        <text class="turn-label">轮到</text>
+        <text class="turn-name">{{gamePlayers[currentTurn]}}</text>
+        <text class="turn-hint">按一颗牙齿...</text>
+      </view>
+      <view class="croc-wrap">
+        <view class="croc-body {{biting ? 'bite' : ''}}">
+          <view class="croc-head">
+            <view class="croc-eye left"><view class="pupil"></view></view>
+            <view class="croc-eye right"><view class="pupil"></view></view>
+            <view class="croc-snout">
+              <view class="nostril left"></view>
+              <view class="nostril right"></view>
+            </view>
+          </view>
+          <view class="croc-jaw-upper">
+            <view class="teeth-row">
+              <view wx:for="{{teeth}}" wx:key="index" class="tooth {{item.state}}"
+                data-index="{{index}}" bindtap="pressTooth" style="animation-delay:{{item.wiggleDelay}}s">
+              </view>
+            </view>
+          </view>
+          <view class="croc-jaw-lower"></view>
+        </view>
+      </view>
+      <view wx:if="{{gameOver}}" class="result-box">
+        <text class="result-label">💥 被咬了！</text>
+        <text class="result-name">{{gameLoser}}</text>
+        <text class="result-desc">你来买单！</text>
+        <button class="reset-btn" bindtap="resetGame">再来一局</button>
+      </view>
+    </view>
+
+    <view wx:if="{{currentGame === 'pirate'}}">
+      <view class="game-header">
+        <text class="back-btn" bindtap="backToPicker">← 返回</text>
+        <text class="game-title">🏴‍☠️ 海盗插刀</text>
+      </view>
+      <view class="input-section">
+        <view class="input-row">
+          <input class="name-input" placeholder="输入姓名" value="{{pirateInput}}" data-field="pirateInput" bindinput="onInput" bindconfirm="addPiratePlayer" />
+          <button class="add-btn" bindtap="addPiratePlayer">添加</button>
+        </view>
+        <view class="buddy-shortcut" bindtap="openGameBuddy"><text>👥 从饭搭子中选择</text></view>
+        <view class="player-list">
+          <view wx:for="{{piratePlayers}}" wx:key="index" class="player-tag">
+            <text>{{item}}</text>
+            <text class="player-remove" data-index="{{index}}" bindtap="removePiratePlayer">×</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{piratePlayers.length >= 2 && !pirateGameOver}}" class="game-status">
+        <text class="turn-label">轮到</text>
+        <text class="turn-name">{{piratePlayers[pirateTurn]}}</text>
+        <text class="turn-hint">选一个孔插刀...</text>
+      </view>
+      <view class="barrel-wrap {{pirateBoom ? 'boomed' : ''}}">
+        <view class="barrel {{pirateBoom ? 'shake' : ''}}">
+          <view class="barrel-body">
+            <view class="barrel-plank"></view>
+            <view class="barrel-plank"></view>
+            <view class="barrel-plank"></view>
+            <view class="barrel-band-top"></view>
+            <view class="barrel-band-bot"></view>
+            <view class="barrel-skull">☠️</view>
+            <view class="slot-grid">
+              <view wx:for="{{pirateSlots}}" wx:key="index"
+                class="slot {{item.state}}"
+                data-index="{{index}}" bindtap="pressSlot">
+                <view wx:if="{{item.state === 'stabbed'}}" class="knife"></view>
+                <view wx:if="{{item.state === 'boom'}}" class="boom-effect">💥</view>
+              </view>
+            </view>
+          </view>
+          <view class="barrel-base"></view>
+          <view class="pirate {{pirateBoom ? 'pop' : ''}}">
+            <text class="pirate-icon">🏴‍☠️</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{pirateGameOver}}" class="result-box">
+        <text class="result-label">🏴‍☠️ 海盗出来了！</text>
+        <text class="result-name">{{pirateLoser}}</text>
+        <text class="result-desc">你来买单！</text>
+        <button class="reset-btn" bindtap="resetPirate">再来一局</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== AA 记账 ========== -->
+  <view wx:if="{{activeTab === 'aa'}}" class="game-content">
+    <view class="aa-header">
+      <view class="aa-stat"><text class="aa-stat-num">{{aaHistory.length}}</text><text class="aa-stat-label">累计次数</text></view>
+      <view class="aa-stat"><text class="aa-stat-num">{{aaTotal}}</text><text class="aa-stat-label">总金额(元)</text></view>
+    </view>
+
+    <view class="aa-form">
+      <text class="section-title">记录本次付款</text>
+      <text class="aa-payer-hint">付款人：<text class="aa-payer-name">{{currentUser}}</text>（我）</text>
+
+      <view wx:if="{{!selectedGathering}}" class="gathering-pick-btn" bindtap="openGatheringPicker">
+        <text class="gathering-pick-icon">📋</text>
+        <text class="gathering-pick-text">选择聚餐记录</text>
+      </view>
+      <view wx:if="{{selectedGathering}}" class="gathering-selected">
+        <view class="gathering-sel-top">
+          <view class="gathering-sel-info">
+            <text class="gathering-sel-title">{{selectedGathering.title}}</text>
+            <text class="gathering-sel-date">{{selectedGathering.dateTime || ''}}</text>
+          </view>
+          <text class="gathering-sel-clear" bindtap="clearGathering">✕</text>
+        </view>
+        <text class="gathering-sel-amount">{{selectedGathering.totalCost || 0}}元</text>
+      </view>
+
+      <input class="aa-input" placeholder="消费金额(元)" type="digit" value="{{aaAmount}}" data-field="aaAmount" bindinput="onInput" />
+
+      <text class="section-title" style="margin-top:6px">参与人员（AA 分摊）</text>
+      <view class="input-row">
+        <input class="name-input" placeholder="输入参与人" value="{{aaParticipantInput}}" data-field="aaParticipantInput" bindinput="onInput" bindconfirm="addAAParticipant" />
+        <button class="add-btn" bindtap="addAAParticipant">添加</button>
+      </view>
+      <view class="buddy-shortcut" bindtap="openAABuddy"><text>👥 从饭搭子中选择</text></view>
+      <view class="player-list">
+        <view wx:for="{{aaParticipants}}" wx:key="index" class="player-tag">
+          <text>{{item}}</text>
+          <text class="player-remove" data-index="{{index}}" bindtap="removeAAParticipant">×</text>
+        </view>
+      </view>
+
+      <button class="aa-submit" bindtap="submitAA" style="margin-top:12px">保存记录</button>
+    </view>
+
+    <view class="aa-history">
+      <text class="section-title">历史记录</text>
+      <view wx:for="{{aaHistory}}" wx:key="index" class="aa-card">
+        <view class="aa-card-header">
+          <view class="aa-card-left">
+            <text class="aa-card-payer">{{item.payer}}</text>
+            <text class="aa-card-label">请客</text>
+          </view>
+          <text class="aa-card-amount">{{item.amount}}元</text>
+        </view>
+        <view wx:if="{{item.parts && item.parts.length}}" class="aa-card-body">
+          <view wx:for="{{item.parts}}" wx:for-item="p" wx:key="name" class="aa-card-part">
+            <text class="aa-part-name">{{p.name}}</text>
+            <text class="aa-paid-toggle {{p.paidClass}}"
+              data-recordid="{{item._id}}"
+              data-participant="{{p.name}}"
+              bindtap="togglePaid">{{p.paidText}}</text>
+          </view>
+        </view>
+      </view>
+      <text wx:if="{{aaHistory.length === 0}}" class="hint">还没有付款记录</text>
+    </view>
+  </view>
+
+  <!-- ========== 饭搭子弹窗（抽签） ========== -->
+  <view wx:if="{{showDrawBuddy}}" class="modal-overlay" bindtap="closeDrawBuddy">
+    <view class="buddy-picker" catchtap>
+      <text class="buddy-picker-title">选择饭搭子</text>
+      <input class="buddy-search" placeholder="搜索…" value="{{drawBuddySearch}}" bindinput="onDrawBuddySearch" />
+      <scroll-view class="buddy-list" scroll-y>
+        <view wx:for="{{drawBuddies}}" wx:key="id" class="buddy-pick-item" data-name="{{item.name}}" bindtap="pickDrawBuddy">
+          <view class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
+          <text class="bp-name">{{item.name}}</text>
+          <text wx:if="{{item.phone}}" class="bp-phone">{{item.phone}}</text>
+          <text class="bp-add">+</text>
+        </view>
+        <view wx:if="{{drawBuddies.length === 0}}" class="bp-empty">没有匹配的饭搭子</view>
+      </scroll-view>
+      <button class="buddy-close" bindtap="closeDrawBuddy">关闭</button>
+    </view>
+  </view>
+
+  <!-- ========== 饭搭子弹窗（AA） ========== -->
+  <view wx:if="{{showAABuddy}}" class="modal-overlay" bindtap="closeAABuddy">
+    <view class="buddy-picker" catchtap>
+      <text class="buddy-picker-title">选择饭搭子</text>
+      <input class="buddy-search" placeholder="搜索…" value="{{aaBuddySearch}}" bindinput="onAABuddySearch" />
+      <scroll-view class="buddy-list" scroll-y>
+        <view wx:for="{{aaBuddies}}" wx:key="id" class="buddy-pick-item" data-name="{{item.name}}" bindtap="pickAABuddy">
+          <view class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
+          <text class="bp-name">{{item.name}}</text>
+          <text wx:if="{{item.phone}}" class="bp-phone">{{item.phone}}</text>
+          <text class="bp-add">+</text>
+        </view>
+        <view wx:if="{{aaBuddies.length === 0}}" class="bp-empty">没有匹配的饭搭子</view>
+      </scroll-view>
+      <button class="buddy-close" bindtap="closeAABuddy">关闭</button>
+    </view>
+  </view>
+
+  <!-- ========== 聚餐记录选择弹窗（居中） ========== -->
+  <view wx:if="{{showGatheringPicker}}" class="gather-overlay" bindtap="closeGatheringPicker">
+    <view class="gather-modal" catchtap>
+      <view class="gather-modal-header">
+        <text class="gather-modal-title">📋 选择聚餐记录</text>
+        <text class="gather-modal-close" bindtap="closeGatheringPicker">✕</text>
+      </view>
+      <scroll-view scroll-y class="gather-modal-list">
+        <view wx:for="{{gatherings}}" wx:key="id" class="gather-item" data-id="{{item._id || item.gathering_id}}" bindtap="pickGathering">
+          <view class="gather-item-avatar">{{item.title ? item.title.slice(0,1) : '?'}}</view>
+          <view class="gather-item-info">
+            <text class="gather-item-title">{{item.title}}</text>
+            <text class="gather-item-meta">{{item.participants ? item.participants.length : 0}}人 · {{item.totalCost || 0}}元 · {{item.dateTime ? item.dateTime.slice(0,10) : ''}}</text>
+          </view>
+          <text class="gather-item-add">+</text>
+        </view>
+        <view wx:if="{{gatherings.length === 0}}" class="gather-empty">还没有聚餐记录，先去记录本创建吧</view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- ========== 饭搭子弹窗（小游戏） ========== -->
+  <view wx:if="{{showGameBuddy}}" class="modal-overlay" bindtap="closeGameBuddy">
+    <view class="buddy-picker" catchtap>
+      <text class="buddy-picker-title">选择饭搭子</text>
+      <input class="buddy-search" placeholder="搜索…" value="{{gameBuddySearch}}" bindinput="onGameBuddySearch" />
+      <scroll-view class="buddy-list" scroll-y>
+        <view wx:for="{{gameBuddies}}" wx:key="id" class="buddy-pick-item" data-name="{{item.name}}" bindtap="pickGameBuddy">
+          <view class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
+          <text class="bp-name">{{item.name}}</text>
+          <text wx:if="{{item.phone}}" class="bp-phone">{{item.phone}}</text>
+          <text class="bp-add">+</text>
+        </view>
+        <view wx:if="{{gameBuddies.length === 0}}" class="bp-empty">没有匹配的饭搭子</view>
+      </scroll-view>
+      <button class="buddy-close" bindtap="closeGameBuddy">关闭</button>
+    </view>
+  </view>
+</scroll-view>

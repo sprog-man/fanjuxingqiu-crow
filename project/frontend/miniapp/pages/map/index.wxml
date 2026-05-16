@@ -1,0 +1,164 @@
+<scroll-view class="page" scroll-y>
+  <!-- Map Section -->
+  <view class="map-wrapper">
+    <map
+      id="foodMap"
+      class="food-map"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      bindmarkertap="onMarkerTap"
+      show-location
+    ></map>
+
+    <!-- Locate button overlay -->
+    <view class="locate-btn" bindtap="tryAutoLocate">
+      <text>📍</text>
+    </view>
+
+    <!-- Check-in FAB -->
+    <view class="fab" bindtap="startCheckin">
+      <text class="fab-icon">📍</text>
+      <text class="fab-text">打卡</text>
+    </view>
+  </view>
+
+  <!-- Stats -->
+  <view class="section">
+    <view class="stats-row">
+      <view class="stat-card">
+        <text class="stat-icon">📍</text>
+        <text class="stat-num">{{stats.totalCities || 0}}</text>
+        <text class="stat-label">足迹城市</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-icon">🍜</text>
+        <text class="stat-num">{{stats.totalFoods || 0}}</text>
+        <text class="stat-label">探索美食</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-icon">🍽️</text>
+        <text class="stat-num">{{stats.totalGatherings || 0}}</text>
+        <text class="stat-label">聚餐次数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Achievement Bar -->
+  <view class="achievement-bar" bindtap="toggleAchievements">
+    <text class="ach-bar-icon">🏆</text>
+    <text class="ach-bar-text">成就 {{unlockedCount}}/{{totalCount}}</text>
+    <text class="ach-bar-arrow">{{achArrow}}</text>
+  </view>
+
+  <!-- Achievements Grid -->
+  <view wx:if="{{showAchievements}}" class="achievement-grid">
+    <view wx:for="{{achievements}}" wx:key="id" class="ach-card {{item.cardClass}}">
+      <text class="ach-icon">{{item.iconDisplay}}</text>
+      <text class="ach-name">{{item.name}}</text>
+      <text class="ach-desc">{{item.desc}}</text>
+      <view class="ach-tier {{item.tier}}">{{item.statusText}}</view>
+    </view>
+  </view>
+
+  <!-- City Ranking -->
+  <view class="section">
+    <text class="section-title">城市排行榜</text>
+    <view wx:for="{{cities}}" wx:key="city" class="rank-item" data-city="{{item.city}}" bindtap="showCityDetail">
+      <text class="rank-num {{item.rankClass}}">{{item.rankNum}}</text>
+      <view class="rank-info">
+        <text class="rank-city">{{item.city}}</text>
+        <text class="rank-foods">{{item.foodsStr || ''}}</text>
+      </view>
+      <text class="rank-count">{{item.count}}次</text>
+    </view>
+    <view wx:if="{{isEmptyCities}}" class="empty-state">
+      <text class="empty-icon">🗺️</text>
+      <text class="empty-text">还没有打卡记录</text>
+      <text class="empty-hint">点击右下角「打卡」开始你的美食足迹</text>
+    </view>
+  </view>
+
+  <!-- Check-in Form Modal -->
+  <view wx:if="{{showForm}}" class="form-overlay" bindtap="closeForm">
+    <view class="form-card" catchtap>
+      <view class="form-header">
+        <text class="form-title">📍 美食打卡</text>
+        <text class="form-close" bindtap="closeForm">✕</text>
+      </view>
+
+      <scroll-view scroll-y class="form-body" style="height:{{formBodyH}}px">
+        <view wx:if="{{checkin.city}}" class="form-auto-loc">
+          <text class="loc-label">📍 自动定位</text>
+          <text class="loc-city">{{locInfo}}</text>
+        </view>
+
+        <view class="form-import-bar" bindtap="showImportPicker">
+          <text class="import-icon">📋</text>
+          <text class="import-text">从记录本导入</text>
+          <text class="import-arrow">›</text>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">餐厅名称</text>
+          <input class="form-input" placeholder="如：海底捞、街角小馆…" value="{{checkin.restaurant}}" data-field="restaurant" bindinput="onCheckinInput" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">吃了什么</text>
+          <input class="form-input" placeholder="如：麻辣火锅、日料刺身…" value="{{checkin.food}}" data-field="food" bindinput="onCheckinInput" />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">打卡感想</text>
+          <textarea class="form-textarea" placeholder="记录此刻的美食心情…" value="{{checkin.note}}" data-field="note" bindinput="onCheckinInput" maxlength="200"></textarea>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">照片</text>
+          <view class="photo-upload-area">
+            <view wx:if="{{noPhotos}}" class="photo-upload-btn" bindtap="pickCheckinPhoto">
+              <text class="photo-plus">+</text>
+              <text class="photo-label">添加照片</text>
+            </view>
+            <view wx:if="{{hasPhotos}}" class="photo-preview">
+              <image class="photo-img" src="{{firstPhoto}}" mode="aspectFill" />
+              <view class="photo-remove" bindtap="removeCheckinPhoto">✕</view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="form-footer">
+        <button class="btn-cancel" bindtap="closeForm">取消</button>
+        <button class="btn-submit {{submitBtnClass}}" bindtap="submitCheckin" disabled="{{formLoading}}">
+          {{submitBtnText}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Import Picker Modal -->
+  <view wx:if="{{showImport}}" class="form-overlay" bindtap="closeImport">
+    <view class="import-card" catchtap>
+      <view class="import-header">
+        <text class="import-title">📋 选择聚餐记录</text>
+        <text class="form-close" bindtap="closeImport">✕</text>
+      </view>
+      <scroll-view scroll-y class="import-list" style="height:400px">
+        <view wx:if="{{importList.length === 0}}" class="import-empty">
+          <text class="import-empty-text">暂无记录，先去「记录本」创建一条吧</text>
+        </view>
+        <view wx:for="{{importList}}" wx:key="_id" class="import-item" data-index="{{index}}" bindtap="pickImport">
+          <view class="import-item-left">
+            <text class="import-item-title">{{item.title}}</text>
+            <text class="import-item-meta">{{item.dateTime}} · {{item.location.city || '未知城市'}}</text>
+            <text wx:if="{{item.foodTags && item.foodTags.length}}" class="import-item-foods">{{item.foodTags.join('、')}}</text>
+          </view>
+          <text class="import-item-arrow">›</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</scroll-view>

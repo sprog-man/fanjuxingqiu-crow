@@ -1,0 +1,100 @@
+<scroll-view class="page" scroll-y>
+  <!-- Header -->
+  <view class="header">
+    <text class="header-title">今晚吃什么？</text>
+    <text class="header-sub">让转盘帮你决定</text>
+  </view>
+
+  <!-- Mode Switch -->
+  <view class="mode-switch">
+    <view class="mode-btn {{mode === 'single' ? 'active' : ''}}" data-mode="single" bindtap="switchMode">
+      <text class="mode-icon">👤</text>
+      <text>单人模式</text>
+    </view>
+    <view class="mode-btn {{mode === 'multi' ? 'active' : ''}}" data-mode="multi" bindtap="switchMode">
+      <text class="mode-icon">👥</text>
+      <text>多人模式</text>
+    </view>
+  </view>
+
+  <!-- Mood Tags -->
+  <view class="section">
+    <text class="section-title">今日氛围</text>
+    <scroll-view class="mood-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="mood-tags">
+        <view
+          wx:for="{{moods}}"
+          wx:key="id"
+          class="mood-tag {{selectedMood === item.id ? 'selected' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="selectMood"
+        >
+          <text class="mood-icon">{{item.icon}}</text>
+          <text class="mood-name">{{item.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Flavor Filter -->
+  <view class="section">
+    <text class="section-title">口味偏好</text>
+    <view class="tag-group">
+      <view
+        wx:for="{{['辣', '清淡', '重口', '鲜美', '精致', '健康', '烤肉', '浪漫']}}"
+        wx:key="*this"
+        class="tag-btn {{tagStates[index] ? 'selected' : ''}}"
+        data-tag="{{item}}"
+        hover-class="tag-hover"
+        hover-stay-time="100"
+        bindtap="toggleTag"
+      >
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <!-- Wheel + Spin + Progress (hidden when result shown) -->
+  <view wx:if="{{!showResult}}">
+    <view class="wheel-container">
+      <canvas
+        type="2d"
+        id="wheelCanvas"
+        class="wheel-canvas"
+        style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;"
+      ></canvas>
+      <view class="wheel-center" bindtap="spin">
+        <text class="wheel-center-text">{{spinning ? '...' : 'GO'}}</text>
+      </view>
+    </view>
+
+    <button class="spin-btn {{spinning ? 'disabled' : ''}}" disabled="{{spinning}}" bindtap="spin">
+      {{spinning ? '转动中...' : '开始转！'}}
+    </button>
+
+    <view wx:if="{{mode === 'multi'}}" class="vote-progress">
+      <text class="vote-progress-text">{{voteProgress.submitted}}/{{voteProgress.total}}人已提交</text>
+      <view class="progress-bar">
+        <view class="progress-fill" style="width:{{(voteProgress.submitted/voteProgress.total)*100}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Result Card (replaces wheel, not overlay) -->
+  <view wx:if="{{showResult && result}}" class="result-section">
+    <view class="result-content">
+      <view class="result-icon-wrap">
+        <text class="result-icon">{{result.icon || '🍽️'}}</text>
+      </view>
+      <text class="result-name">{{result.name}}</text>
+      <text class="result-desc">就吃这个吧！</text>
+      <view class="result-tags">
+        <text class="result-tag" wx:for="{{result.tags}}" wx:key="*this">{{item}}</text>
+      </view>
+      <view class="result-actions">
+        <button class="result-btn primary" bindtap="resetSpin">换一个</button>
+        <button class="result-btn secondary" bindtap="resetSpin">就它了！</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>

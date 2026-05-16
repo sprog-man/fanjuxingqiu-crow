@@ -1,0 +1,243 @@
+.page { min-height: 100vh; background: #f8f6f3; padding-bottom: 30px; }
+
+/* Stats */
+.stats-header {
+  display: flex;
+  gap: 8px;
+  margin: 16px 16px 12px;
+}
+
+.stat-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 8px;
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: #D85A30;
+}
+
+.stat-label {
+  display: block;
+  font-size: 11px;
+  color: #5F5E5A;
+  margin-top: 2px;
+}
+
+/* Top Friends */
+.top-friends {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 16px 12px;
+  padding: 14px 16px;
+}
+
+.section-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2C2C2A;
+  margin-bottom: 10px;
+}
+
+.friend-row {
+  display: flex;
+  gap: 10px;
+}
+
+.friend-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #FAECE7;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #2C2C2A;
+}
+
+.friend-rank {
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  background: #D85A30;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.friend-count {
+  color: #D85A30;
+  font-weight: 500;
+}
+
+/* Monthly Chart */
+.chart-section {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 16px 12px;
+  padding: 14px 16px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  padding-top: 10px;
+}
+
+.bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 30px;
+  background: linear-gradient(180deg, #D85A30, #e07a50);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.5s;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: #5F5E5A;
+}
+
+.bar-count {
+  font-size: 11px;
+  color: #D85A30;
+  font-weight: 600;
+}
+
+/* Create Button */
+.create-btn {
+  margin: 0 16px 12px;
+  height: 48px;
+  line-height: 48px;
+  background: #D85A30;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+/* Record List */
+.record-list {
+  padding: 0 16px;
+}
+
+.record-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.record-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.record-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C2C2A;
+}
+
+.record-cost {
+  font-size: 15px;
+  font-weight: 600;
+  color: #D85A30;
+}
+
+.record-time {
+  display: block;
+  font-size: 12px;
+  color: #5F5E5A;
+  margin-bottom: 8px;
+}
+
+.record-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-location {
+  font-size: 12px;
+  color: #5F5E5A;
+}
+
+.record-avatars {
+  display: flex;
+  gap: -4px;
+}
+
+.avatar-dot {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  background: #FAECE7;
+  border-radius: 50%;
+  font-size: 11px;
+  color: #D85A30;
+  border: 2px solid #fff;
+  margin-left: -6px;
+}
+
+.avatar-dot:first-child {
+  margin-left: 0;
+}
+
+.avatar-more {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  background: #f0f0f0;
+  border-radius: 50%;
+  font-size: 9px;
+  color: #5F5E5A;
+  margin-left: -6px;
+  border: 2px solid #fff;
+}
+
+/* Empty */
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 16px;
+  color: #2C2C2A;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: #ccc;
+}

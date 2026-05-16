@@ -1,0 +1,74 @@
+<scroll-view class="page" scroll-y>
+  <!-- Stats Header -->
+  <view class="stats-header">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.total}}</text>
+      <text class="stat-label">总次数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.totalCost}}</text>
+      <text class="stat-label">总消费(元)</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.avgCost}}</text>
+      <text class="stat-label">平均(元)</text>
+    </view>
+  </view>
+
+  <!-- Top Friends -->
+  <view wx:if="{{stats.topFriends && stats.topFriends.length}}" class="top-friends">
+    <text class="section-title">最常聚餐好友</text>
+    <view class="friend-row">
+      <view wx:for="{{stats.topFriends}}" wx:key="index" class="friend-badge">
+        <text class="friend-rank">{{index + 1}}</text>
+        <text>{{item.name}}</text>
+        <text class="friend-count">{{item.count}}次</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Monthly Chart -->
+  <view wx:if="{{stats.monthly && stats.monthly.length}}" class="chart-section">
+    <text class="section-title">月度趋势</text>
+    <view class="chart-bars">
+      <view wx:for="{{stats.monthly}}" wx:key="index" class="bar-item">
+        <view class="bar" style="height:{{maxBar > 0 ? (item.count/maxBar*80) : 0}}px"></view>
+        <text class="bar-label">{{item.monthShort}}</text>
+        <text class="bar-count">{{item.count}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Create Button -->
+  <button class="create-btn" bindtap="goCreate">+ 新建聚餐记录</button>
+
+  <!-- Record List -->
+  <view class="record-list">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="record-card"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="record-top">
+        <text class="record-title">{{item.title}}</text>
+        <text class="record-cost">{{item.totalCost}}元</text>
+      </view>
+      <text class="record-time">{{formatTime(item.dateTime)}}</text>
+      <view class="record-meta">
+        <text class="record-location">{{item.locationName}}</text>
+        <view class="record-avatars">
+          <text wx:for="{{item.participants.slice(0,5)}}" wx:key="index" class="avatar-dot">{{item.participantShort[index]}}</text>
+          <text wx:if="{{item.participants.length > 5}}" class="avatar-more">+{{item.participants.length-5}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{records.length === 0}}" class="empty-state">
+      <text class="empty-icon">📓</text>
+      <text class="empty-text">还没有聚餐记录</text>
+      <text class="empty-hint">点击上方按钮开始记录</text>
+    </view>
+  </view>
+</scroll-view>
