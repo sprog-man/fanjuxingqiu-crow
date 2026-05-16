@@ -5,6 +5,7 @@ const { createGameHandler, handleGameEvent } = require('./gameHandler');
 module.exports = function attachWS(server) {
   const wss = new WebSocketServer({ server });
   const rooms = new RoomManager();
+  console.log('[ws] WebSocket server attached, room cleanup every 60s');
 
   wss.on('connection', (ws, req) => {
     ws.id = req.headers['sec-websocket-key'] || Math.random().toString(36).slice(2);
@@ -26,17 +27,24 @@ module.exports = function attachWS(server) {
           ws.nickname = nickname;
           const room = rooms.createRoom(ws.id, nickname);
           ws.roomCode = room.code;
+          console.log(`[ws] room:create -> code=${room.code} host=${nickname} totalRooms=${rooms.rooms.size}`);
           send('room:joined', { roomCode: room.code, members: room.members, isHost: true, mySocketId: ws.id });
           break;
         }
         case 'room:join': {
           const { roomCode, nickname: joinName } = data || {};
+          console.log(`[ws] room:join -> code=${roomCode} nickname=${joinName}`);
           if (!roomCode) { send('room:error', { message: '缺少房间码' }); break; }
           const room = rooms.getRoom(roomCode);
-          if (!room) { send('room:error', { message: '房间不存在或已过期' }); break; }
+          if (!room) {
+            console.log(`[ws] room:join FAIL -> room not found, existing codes=[${Array.from(rooms.rooms.keys()).join(',')}]`);
+            send('room:error', { message: '房间不存在或已过期' });
+            break;
+          }
           ws.nickname = joinName || '匿名';
           ws.roomCode = roomCode;
           room.addMember(ws.id, ws.nickname);
+          console.log(`[ws] room:join OK -> code=${roomCode} joiner=${ws.nickname} members=${room.members.length}`);
           send('room:joined', { roomCode, members: room.members, isHost: false, mySocketId: ws.id });
           broadcast(roomCode, 'room:members', { members: room.members }, ws.id);
           break;
@@ -47,8 +55,10 @@ module.exports = function attachWS(server) {
           const leaveRoom = rooms.getRoom(leaveCode);
           if (leaveRoom) {
             leaveRoom.removeMember(ws.id);
-            if (leaveRoom.members.length === 0) rooms.removeRoom(leaveCode);
-            else broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
+            console.log(`[ws] room:leave -> code=${leaveCode} remaining=${leaveRoom.members.length}`);
+            if (leaveRoom.members.length > 0) {
+              broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
+            }
           }
           ws.roomCode = null;
           break;
@@ -65,8 +75,10 @@ module.exports = function attachWS(server) {
       const leaveRoom = rooms.getRoom(leaveCode);
       if (leaveRoom) {
         leaveRoom.removeMember(ws.id);
-        if (leaveRoom.members.length === 0) rooms.removeRoom(leaveCode);
-        else broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
+        console.log(`[ws] disconnect cleanup -> code=${leaveCode} remaining=${leaveRoom.members.length}`);
+        if (leaveRoom.members.length > 0) {
+          broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
+        }
       }
     });
   });

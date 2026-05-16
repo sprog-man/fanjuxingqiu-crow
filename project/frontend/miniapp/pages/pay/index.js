@@ -170,7 +170,6 @@ Page({
     if (!name) return
     if (this.data.gamePlayers.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
     this.setData({ gamePlayers: [...this.data.gamePlayers, name], gameInput: '' })
-    if (this.data.gamePlayers.length >= 2 && !this.data.teeth.length) this.startGame()
   },
   removeGamePlayer(e) {
     const { index } = e.currentTarget.dataset
@@ -206,7 +205,6 @@ Page({
     if (!name) return
     if (this.data.piratePlayers.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
     this.setData({ piratePlayers: [...this.data.piratePlayers, name], pirateInput: '' })
-    if (this.data.piratePlayers.length >= 2 && !this.data.pirateSlots.length) this.startPirate()
   },
   removePiratePlayer(e) {
     const { index } = e.currentTarget.dataset

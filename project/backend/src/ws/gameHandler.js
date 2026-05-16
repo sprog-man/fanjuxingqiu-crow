@@ -25,16 +25,13 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       }
       const players = room.members.map(m => m.nickname);
       const winner = players[Math.floor(Math.random() * players.length)];
-      const shuffled = [...players].sort(() => Math.random() - 0.5);
-      const shortlist = shuffled.slice(0, Math.min(3, shuffled.length));
 
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'draw:countdown', { count: 3 });
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 2 }), 1000);
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 1 }), 2000);
-      setTimeout(() => gh.broadcast(roomCode, 'draw:spinning', { candidates: players }), 3000);
-      setTimeout(() => gh.broadcast(roomCode, 'draw:focus', { shortlist }), 5500);
-      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner }), 6500);
+      setTimeout(() => gh.broadcast(roomCode, 'draw:spinning', { candidates: players, winner }), 3000);
+      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner }), 8500);
       break;
     }
     case 'croc:start': {

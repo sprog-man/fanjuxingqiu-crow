@@ -3,32 +3,37 @@ let socketOpen = false;
 let pendingMessages = [];
 let currentRoomCode = '';
 let currentNickname = '';
+let listenersRegistered = false;
 
 function connect(roomCode, nickname) {
   currentRoomCode = roomCode || '';
   currentNickname = nickname || '我';
   const serverUrl = 'ws://localhost:2001';
   wx.connectSocket({ url: serverUrl });
-  wx.onSocketOpen(() => {
-    socketOpen = true;
-    pendingMessages.forEach(msg => wx.sendSocketMessage({ data: msg }));
-    pendingMessages = [];
-    if (currentRoomCode) {
-      send('room:join', { roomCode: currentRoomCode, nickname: currentNickname });
-    } else {
-      send('room:create', { nickname: currentNickname });
-    }
-  });
-  wx.onSocketMessage(res => {
-    try {
-      const { event, data } = JSON.parse(res.data);
-      if (EVENTS[event]) EVENTS[event].forEach(fn => fn(data));
-    } catch (e) {}
-  });
-  wx.onSocketClose(() => {
-    socketOpen = false;
-  });
-  wx.onSocketError(() => { socketOpen = false; });
+
+  if (!listenersRegistered) {
+    listenersRegistered = true;
+    wx.onSocketOpen(() => {
+      socketOpen = true;
+      pendingMessages.forEach(msg => wx.sendSocketMessage({ data: msg }));
+      pendingMessages = [];
+      if (currentRoomCode) {
+        send('room:join', { roomCode: currentRoomCode, nickname: currentNickname });
+      } else {
+        send('room:create', { nickname: currentNickname });
+      }
+    });
+    wx.onSocketMessage(res => {
+      try {
+        const { event, data } = JSON.parse(res.data);
+        if (EVENTS[event]) EVENTS[event].forEach(fn => fn(data));
+      } catch (e) {}
+    });
+    wx.onSocketClose(() => {
+      socketOpen = false;
+    });
+    wx.onSocketError(() => { socketOpen = false; });
+  }
 }
 
 function send(event, data) {
@@ -52,7 +57,6 @@ function off(event, callback) {
 function close() {
   wx.closeSocket();
   socketOpen = false;
-  Object.keys(EVENTS).forEach(k => delete EVENTS[k]);
 }
 
 module.exports = { connect, send, on, off, close };

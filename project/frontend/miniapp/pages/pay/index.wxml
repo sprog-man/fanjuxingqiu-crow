@@ -101,7 +101,10 @@
           </view>
         </view>
       </view>
-      <view wx:if="{{gamePlayers.length >= 2 && !gameOver}}" class="game-status">
+      <view wx:if="{{gamePlayers.length >= 2 && teeth.length === 0}}" class="start-game-row">
+        <button class="start-game-btn" bindtap="startGame">🎮 开始游戏</button>
+      </view>
+      <view wx:if="{{teeth.length > 0 && !gameOver}}" class="game-status">
         <text class="turn-label">轮到</text>
         <text class="turn-name">{{gamePlayers[currentTurn]}}</text>
         <text class="turn-hint">按一颗牙齿...</text>
@@ -152,7 +155,10 @@
           </view>
         </view>
       </view>
-      <view wx:if="{{piratePlayers.length >= 2 && !pirateGameOver}}" class="game-status">
+      <view wx:if="{{piratePlayers.length >= 2 && pirateSlots.length === 0}}" class="start-game-row">
+        <button class="start-game-btn" bindtap="startPirate">🎮 开始游戏</button>
+      </view>
+      <view wx:if="{{pirateSlots.length > 0 && !pirateGameOver}}" class="game-status">
         <text class="turn-label">轮到</text>
         <text class="turn-name">{{piratePlayers[pirateTurn]}}</text>
         <text class="turn-hint">选一个孔插刀...</text>
