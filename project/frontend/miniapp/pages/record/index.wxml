@@ -42,33 +42,87 @@
   <!-- Create Button -->
   <button class="create-btn" bindtap="goCreate">+ 新建聚餐记录</button>
 
+  <!-- ===== 筛选栏 ===== -->
+  <view class="filter-section">
+    <view class="filter-tabs">
+      <view class="filter-tab {{filterMode === 'all' ? 'active' : ''}}" data-mode="all" bindtap="switchFilter">
+        <text>全部</text>
+      </view>
+      <view class="filter-tab {{filterMode === 'month' ? 'active' : ''}}" data-mode="month" bindtap="switchFilter">
+        <text>按月</text>
+      </view>
+      <view class="filter-tab {{filterMode === 'day' ? 'active' : ''}}" data-mode="day" bindtap="switchFilter">
+        <text>按日</text>
+      </view>
+    </view>
+
+    <!-- 按月筛选：月份选择 -->
+    <view wx:if="{{filterMode === 'month'}}" class="day-picker-wrap">
+      <picker mode="date" fields="month" value="{{filterMonth ? filterMonth + '-01' : ''}}" bindchange="onMonthChange">
+        <view class="day-picker-btn">
+          <text wx:if="{{!filterMonth}}" class="day-picker-placeholder">请选择月份</text>
+          <text wx:if="{{filterMonth}}" class="day-picker-value">{{filterMonthLabel}}</text>
+          <text class="day-picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 按日筛选：日期选择 -->
+    <view wx:if="{{filterMode === 'day'}}" class="day-picker-wrap">
+      <picker mode="date" value="{{filterDate}}" bindchange="onDateChange">
+        <view class="day-picker-btn">
+          <text wx:if="{{!filterDate}}" class="day-picker-placeholder">请选择日期</text>
+          <text wx:if="{{filterDate}}" class="day-picker-value">{{filterDateLabel}}</text>
+          <text class="day-picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 当前筛选提示 -->
+    <view wx:if="{{filterMode !== 'all'}}" class="filter-hint">
+      <text wx:if="{{filterMode === 'month' && filterMonth}}">当前：{{filterMonthLabel}}（{{filteredRecords.length}}条）</text>
+      <text wx:if="{{filterMode === 'day' && filterDate}}">当前：{{filterDateLabel}}（{{filteredRecords.length}}条）</text>
+      <text class="filter-clear" bindtap="clearFilter">✕ 清除</text>
+    </view>
+  </view>
+
   <!-- Record List -->
   <view class="record-list">
     <view
-      wx:for="{{records}}"
+      wx:for="{{filteredRecords}}"
       wx:key="id"
       class="record-card"
       data-id="{{item.id}}"
       bindtap="goDetail"
     >
-      <view class="record-top">
-        <text class="record-title">{{item.title}}</text>
-        <text class="record-cost">{{item.totalCost}}元</text>
+      <!-- 日期突出展示 -->
+      <view class="record-date-block">
+        <text class="rd-year">{{item.cardYear}}</text>
+        <view class="rd-date-row">
+          <text class="rd-date">{{item.cardDate}}</text>
+          <text class="rd-weekday">{{item.cardWeekday}}</text>
+          <text class="rd-time">{{item.cardTime}}</text>
+        </view>
       </view>
-      <text class="record-time">{{formatTime(item.dateTime)}}</text>
-      <view class="record-meta">
-        <text class="record-location">{{item.locationName}}</text>
-        <view class="record-avatars">
-          <text wx:for="{{item.participants.slice(0,5)}}" wx:key="index" class="avatar-dot">{{item.participantShort[index]}}</text>
-          <text wx:if="{{item.participants.length > 5}}" class="avatar-more">+{{item.participants.length-5}}</text>
+      <view class="record-body">
+        <view class="record-top">
+          <text class="record-title">{{item.title}}</text>
+          <text class="record-cost">{{item.totalCost}}元</text>
+        </view>
+        <view class="record-meta">
+          <text class="record-location">{{item.locationName}}</text>
+          <view class="record-avatars">
+            <text wx:for="{{item.participants.slice(0,5)}}" wx:key="index" class="avatar-dot">{{item.participantShort[index]}}</text>
+            <text wx:if="{{item.participants.length > 5}}" class="avatar-more">+{{item.participants.length-5}}</text>
+          </view>
         </view>
       </view>
     </view>
 
-    <view wx:if="{{records.length === 0}}" class="empty-state">
+    <view wx:if="{{filteredRecords.length === 0}}" class="empty-state">
       <text class="empty-icon">📓</text>
-      <text class="empty-text">还没有聚餐记录</text>
-      <text class="empty-hint">点击上方按钮开始记录</text>
+      <text class="empty-text">没有匹配的记录</text>
+      <text class="empty-hint" bindtap="clearFilter">试试清除筛选</text>
     </view>
   </view>
 </scroll-view>
