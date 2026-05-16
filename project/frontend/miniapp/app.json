@@ -9,7 +9,8 @@
     "pages/mine/album",
     "pages/mine/buddies",
     "pages/map/index",
-    "pages/mine/index"
+    "pages/mine/index",
+    "pages/room/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
