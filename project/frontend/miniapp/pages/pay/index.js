@@ -126,6 +126,10 @@ Page({
     })
   },
 
+  goMultiplayer() {
+    wx.navigateTo({ url: '/pages/room/index' });
+  },
+
   /* ========== 抽签 ========== */
 
   addPlayer() {

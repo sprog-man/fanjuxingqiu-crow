@@ -4,6 +4,14 @@
 .header-title { display: block; font-size: 24px; font-weight: 600; color: #2C2C2A; margin-bottom: 4px; }
 .header-sub { display: block; font-size: 14px; color: #5F5E5A; }
 
+/* Multiplayer Entry */
+.multiplayer-entry { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; }
+.mpe-icon { font-size: 24px; }
+.mpe-text { flex: 1; }
+.mpe-title { display: block; font-size: 15px; font-weight: 600; color: #FFD700; margin-bottom: 2px; }
+.mpe-desc { display: block; font-size: 11px; color: rgba(255,255,255,0.5); }
+.mpe-arrow { font-size: 24px; color: rgba(255,255,255,0.3); }
+
 /* Game Tabs */
 .game-tabs { display: flex; margin: 0 24px 16px; background: #fff; border-radius: 12px; padding: 4px; }
 .game-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px 0; border-radius: 10px; font-size: 13px; color: #5F5E5A; transition: all 0.3s; }

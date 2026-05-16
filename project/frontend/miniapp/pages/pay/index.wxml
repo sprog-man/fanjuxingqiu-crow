@@ -20,6 +20,16 @@
     </view>
   </view>
 
+  <!-- 多人入口 -->
+  <view class="multiplayer-entry" bindtap="goMultiplayer">
+    <text class="mpe-icon">👥</text>
+    <view class="mpe-text">
+      <text class="mpe-title">多人在线</text>
+      <text class="mpe-desc">邀请好友一起决定谁买单</text>
+    </view>
+    <text class="mpe-arrow">›</text>
+  </view>
+
   <!-- ========== 抽签 ========== -->
   <view wx:if="{{activeTab === 'draw'}}" class="game-content">
     <view class="input-section">
