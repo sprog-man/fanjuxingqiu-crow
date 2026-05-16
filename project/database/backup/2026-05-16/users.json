@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "6a0733b8fd678a7d842748a3",
+    "openid": "dev_0e1ilRGa1pFjHL0KLHGa1yf0b73ilRGQ_1778856888101",
+    "nickname": "微信用户",
+    "avatar_url": "https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132",
+    "preference_tags": "{\"cuisines\":{\"chuan\":4,\"yue\":1,\"xi\":2},\"tags\":{\"辣\":4,\"麻辣\":4,\"重口\":4,\"清淡\":1,\"鲜美\":1,\"精致\":3,\"牛排\":2,\"浪漫\":2},\"totalSpins\":7}",
+    "friend_ids": [],
+    "createdAt": "2026-05-15T14:54:48.107Z",
+    "updatedAt": "2026-05-16T03:25:11.435Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a07c43da6b8dc4974ec9fc5",
+    "openid": "test_user",
+    "nickname": "",
+    "avatar_url": "",
+    "preference_tags": "{\"cuisines\":{\"chuan\":1},\"tags\":{\"��\":1,\"����\":1},\"totalSpins\":1,\"likedCuisines\":[\"chuan\",\"han\"]}",
+    "friend_ids": [],
+    "createdAt": "2026-05-16T01:11:25.591Z",
+    "updatedAt": "2026-05-16T01:13:26.485Z",
+    "__v": 0
+  }
+]

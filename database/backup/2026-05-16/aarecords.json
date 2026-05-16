@@ -1,0 +1,127 @@
+[
+  {
+    "_id": "6a071e066d95bd8e5c7e6d5e",
+    "groupId": "default-group",
+    "payer": "康悦悦",
+    "participants": [
+      "康悦悦"
+    ],
+    "amount": 237,
+    "createdAt": "2026-05-15T13:22:14.860Z",
+    "updatedAt": "2026-05-16T03:52:01.663Z",
+    "__v": 0,
+    "paidStatus": {
+      "康悦悦": true
+    }
+  },
+  {
+    "_id": "6a071e0f6d95bd8e5c7e6d61",
+    "groupId": "default-group",
+    "payer": "邱邱",
+    "participants": [
+      "邱邱"
+    ],
+    "amount": 222,
+    "createdAt": "2026-05-15T13:22:23.995Z",
+    "updatedAt": "2026-05-16T03:47:26.460Z",
+    "__v": 0,
+    "paidStatus": {
+      "邱邱": false
+    }
+  },
+  {
+    "_id": "6a07e8f3e65234727814d297",
+    "groupId": "default-group",
+    "payer": "康悦悦",
+    "participants": [
+      "小明",
+      "小红"
+    ],
+    "amount": 188,
+    "paidStatus": {
+      "小明": true,
+      "小红": true
+    },
+    "createdAt": "2026-05-16T03:48:03.503Z",
+    "updatedAt": "2026-05-16T03:51:23.715Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a07f42ce65234727814d2df",
+    "groupId": "default-group",
+    "payer": "微信用户",
+    "participants": [
+      "我",
+      "小丽",
+      "小刚",
+      "小明"
+    ],
+    "amount": 257,
+    "paidStatus": {
+      "我": true,
+      "小丽": true,
+      "小刚": true,
+      "小明": true
+    },
+    "createdAt": "2026-05-16T04:35:56.800Z",
+    "updatedAt": "2026-05-16T04:36:06.869Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a084c1e198009528fadeb81",
+    "groupId": "default-group",
+    "payer": "微信用户",
+    "participants": [
+      "我",
+      "小明",
+      "小红"
+    ],
+    "amount": 368,
+    "paidStatus": {
+      "我": true,
+      "小明": false,
+      "小红": false
+    },
+    "createdAt": "2026-05-16T10:51:10.660Z",
+    "updatedAt": "2026-05-16T10:51:51.646Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a084d03198009528fadeba5",
+    "groupId": "default-group",
+    "payer": "微信用户",
+    "participants": [
+      "我",
+      "小明",
+      "小红"
+    ],
+    "amount": 368,
+    "paidStatus": {
+      "我": false,
+      "小明": false,
+      "小红": false
+    },
+    "createdAt": "2026-05-16T10:54:59.147Z",
+    "updatedAt": "2026-05-16T10:54:59.147Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a084e86198009528fadebb4",
+    "groupId": "default-group",
+    "payer": "微信用户",
+    "participants": [
+      "我",
+      "小明",
+      "小红"
+    ],
+    "amount": 368,
+    "paidStatus": {
+      "我": false,
+      "小明": false,
+      "小红": false
+    },
+    "createdAt": "2026-05-16T11:01:26.939Z",
+    "updatedAt": "2026-05-16T11:01:26.939Z",
+    "__v": 0
+  }
+]
