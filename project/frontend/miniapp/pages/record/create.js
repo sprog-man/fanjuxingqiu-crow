@@ -102,16 +102,29 @@ Page({
   },
 
   // 饭搭子
-  showBuddyPicker() { this.setData({ showBuddyModal: true, buddySearch: '', filteredBuddies: app.getBuddies() }) },
+  markBuddiesAdded(buddies, list) {
+    return buddies.map(b => ({ ...b, added: list.includes(b.name) }))
+  },
+  showBuddyPicker() {
+    this.setData({
+      showBuddyModal: true, buddySearch: '',
+      filteredBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.form.participants),
+    })
+  },
   closeBuddyPicker() { this.setData({ showBuddyModal: false }) },
   onBuddySearch(e) {
     const q = e.detail.value
-    this.setData({ buddySearch: q, filteredBuddies: app.getBuddies().filter(b => b.name.includes(q)) })
+    const all = this.markBuddiesAdded(app.getBuddies(), this.data.form.participants)
+    this.setData({ buddySearch: q, filteredBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickBuddy(e) {
     const name = e.currentTarget.dataset.name
     if (this.data.form.participants.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-    this.setData({ 'form.participants': [...this.data.form.participants, name] })
+    const newList = [...this.data.form.participants, name]
+    this.setData({
+      'form.participants': newList,
+      filteredBuddies: this.markBuddiesAdded(this.data.filteredBuddies, newList),
+    })
   },
 
   jumpStep(e) {

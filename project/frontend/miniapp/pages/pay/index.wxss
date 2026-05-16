@@ -206,6 +206,7 @@
 .bp-name { flex: 1; font-size: 14px; color: #2C2C2A; }
 .bp-phone { font-size: 11px; color: #5F5E5A; }
 .bp-add { font-size: 20px; color: #D85A30; font-weight: 700; }
+.bp-added { font-size: 11px; color: #999; background: #f5f5f5; padding: 2px 8px; border-radius: 8px; }
 .bp-empty { text-align: center; padding: 20px; font-size: 13px; color: #ccc; }
 .buddy-close { height: 40px; line-height: 40px; background: #f5f5f5; color: #2C2C2A; font-size: 14px; border-radius: 10px; margin-top: 10px; }
 

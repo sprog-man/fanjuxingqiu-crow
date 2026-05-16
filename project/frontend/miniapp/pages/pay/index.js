@@ -47,63 +47,83 @@ Page({
 
   /* ========== 通用饭搭子导入 ========== */
 
+  markBuddiesAdded(buddies, list) {
+    return buddies.map(b => ({ ...b, added: list.includes(b.name) }))
+  },
+
   openDrawBuddy() {
     this.setData({
       showDrawBuddy: true, drawBuddySearch: '',
-      drawBuddies: app.getBuddies(),
+      drawBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.players),
     })
   },
   closeDrawBuddy() { this.setData({ showDrawBuddy: false }) },
   onDrawBuddySearch(e) {
     const q = e.detail.value
-    this.setData({ drawBuddySearch: q, drawBuddies: app.getBuddies().filter(b => b.name.includes(q)) })
+    const all = this.markBuddiesAdded(app.getBuddies(), this.data.players)
+    this.setData({ drawBuddySearch: q, drawBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickDrawBuddy(e) {
     const name = e.currentTarget.dataset.name
     if (this.data.players.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-    this.setData({ players: [...this.data.players, name] })
+    this.setData({
+      players: [...this.data.players, name],
+      drawBuddies: this.markBuddiesAdded(this.data.drawBuddies, [...this.data.players, name]),
+    })
   },
 
   /* ========== 小游戏饭搭子 ========== */
 
+  getGamePlayerList() {
+    const g = this.data.currentGame
+    return g === 'croc' ? this.data.gamePlayers : g === 'pirate' ? this.data.piratePlayers : []
+  },
+
   openGameBuddy() {
     this.setData({
       showGameBuddy: true, gameBuddySearch: '',
-      gameBuddies: app.getBuddies(),
+      gameBuddies: this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList()),
     })
   },
   closeGameBuddy() { this.setData({ showGameBuddy: false }) },
   onGameBuddySearch(e) {
     const q = e.detail.value
-    this.setData({ gameBuddySearch: q, gameBuddies: app.getBuddies().filter(b => b.name.includes(q)) })
+    const all = this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList())
+    this.setData({ gameBuddySearch: q, gameBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickGameBuddy(e) {
     const name = e.currentTarget.dataset.name
     const game = this.data.currentGame
-    if (game === 'croc') {
-      if (this.data.gamePlayers.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-      this.setData({ gamePlayers: [...this.data.gamePlayers, name] })
-    } else if (game === 'pirate') {
-      if (this.data.piratePlayers.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-      this.setData({ piratePlayers: [...this.data.piratePlayers, name] })
-    }
+    const listKey = game === 'croc' ? 'gamePlayers' : game === 'pirate' ? 'piratePlayers' : null
+    if (!listKey) return
+    if (this.data[listKey].includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
+    const newList = [...this.data[listKey], name]
+    this.setData({
+      [listKey]: newList,
+      gameBuddies: this.markBuddiesAdded(this.data.gameBuddies, newList),
+    })
   },
 
   openAABuddy() {
     this.setData({
       showAABuddy: true, aaBuddySearch: '',
-      aaBuddies: app.getBuddies(),
+      aaBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants),
     })
   },
   closeAABuddy() { this.setData({ showAABuddy: false }) },
   onAABuddySearch(e) {
     const q = e.detail.value
-    this.setData({ aaBuddySearch: q, aaBuddies: app.getBuddies().filter(b => b.name.includes(q)) })
+    const all = this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants)
+    this.setData({ aaBuddySearch: q, aaBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickAABuddy(e) {
     const name = e.currentTarget.dataset.name
     if (this.data.aaParticipants.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-    this.setData({ aaParticipants: [...this.data.aaParticipants, name] })
+    const newList = [...this.data.aaParticipants, name]
+    this.setData({
+      aaParticipants: newList,
+      aaBuddies: this.markBuddiesAdded(this.data.aaBuddies, newList),
+    })
   },
 
   /* ========== 抽签 ========== */
@@ -214,11 +234,14 @@ Page({
 
   enrichRecord(r) {
     const ps = r.paidStatus || {}
-    const parts = (r.participants || []).map(name => ({
-      name,
-      paidClass: ps[name] ? 'paid' : 'unpaid',
-      paidText: ps[name] ? '已A' : '未A',
-    }))
+    const me = this.data.currentUser
+    const parts = (r.participants || [])
+      .filter(name => name !== me)
+      .map(name => ({
+        name,
+        paidClass: ps[name] ? 'paid' : 'unpaid',
+        paidText: ps[name] ? '已A' : '未A',
+      }))
     return { ...r, parts }
   },
 
@@ -248,9 +271,11 @@ Page({
     const id = e.currentTarget.dataset.id
     const g = this.data.gatherings.find(x => (x._id || x.gathering_id) === id)
     if (!g) return
+    const me = this.data.currentUser
+    const buddies = (g.participants || []).filter(p => p !== me)
     this.setData({
       selectedGathering: g,
-      aaParticipants: g.participants || [],
+      aaParticipants: buddies,
       aaAmount: String(g.totalCost || ''),
       showGatheringPicker: false,
     })
@@ -283,12 +308,13 @@ Page({
 
   async submitAA() {
     if (!this.data.aaAmount) { wx.showToast({ title: '请填写金额', icon: 'none' }); return }
-    if (this.data.aaParticipants.length < 1) { wx.showToast({ title: '请添加参与人', icon: 'none' }); return }
     const payer = this.data.currentUser
+    const participants = this.data.aaParticipants.filter(p => p !== payer)
+    if (participants.length < 1) { wx.showToast({ title: '请添加参与人', icon: 'none' }); return }
     const payload = {
       groupId: this.data.groupId,
       payer,
-      participants: this.data.aaParticipants,
+      participants,
       amount: Number(this.data.aaAmount),
     }
     try {
