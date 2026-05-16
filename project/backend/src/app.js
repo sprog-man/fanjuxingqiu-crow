@@ -1,4 +1,5 @@
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
@@ -77,7 +78,10 @@ app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/admin/index.html'));
 });
 
-app.listen(config.port, () => {
+const server = http.createServer(app);
+require('./ws')(server);
+
+server.listen(config.port, () => {
   console.log(`饭局星球 → http://localhost:${config.port}`);
   console.log(`  小程序 API   → /api/*（公开）`);
   console.log(`  管理后台     → /admin（认证后使用）`);
