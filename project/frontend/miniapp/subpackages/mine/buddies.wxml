@@ -1,20 +1,23 @@
 <scroll-view class="page" scroll-y>
-  <view class="page">
+  <view class="page-inner">
     <view class="header-note">添加经常一起吃饭的朋友，在所有功能中快速选择</view>
 
     <button class="add-buddy-btn" bindtap="showAdd">+ 添加饭搭子</button>
 
     <view wx:for="{{buddies}}" wx:key="id" class="buddy-card">
-      <view class="buddy-avatar" style="background:{{item.color}}">
-        <text>{{item.name.slice(0,1)}}</text>
+      <view class="buddy-avatar-wrap" data-id="{{item._id || item.id}}" bindtap="editBuddy">
+        <image wx:if="{{item.avatar}}" class="buddy-avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+        <view wx:else class="buddy-avatar-letter" style="background:{{item.color || '#D85A30'}}">
+          <text>{{item.name.slice(0,1)}}</text>
+        </view>
       </view>
-      <view class="buddy-info">
+      <view class="buddy-info" data-id="{{item._id || item.id}}" bindtap="editBuddy">
         <text class="buddy-name">{{item.name}}</text>
         <text wx:if="{{item.phone}}" class="buddy-phone">{{item.phone}}</text>
       </view>
       <view class="buddy-actions">
-        <text class="buddy-edit" data-id="{{item.id}}" bindtap="editBuddy">✎</text>
-        <text class="buddy-del" data-id="{{item.id}}" bindtap="deleteBuddy">×</text>
+        <text class="buddy-edit" data-id="{{item._id || item.id}}" bindtap="editBuddy">✎</text>
+        <text class="buddy-del" data-id="{{item._id || item.id}}" bindtap="deleteBuddy">×</text>
       </view>
     </view>
 
@@ -28,9 +31,19 @@
   <!-- Add/Edit Modal -->
   <view wx:if="{{showModal}}" class="modal-overlay" bindtap="closeModal">
     <view class="modal-card" catchtap="preventClose">
-      <text class="modal-title">{{editBuddyId ? '编辑' : '添加'}}饭搭子</text>
-      <input class="modal-input" placeholder="姓名 *" value="{{editName}}" bindinput="onNameInput" />
-      <input class="modal-input" placeholder="手机号（选填）" type="number" value="{{editPhone}}" bindinput="onPhoneInput" />
+      <text class="modal-title">{{editBuddyId ? '编辑饭搭子' : '添加饭搭子'}}</text>
+
+      <!-- Avatar picker -->
+      <view class="avatar-picker" bindtap="pickAvatar">
+        <image wx:if="{{editAvatar}}" class="avatar-preview" src="{{editAvatar}}" mode="aspectFill"></image>
+        <view wx:else class="avatar-preview avatar-preview-empty">
+          <text class="avatar-preview-text">📷</text>
+        </view>
+        <text class="avatar-picker-hint">点击更换头像</text>
+      </view>
+
+      <input class="modal-input" placeholder="姓名 *" value="{{editName}}" bindinput="onNameInput" maxlength="20" />
+      <input class="modal-input" placeholder="手机号（选填）" type="number" value="{{editPhone}}" bindinput="onPhoneInput" maxlength="11" />
       <view class="modal-actions">
         <button class="modal-cancel" bindtap="closeModal">取消</button>
         <button class="modal-confirm" bindtap="saveBuddy">保存</button>

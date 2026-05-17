@@ -7,8 +7,9 @@
   <!-- Album Grid -->
   <view class="album-grid">
     <view wx:for="{{albums}}" wx:key="gathering_id" class="album-card" data-index="{{index}}" bindtap="openAlbum">
-      <view class="album-cover" style="background:{{coverColors[index % coverColors.length]}}">
-        <text class="album-cover-text">{{item.title.slice(0,2)}}</text>
+      <view class="album-cover" style="{{getCover(item) ? '' : 'background:' + coverColors[index % coverColors.length]}}">
+        <image wx:if="{{getCover(item)}}" class="album-cover-img" src="{{getCover(item)}}" mode="aspectFill"></image>
+        <text wx:else class="album-cover-text">{{item.title.slice(0,2)}}</text>
         <view class="album-cost">{{item.totalCost}}元</view>
       </view>
       <view class="album-body">
@@ -30,9 +31,16 @@
   <!-- Album Detail Modal -->
   <view wx:if="{{selectedAlbum}}" class="modal-overlay" bindtap="closeAlbum">
     <scroll-view class="modal-scroll" scroll-y catchtap>
-      <view class="modal-hero" style="background:{{coverColors[selectedIndex % coverColors.length]}}">
-        <text class="modal-hero-title">{{selectedAlbum.title}}</text>
-        <text class="modal-hero-meta">{{albumDate}} · {{albumLocation}}</text>
+      <!-- Hero 区域：显示封面 -->
+      <view class="modal-hero" style="{{getCover(selectedAlbum) ? 'padding:0;overflow:hidden' : 'background:' + coverColors[selectedIndex % coverColors.length]}}">
+        <image wx:if="{{getCover(selectedAlbum)}}" class="modal-hero-img" src="{{getCover(selectedAlbum)}}" mode="aspectFill"></image>
+        <view class="modal-hero-overlay">
+          <text class="modal-hero-title">{{selectedAlbum.title}}</text>
+          <text class="modal-hero-meta">{{albumDate}} · {{albumLocation}}</text>
+        </view>
+        <view class="modal-hero-cover-btn" bindtap="showCoverSelector">
+          <text>更换封面</text>
+        </view>
       </view>
 
       <view class="modal-section">
@@ -46,7 +54,7 @@
       <view wx:if="{{selectedAlbum.photos && selectedAlbum.photos.length}}" class="modal-section">
         <text class="modal-section-title">照片</text>
         <scroll-view class="photo-scroll" scroll-x>
-          <image wx:for="{{selectedAlbum.photos}}" wx:key="*this" class="photo-thumb" src="{{item}}" mode="aspectFill" data-url="{{item}}" bindtap="previewPhoto" />
+          <image wx:for="{{selectedAlbum.photos}}" wx:key="*this" class="photo-thumb" src="{{fullUrl(item)}}" mode="aspectFill" data-url="{{fullUrl(item)}}" bindtap="previewPhoto" />
         </scroll-view>
       </view>
 
@@ -87,6 +95,19 @@
         <button class="modal-close-btn">关闭</button>
       </view>
     </scroll-view>
+  </view>
+
+  <!-- 封面选择弹窗 -->
+  <view wx:if="{{showCoverPicker}}" class="cover-picker-overlay" bindtap="closeCoverPicker">
+    <view class="cover-picker-card" catchtap>
+      <text class="cover-picker-title">选择封面</text>
+      <view class="cover-picker-grid">
+        <view wx:for="{{selectedAlbum.photos}}" wx:key="*this" class="cover-picker-item" data-url="{{fullUrl(item)}}" bindtap="selectCover">
+          <image class="cover-picker-img" src="{{fullUrl(item)}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <button class="cover-picker-cancel" bindtap="closeCoverPicker">取消</button>
+    </view>
   </view>
 
   <!-- Hidden Poster Canvas -->

@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -65,6 +66,7 @@ app.use('/api/relation', require('./routes/relation'));
 app.use('/api/map', require('./routes/map'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/preference', require('./routes/preference'));
+app.use('/api/buddy', require('./routes/buddy'));
 app.use('/api/seed', require('./routes/seed'));
 
 // 管理后台 API（需认证）

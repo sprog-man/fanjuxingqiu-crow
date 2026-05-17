@@ -159,4 +159,19 @@ router.post('/upload', upload.array('photos', 9), async (req, res) => {
   }
 });
 
+router.put('/update-cover/:id', async (req, res) => {
+  try {
+    const { cover } = req.body;
+    const record = await Gathering.findByIdAndUpdate(
+      req.params.id,
+      { cover: cover || '' },
+      { new: true }
+    ).lean();
+    if (!record) return res.status(404).json({ error: '记录不存在' });
+    res.json({ data: record });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

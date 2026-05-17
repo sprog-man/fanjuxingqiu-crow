@@ -152,37 +152,44 @@ Page({
 
   submitForm() {
     if (!this.validateStep(2)) return
+    const self = this
     const f = this.data.form
     const photos = this.data.photos
-    const record = {
-      _id: 'local_' + Date.now(), gathering_id: 'G' + Date.now(),
-      title: f.title, dateTime: `${f.date}T${f.time || '12:00'}`,
-      location: { name: f.locationName, city: f.city || '未知', lat: 0, lng: 0 },
-      participants: f.participants, totalCost: Number(f.totalCost),
-      payer: this.data.payerIndex >= 0 ? f.participants[this.data.payerIndex] : null,
-      moodScore: f.moodScore || null, moodTags: f.moodTags, note: f.note,
-      photos, foodTags: [], createdAt: new Date().toISOString(),
-      creatorId: this.data.currentUser
-    }
+    wx.showLoading({ title: '保存中...' })
 
-    // Save locally
-    const local = wx.getStorageSync('gatherings') || []
-    local.unshift(record)
-    wx.setStorageSync('gatherings', local)
+    // Step 1: upload photos first → get real URLs (OSS or local)
+    const uploadPromise = photos.length > 0 ? this.uploadPhotos(photos) : Promise.resolve([])
 
-    // Try API async (don't wait)
-    wx.request({ url: this.data.serverUrl + '/api/gathering/create', method: 'POST', data: record, timeout: 3000 })
+    uploadPromise.then(photoUrls => {
+      const record = {
+        _id: 'local_' + Date.now(), gathering_id: 'G' + Date.now(),
+        title: f.title, dateTime: `${f.date}T${f.time || '12:00'}`,
+        location: { name: f.locationName, city: f.city || '未知', lat: 0, lng: 0 },
+        participants: f.participants, totalCost: Number(f.totalCost),
+        payer: self.data.payerIndex >= 0 ? f.participants[self.data.payerIndex] : null,
+        moodScore: f.moodScore || null, moodTags: f.moodTags, note: f.note,
+        photos: photoUrls, foodTags: [], createdAt: new Date().toISOString(),
+        creatorId: self.data.currentUser
+      }
 
-    // Upload photos async
-    if (photos.length > 0) {
-      this.uploadPhotos(photos, record._id)
-    }
+      // Save locally
+      const local = wx.getStorageSync('gatherings') || []
+      local.unshift(record)
+      wx.setStorageSync('gatherings', local)
 
-    wx.showToast({ title: '创建成功 🎉' })
-    setTimeout(() => wx.navigateBack(), 800)
+      // Create on server with real photo URLs
+      wx.request({
+        url: self.data.serverUrl + '/api/gathering/create',
+        method: 'POST', data: record, timeout: 3000,
+      })
+
+      wx.hideLoading()
+      wx.showToast({ title: '创建成功 🎉' })
+      setTimeout(() => wx.navigateBack(), 800)
+    })
   },
 
-  uploadPhotos(photos, gatheringId) {
+  uploadPhotos(photos) {
     const uploadTasks = photos.map(path => {
       return new Promise((resolve) => {
         wx.uploadFile({
@@ -197,16 +204,8 @@ Page({
         })
       })
     })
-    Promise.all(uploadTasks).then(results => {
-      const urls = results.flat().map(r => r.url)
-      if (urls.length > 0) {
-        wx.request({
-          url: this.data.serverUrl + '/api/gathering/update-photos',
-          method: 'POST',
-          data: { gatheringId, photos: urls },
-          timeout: 3000,
-        })
-      }
+    return Promise.all(uploadTasks).then(results => {
+      return results.flat().map(r => r.url).filter(Boolean)
     })
   }
 })

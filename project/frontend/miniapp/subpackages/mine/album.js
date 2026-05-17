@@ -6,9 +6,13 @@ Page({
     albumDate: '', albumLocation: '', albumAvgCost: 0, albumStars: '',
     coverColors: ['#D85A30', '#1D9E75', '#534AB7', '#185FA5', '#BA7517', '#2C2C2A'],
     serverUrl: 'http://localhost:2001',
+    showCoverPicker: false,
   },
 
-  onShow() { this.fetchAlbums() },
+  onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
+    this.fetchAlbums()
+  },
 
   fetchAlbums() {
     wx.request({
@@ -20,6 +24,20 @@ Page({
         this.setData({ albums: local })
       }
     })
+  },
+
+  getCover(album) {
+    let url = ''
+    if (album.cover) url = album.cover
+    else if (album.photos && album.photos.length) url = album.photos[0]
+    else return ''
+    if (url.startsWith('/')) url = this.data.serverUrl + url
+    return url
+  },
+
+  fullUrl(path) {
+    if (!path) return ''
+    return path.startsWith('http') ? path : this.data.serverUrl + path
   },
 
   formatDate(dateStr) {
@@ -40,18 +58,19 @@ Page({
       albumDate: this.formatDate(album.dateTime),
       albumLocation: loc.name || '',
       albumAvgCost: avgCost,
-      albumStars: stars
+      albumStars: stars,
+      showCoverPicker: false,
     })
     this.generateMemory()
   },
 
   previewPhoto(e) {
     const { url } = e.currentTarget.dataset
-    const photos = this.data.selectedAlbum.photos || []
+    const photos = (this.data.selectedAlbum.photos || []).map(p => this.fullUrl(p))
     wx.previewImage({ current: url, urls: photos })
   },
 
-  closeAlbum() { this.setData({ selectedAlbum: null }) },
+  closeAlbum() { this.setData({ selectedAlbum: null, showCoverPicker: false }) },
 
   generateMemory() {
     const g = this.data.selectedAlbum
@@ -77,60 +96,63 @@ Page({
     })
   },
 
-  generatePoster() {
+  // --- 封面管理 ---
+  showCoverSelector() {
     const album = this.data.selectedAlbum
-    if (!album) return
-    const photos = album.photos || []
-    const count = photos.length
-    let style
-
-    if (count === 0) style = 'poster'
-    else if (count === 1) style = 'single'
-    else if (count <= 4) style = 'collage'
-    else style = 'grid'
-
-    const self = this
-    wx.showLoading({ title: '生成分享图...' })
-
-    const query = wx.createSelectorQuery()
-    query.select('#posterCanvas').node(res => {
-      if (!res || !res.node) {
-        wx.hideLoading()
-        wx.showToast({ title: '生成失败', icon: 'none' })
-        return
-      }
-      const canvas = res.node
-      const ctx = canvas.getContext('2d')
-      const dpr = wx.getWindowInfo().pixelRatio
-      const w = 540, h = 810
-      canvas.width = w * dpr
-      canvas.height = h * dpr
-      ctx.scale(dpr, dpr)
-
-      const drawFn = self['_draw' + style.charAt(0).toUpperCase() + style.slice(1)]
-      if (drawFn) drawFn.call(self, ctx, w, h, album, photos, () => {
-        wx.canvasToTempFilePath({
-          canvas, fileType: 'jpg', quality: 0.9,
-          success: (r) => {
-            wx.hideLoading()
-            wx.showActionSheet({
-              itemList: ['保存到相册', '转发给朋友'],
-              success: (e) => {
-                if (e.tapIndex === 0) {
-                  wx.saveImageToPhotosAlbum({
-                    filePath: r.tempFilePath,
-                    fail: () => wx.showToast({ title: '保存失败，请授权相册权限', icon: 'none' })
-                  })
-                }
-              }
-            })
-          },
-          fail: () => { wx.hideLoading(); wx.showToast({ title: '生成失败', icon: 'none' }) }
-        })
-      })
-    }).exec()
+    if (!album || !album.photos || album.photos.length === 0) {
+      wx.showToast({ title: '当前相册没有照片', icon: 'none' })
+      return
+    }
+    this.setData({ showCoverPicker: true })
   },
 
+  closeCoverPicker() {
+    this.setData({ showCoverPicker: false })
+  },
+
+  selectCover(e) {
+    const url = e.currentTarget.dataset.url
+    const album = this.data.selectedAlbum
+    if (!album) return
+
+    wx.showLoading({ title: '设置封面...' })
+
+    // 找出 photos 数组中匹配的索引，保存为相对路径
+    let coverPath = url
+    if (url && url.startsWith('http')) {
+      const idx = (album.photos || []).findIndex(p => p === url)
+      if (idx > -1) coverPath = '/uploads/gatherings/' + url.split('/').pop()
+      else coverPath = url
+    }
+
+    wx.request({
+      url: this.data.serverUrl + '/api/gathering/update-cover/' + (album._id || album.id),
+      method: 'PUT',
+      data: { cover: coverPath },
+      timeout: 3000,
+      success: (res) => {
+        wx.hideLoading()
+        if (res.data && res.data.data) {
+          const updated = res.data.data
+          const albums = [...this.data.albums]
+          albums[this.data.selectedIndex] = updated
+          this.setData({ albums, selectedAlbum: updated, showCoverPicker: false })
+          wx.showToast({ title: '封面已更新', icon: 'success' })
+        }
+      },
+      fail: () => {
+        wx.hideLoading()
+        wx.showToast({ title: '设置失败', icon: 'none' })
+      }
+    })
+  },
+
+  // --- 分享海报（开发中） ---
+  generatePoster() {
+    wx.showToast({ title: '仍在开发中', icon: 'none' })
+  },
+
+  // --- Canvas 绘制（保留，后续开发） ---
   _drawPoster(ctx, w, h, album, photos, cb) {
     const colors = ['#D85A30', '#1D9E75', '#534AB7', '#185FA5', '#BA7517', '#2C2C2A']
     const c = colors[this.data.selectedIndex % colors.length]
