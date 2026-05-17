@@ -31,8 +31,9 @@ const loginLimiter = rateLimit({
 });
 app.use('/api/admin/login', loginLimiter);
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:2001,http://127.0.0.1:2001').split(',');
 app.use(cors({
-  origin: ['http://localhost:2001', 'http://127.0.0.1:2001'],
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));
