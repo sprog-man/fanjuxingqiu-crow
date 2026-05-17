@@ -3,6 +3,7 @@ App({
     userInfo: null,
     token: '',
     serverUrl: 'http://localhost:2001',
+    cloudUrl: 'https://express-p1bi-258936-9-1434048439.sh.run.tcloudbase.com',
     ossBase: 'https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com'
   },
 
@@ -14,6 +15,13 @@ App({
       this.globalData.token = token;
       this.globalData.userInfo = userInfo;
     }
+    // 自动识别环境：开发版走本地，体验版/正式版走云托管
+    try {
+      const env = wx.getAccountInfoSync().miniProgram.envVersion;
+      if (env === 'trial' || env === 'release') {
+        this.globalData.serverUrl = this.globalData.cloudUrl;
+      }
+    } catch (e) {}
   },
 
   // 微信登录

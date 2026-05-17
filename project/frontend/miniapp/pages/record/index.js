@@ -9,6 +9,7 @@ Page({
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     this.loadRecords()
     this.loadStats()
   },

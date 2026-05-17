@@ -112,6 +112,7 @@ Page({
   stop() {},
 
   onLoad() {
+    this.setData({ serverUrl: app.getServerUrl() })
     this.fetchCategories()
   },
 
