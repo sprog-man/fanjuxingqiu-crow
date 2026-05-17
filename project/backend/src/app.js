@@ -38,14 +38,65 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 
-// MongoDB
-mongoose.connect(config.mongoUri)
-  .then(() => console.log('MongoDB 已连接 →', config.mongoUri))
-  .catch(err => console.error('MongoDB 连接失败:', err.message));
+// MongoDB 连接配置
+const mongoOptions = {
+  serverSelectionTimeoutMS: 5000, // 5秒连接超时
+  socketTimeoutMS: 45000,        // 45秒socket超时
+  retryWrites: true,
+  w: 'majority'
+};
 
-// 公开 API
+// MongoDB 连接状态监控
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB 已连接');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB 连接错误:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️  MongoDB 已断开连接');
+});
+
+// 建立连接
+mongoose.connect(config.mongoUri, mongoOptions)
+  .then(() => console.log('🔗 MongoDB 正在连接 →', config.mongoUri.replace(/:\/\/[^:]+:[^@]+@', ':***@')))
+  .catch(err => {
+    console.error('💥 MongoDB 初始连接失败:', err.message);
+    console.error('💥 请检查 MONGO_URI 环境变量是否正确配置');
+  });
+
+// 公开 API - 增强版健康检查
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: '饭局星球 API', version: '1.0.0', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
+  const state = mongoose.connection.readyState;
+  const stateMap = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  res.json({ 
+    status: 'ok', 
+    service: '饭局星球 API', 
+    version: '1.0.0', 
+    db: stateMap[state] || 'unknown',
+    dbState: state,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 临时调试接口（上线前删除！）
+app.get('/api/debug/env', (req, res) => {
+  const mongoUri = process.env.MONGO_URI || 'NOT_SET';
+  res.json({
+    MONGO_URI_EXISTS: !!process.env.MONGO_URI,
+    MONGO_URI_PREFIX: mongoUri.substring(0, 30) + '...',
+    MONGO_URI_LENGTH: mongoUri.length,
+    NODE_ENV: process.env.NODE_ENV || 'not set',
+    ALL_ENV_KEYS: Object.keys(process.env).filter(k => k.includes('MONGO') || k.includes('mongo'))
+  });
 });
 
 app.use('/api/wheel', require('./routes/wheel'));
