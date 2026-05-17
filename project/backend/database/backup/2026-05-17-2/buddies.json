@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "6a097164b8044610225b5fb1",
+    "openid": "dev_0e1ilRGa1pFjHL0KLHGa1yf0b73ilRGQ_1778856888101",
+    "name": "康乐",
+    "phone": "19248572112",
+    "avatar": "https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com/buddies/avatars/2026/05/2e607047-48bf-4ba7-abf2-3bf393c36955.jpg",
+    "createdAt": "2026-05-17T07:42:28.998Z",
+    "updatedAt": "2026-05-17T08:09:51.915Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a0976dcc1a5a0524da3304a",
+    "openid": "dev_0e1ilRGa1pFjHL0KLHGa1yf0b73ilRGQ_1778856888101",
+    "name": "邱邱",
+    "phone": "18273891649",
+    "avatar": "https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com/buddies/avatars/2026/05/d041a3f5-744f-4b41-810a-4d1930601948.jpg",
+    "createdAt": "2026-05-17T08:05:48.195Z",
+    "updatedAt": "2026-05-17T08:09:47.069Z",
+    "__v": 0
+  }
+]
