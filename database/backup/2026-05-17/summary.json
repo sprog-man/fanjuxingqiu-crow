@@ -1,11 +1,12 @@
 {
-  "backupTime": "2026-05-17T07:29:42.719Z",
+  "backupTime": "2026-05-17T10:22:10.030Z",
   "collections": {
-    "gatherings": 19,
+    "gatherings": 23,
     "users": 4,
+    "buddies": 0,
     "dishes": 78,
     "cuisines": 6,
     "aarecords": 9
   },
-  "totalRecords": 116
+  "totalRecords": 120
 }
