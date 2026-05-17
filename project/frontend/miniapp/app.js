@@ -100,10 +100,9 @@ App({
   // 饭搭子管理
   getBuddies() {
     const local = wx.getStorageSync('buddies') || [];
-    if (!this.globalData.token || this.globalData.token === 'local_token') return local;
     return local;
   },
-  saveBuddy(buddy) {
+  saveBuddyToLocal(buddy) {
     let buddies = this.getBuddies();
     if (buddy._id || buddy.id) {
       const idKey = buddy._id || buddy.id;
@@ -116,7 +115,7 @@ App({
     wx.setStorageSync('buddies', buddies);
     return buddies;
   },
-  deleteBuddy(id) {
+  deleteBuddyFromLocal(id) {
     const buddies = this.getBuddies().filter(b => (b._id || b.id) !== id);
     wx.setStorageSync('buddies', buddies);
     return buddies;
@@ -126,6 +125,26 @@ App({
   getOpenid() {
     const user = this.globalData.userInfo;
     return user ? (user.openid || user.id || '') : '';
+  },
+  apiSearchUsers(query) {
+    const self = this;
+    return new Promise((resolve) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        resolve([]);
+        return;
+      }
+      wx.request({
+        url: self.globalData.serverUrl + '/api/buddy/search?q=' + encodeURIComponent(query) + '&openid=' + encodeURIComponent(openid),
+        method: 'GET',
+        header: { 'Authorization': 'Bearer ' + self.globalData.token },
+        success(r) {
+          if (r.data && r.data.data) resolve(r.data.data);
+          else resolve([]);
+        },
+        fail() { resolve([]); }
+      });
+    });
   },
   apiGetBuddies() {
     const self = this;
@@ -155,16 +174,19 @@ App({
     return new Promise((resolve) => {
       const openid = self.getOpenid();
       if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
-        resolve(self.saveBuddy(buddy));
+        resolve(self.saveBuddyToLocal(buddy));
         return;
       }
       const url = buddy._id
         ? self.globalData.serverUrl + '/api/buddy/update/' + buddy._id
         : self.globalData.serverUrl + '/api/buddy/create';
       const method = buddy._id ? 'PUT' : 'POST';
+      const data = buddy._id
+        ? { openid, remark: buddy.remark || '' }
+        : { openid, targetUserId: buddy.targetUserId, remark: buddy.remark || '' };
       wx.request({
         url, method,
-        data: { openid, name: buddy.name, phone: buddy.phone || '' },
+        data,
         header: { 'Authorization': 'Bearer ' + self.globalData.token, 'Content-Type': 'application/json' },
         success(r) {
           if (r.data && r.data.data) {
@@ -176,9 +198,9 @@ App({
             } else { buddies.push(saved); }
             wx.setStorageSync('buddies', buddies);
             resolve(saved);
-          } else { resolve(self.saveBuddy(buddy)); }
+          } else { resolve(self.saveBuddyToLocal(buddy)); }
         },
-        fail() { resolve(self.saveBuddy(buddy)); }
+        fail() { resolve(self.saveBuddyToLocal(buddy)); }
       });
     });
   },
@@ -187,35 +209,16 @@ App({
     return new Promise((resolve) => {
       const openid = self.getOpenid();
       if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
-        resolve(self.deleteBuddy(id));
+        resolve(self.deleteBuddyFromLocal(id));
         return;
       }
       wx.request({
         url: self.globalData.serverUrl + '/api/buddy/delete/' + id,
         method: 'DELETE',
         header: { 'Authorization': 'Bearer ' + self.globalData.token },
-        success() { resolve(self.deleteBuddy(id)); },
-        fail() { resolve(self.deleteBuddy(id)); }
+        success() { resolve(self.deleteBuddyFromLocal(id)); },
+        fail() { resolve(self.deleteBuddyFromLocal(id)); }
       });
     });
   },
-  apiUploadBuddyAvatar(buddyId, tempFilePath) {
-    const self = this;
-    return new Promise((resolve, reject) => {
-      wx.uploadFile({
-        url: self.globalData.serverUrl + '/api/buddy/upload-avatar/' + buddyId,
-        filePath: tempFilePath,
-        name: 'avatar',
-        header: { 'Authorization': 'Bearer ' + self.globalData.token },
-        success(r) {
-          try {
-            const data = JSON.parse(r.data);
-            if (data.data) resolve(data.data);
-            else reject(data.error || '上传失败');
-          } catch (e) { reject('解析响应失败'); }
-        },
-        fail(e) { reject(e.errMsg || '上传失败'); }
-      });
-    });
-  }
 });

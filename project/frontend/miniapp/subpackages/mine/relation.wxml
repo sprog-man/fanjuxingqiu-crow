@@ -1,64 +1,250 @@
 <scroll-view class="page" scroll-y>
-  <view class="header">
-    <text class="header-title">关系图鉴</text>
-    <text class="header-sub">你和好友的聚餐羁绊网络</text>
+  <!-- Tab Bar -->
+  <view class="tab-row">
+    <view class="tab {{currentTab=='overview'?'on':''}}" data-tab="overview" bindtap="switchTab">关系概览</view>
+    <view class="tab {{currentTab=='atlas'?'on':''}}" data-tab="atlas" bindtap="switchTab">称号图鉴</view>
   </view>
 
-  <!-- Graph Canvas with touch -->
-  <view class="graph-container">
-    <canvas type="2d" id="graphCanvas"
-      class="graph-canvas"
-      style="width:{{canvasW}}px;height:{{canvasH}}px"
-      bindtouchstart="onTouchStart"
-      bindtouchmove="onTouchMove"
-      bindtouchend="onTouchEnd"
-    ></canvas>
-  </view>
+  <!-- ════ 关系概览 ════ -->
+  <view wx:if="{{currentTab=='overview'}}">
+    <!-- 列表视图 -->
+    <view wx:if="{{!detailFriend}}">
+      <!-- 我的信息卡 -->
+      <view class="my-card">
+        <view class="my-avatar">
+          <text class="my-avatar-text">{{userTitleInfo.highestIcon ? '✦' : '😊'}}</text>
+        </view>
+        <view class="my-info">
+          <text class="my-name">我的</text>
+          <text class="my-sub">饭搭子宇宙</text>
+          <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}">
+            <text class="title-badge-icon">✦</text>
+            <text class="title-badge-text">{{userTitleInfo.highestTitle}}</text>
+          </view>
+        </view>
+      </view>
 
-  <!-- Friend List -->
-  <view class="friend-list">
-    <view wx:for="{{friends}}" wx:key="name" class="friend-card" data-name="{{item.name}}" bindtap="showDetail">
-      <view class="friend-avatar" style="background:{{item.color}}">
-        <text class="friend-avatar-text">{{item.initial}}</text>
-      </view>
-      <view class="friend-info">
-        <view class="friend-top">
-          <text class="friend-name">{{item.name}}</text>
-          <text class="friend-title">{{item.title}}</text>
+      <!-- 三格统计条 -->
+      <view class="stats-row">
+        <view class="stat-card">
+          <text class="stat-num">{{userTitleInfo.totalFriends}}</text>
+          <text class="stat-label">饭搭子数</text>
         </view>
-        <text class="friend-level">{{item.level}}</text>
-        <text class="friend-desc">{{item.desc}}</text>
-        <view class="friend-stats">
-          <text>{{item.gatherCount}}次聚餐</text>
-          <text>{{item.cities.length}}座城市</text>
+        <view class="stat-card">
+          <text class="stat-num">{{userTitleInfo.totalGatherCount}}</text>
+          <text class="stat-label">聚餐次数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-num">{{userTitleInfo.unlockedTitles}}</text>
+          <text class="stat-label">解锁称号</text>
         </view>
       </view>
-      <text class="friend-arrow">›</text>
+
+      <!-- 好友卡片网格 -->
+      <view class="friend-grid">
+        <view wx:for="{{friends}}" wx:key="name" class="friend-card" data-name="{{item.name}}" bindtap="showDetail">
+          <!-- 锁定遮罩 -->
+          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay">
+            <text class="lock-icon">🔒</text>
+            <text class="lock-text">{{getLockHint(item.gatherCount)}}</text>
+          </view>
+          <view class="card-top">
+            <view class="card-avatar" style="background:{{item.avatarBg}};color:{{item.avatarColor}}">
+              <text>{{item.initial}}</text>
+            </view>
+            <view class="card-info">
+              <text class="card-name">{{item.name}}</text>
+              <text class="card-sub">{{item.gatherCount}}次聚餐</text>
+            </view>
+          </view>
+          <view class="tier-bar">
+            <view class="tier-fill" style="{{getProgressStyle(item.gatherCount)}}"></view>
+          </view>
+          <view class="badge-sm" style="background:{{item.titleBg}};color:{{item.titleColor}}">
+            <text>{{item.level}} {{item.title}}</text>
+          </view>
+          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay-bottom"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 好友详情 -->
+    <view wx:else class="detail-page">
+      <view class="back-btn" bindtap="backToList">
+        <text class="back-arrow">‹</text>
+        <text>返回概览</text>
+      </view>
+
+      <!-- Hero Card -->
+      <view class="hero-card">
+        <view class="hero-avatar" style="background:{{detailFriend.avatarBg}};color:{{detailFriend.avatarColor}}">
+          <text>{{detailFriend.initial}}</text>
+        </view>
+        <text class="hero-name">{{detailFriend.name}}</text>
+        <text class="hero-sub">好友 · {{detailFriend.gatherCount}}次聚餐</text>
+        <view class="hero-stars">{{detailFriend.level}}</view>
+        <view class="hero-title-badge" style="background:{{detailFriend.titleBg}};color:{{detailFriend.titleColor}}">
+          <text>✦ {{detailFriend.title}}</text>
+        </view>
+        <text class="hero-desc">{{detailFriend.desc}}</text>
+      </view>
+
+      <!-- 四格数据统计 -->
+      <view class="detail-stats">
+        <view class="dsc">
+          <text class="dsc-num">{{detailFriend.gatherCount}}</text>
+          <text class="dsc-label">共同聚餐</text>
+        </view>
+        <view class="dsc">
+          <text class="dsc-num">{{detailFriend.cityCount || detailFriend.cities.length}}</text>
+          <text class="dsc-label">同游城市</text>
+        </view>
+        <view class="dsc">
+          <text class="dsc-num">¥{{detailFriend.totalCost || detailFriend.totalSpent || 0}}</text>
+          <text class="dsc-label">共同消费</text>
+        </view>
+        <view class="dsc">
+          <text class="dsc-num">{{detailFriend.payCount}}次</text>
+          <text class="dsc-label">TA买单</text>
+        </view>
+      </view>
+
+      <!-- 最近聚餐 -->
+      <view class="info-card">
+        <view class="info-card-header">
+          <text class="info-card-title">最近聚餐</text>
+        </view>
+        <view wx:for="{{detailFriend.recentMeals}}" wx:key="date" class="timeline-item">
+          <view class="tl-dot" style="background:{{item.moodColor}}">
+            <text class="tl-emoji">{{getMoodEmoji(item.moodScore)}}</text>
+          </view>
+          <text class="tl-text">{{item.title}}</text>
+          <text class="tl-date">{{formatDate(item.date)}}</text>
+        </view>
+        <view wx:if="{{!detailFriend.recentMeals || detailFriend.recentMeals.length===0}}" class="empty-hint">
+          <text>暂无聚餐记录</text>
+        </view>
+      </view>
+
+      <!-- 一起吃过的菜 -->
+      <view class="info-card" wx:if="{{detailFriend.foodTags && detailFriend.foodTags.length}}">
+        <view class="info-card-header">
+          <text class="info-card-title">一起吃过的菜</text>
+        </view>
+        <view class="tags-wrap">
+          <view wx:for="{{detailFriend.foodTags}}" wx:key="*this" class="food-tag" style="background:{{getFoodTagStyle(item).bg}};color:{{getFoodTagStyle(item).color}}">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 同游城市 -->
+      <view class="info-card" wx:if="{{detailFriend.cities && detailFriend.cities.length}}">
+        <view class="info-card-header">
+          <text class="info-card-title">同游城市</text>
+        </view>
+        <view class="tags-wrap">
+          <view wx:for="{{detailFriend.cities}}" wx:key="*this" class="city-tag">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 
-  <!-- Detail Modal -->
-  <view wx:if="{{detailFriend}}" class="modal-overlay" bindtap="closeDetail">
-    <view class="modal-card {{detailFriend ? 'show' : ''}}" catchtap="preventClose">
-      <view class="modal-glow" style="background:{{detailFriend.color}}"></view>
-      <view class="modal-avatar" style="background:{{detailFriend.color}}">
-        <text>{{detailFriend.initial}}</text>
+  <!-- ════ 称号图鉴 ════ -->
+  <view wx:if="{{currentTab=='atlas'}}" class="atlas-page">
+    <!-- 传说·史诗 -->
+    <view class="atlas-section">
+      <text class="atlas-section-title">传说 · 史诗</text>
+      <view wx:for="{{titleAtlas}}" wx:key="id" class="atlas-card {{item.unlocked?'':'atlas-locked'}}"
+        wx:if="{{item.rarity=='传说' || item.rarity=='史诗'}}">
+        <view class="atlas-row">
+          <view class="atlas-icon" style="background:{{item.bg}}">
+            <text class="atlas-icon-text" style="color:{{item.color}}">{{item.unlocked ? '✦' : '🔒'}}</text>
+          </view>
+          <view class="atlas-info">
+            <text class="atlas-name">{{item.name}}</text>
+            <text class="atlas-desc" wx:if="{{item.unlocked}}">{{item.desc}}</text>
+            <text class="atlas-desc atlas-desc-locked" wx:else>{{item.unlocked ? item.desc : '???'}}</text>
+            <view class="atlas-badge" style="background:{{item.bg}};color:{{item.color}}">
+              <text>{{item.level}} {{item.unlocked ? item.rarity : '未解锁'}} · {{item.condition}}</text>
+            </view>
+            <view wx:if="{{!item.unlocked}}" class="atlas-lock-hint">
+              <text class="atlas-lock-icon">🔒</text>
+              <text class="atlas-lock-text">{{item.condition}}</text>
+            </view>
+          </view>
+        </view>
       </view>
-      <text class="modal-name">{{detailFriend.name}}</text>
-      <view class="modal-title-badge">
-        <text>{{detailFriend.title}}</text>
-        <text>{{detailFriend.level}}</text>
+    </view>
+
+    <!-- 稀有 -->
+    <view class="atlas-section">
+      <text class="atlas-section-title">稀有</text>
+      <view wx:for="{{titleAtlas}}" wx:key="id" class="atlas-card {{item.unlocked?'':'atlas-locked'}}"
+        wx:if="{{item.rarity=='稀有'}}">
+        <view class="atlas-row">
+          <view class="atlas-icon" style="background:{{item.bg}}">
+            <text class="atlas-icon-text" style="color:{{item.color}}">{{item.unlocked ? '✦' : '🔒'}}</text>
+          </view>
+          <view class="atlas-info">
+            <text class="atlas-name">{{item.name}}</text>
+            <text class="atlas-desc" wx:if="{{item.unlocked}}">{{item.desc}}</text>
+            <text class="atlas-desc atlas-desc-locked" wx:else>{{item.unlocked ? item.desc : '???'}}</text>
+            <view class="atlas-badge" style="background:{{item.bg}};color:{{item.color}}">
+              <text>{{item.level}} {{item.unlocked ? item.rarity : '未解锁'}} · {{item.condition}}</text>
+            </view>
+            <view wx:if="{{!item.unlocked}}" class="atlas-lock-hint">
+              <text class="atlas-lock-icon">🔒</text>
+              <text class="atlas-lock-text">{{item.condition}}</text>
+            </view>
+          </view>
+        </view>
       </view>
-      <text class="modal-desc">{{detailFriend.desc}}</text>
-      <view class="modal-stats">
-        <view class="modal-stat"><text class="ms-num">{{detailFriend.gatherCount}}</text><text class="ms-label">共餐次数</text></view>
-        <view class="modal-stat"><text class="ms-num">{{detailFriend.totalSpent}}</text><text class="ms-label">累计消费</text></view>
-        <view class="modal-stat"><text class="ms-num">{{detailFriend.cities.length}}</text><text class="ms-label">共同城市</text></view>
+    </view>
+
+    <!-- 进阶·普通 -->
+    <view class="atlas-section">
+      <text class="atlas-section-title">进阶 · 普通</text>
+      <view wx:for="{{titleAtlas}}" wx:key="id" class="atlas-card {{item.unlocked?'':'atlas-locked'}}"
+        wx:if="{{item.rarity=='进阶' || item.rarity=='普通'}}">
+        <view class="atlas-row">
+          <view class="atlas-icon" style="background:{{item.bg}}">
+            <text class="atlas-icon-text" style="color:{{item.color}}">{{item.unlocked ? '✦' : '🔒'}}</text>
+          </view>
+          <view class="atlas-info">
+            <text class="atlas-name">{{item.name}}</text>
+            <text class="atlas-desc" wx:if="{{item.unlocked}}">{{item.desc}}</text>
+            <text class="atlas-desc atlas-desc-locked" wx:else>{{item.unlocked ? item.desc : '???'}}</text>
+            <view class="atlas-badge" style="background:{{item.bg}};color:{{item.color}}">
+              <text>{{item.level}} {{item.unlocked ? item.rarity : '未解锁'}} · {{item.condition}}</text>
+            </view>
+            <view wx:if="{{!item.unlocked}}" class="atlas-lock-hint">
+              <text class="atlas-lock-icon">🔒</text>
+              <text class="atlas-lock-text">{{item.condition}}</text>
+            </view>
+          </view>
+        </view>
       </view>
-      <view wx:if="{{detailFriend.cities && detailFriend.cities.length}}" class="modal-cities">
-        <text wx:for="{{detailFriend.cities}}" wx:key="*this" class="city-badge">{{item}}</text>
+    </view>
+
+    <!-- 演示解锁弹窗 -->
+    <button class="demo-btn" bindtap="demoUnlock">演示称号解锁动画</button>
+  </view>
+
+  <!-- ════ 解锁弹窗 ════ -->
+  <view wx:if="{{unlockModalData}}" class="modal-overlay" bindtap="hideUnlockModal">
+    <view class="modal-card {{unlockModalData?'modal-show':''}}" catchtap="preventClose">
+      <text class="modal-kicker">✦ 称号解锁 ✦</text>
+      <view class="modal-icon-wrap" style="background:{{unlockModalData.bg}}">
+        <text class="modal-icon-text" style="color:{{unlockModalData.color}}">✦</text>
       </view>
-      <button class="modal-close" bindtap="closeDetail">关闭</button>
+      <text class="modal-title">{{unlockModalData.name}}</text>
+      <text class="modal-stars">{{unlockModalData.animStars || unlockModalData.level}}</text>
+      <text class="modal-sub">与{{unlockModalData.friendName}}的羁绊升级了！</text>
+      <text class="modal-desc">{{unlockModalData.desc}}</text>
+      <button class="modal-btn" bindtap="hideUnlockModal">知道了</button>
     </view>
   </view>
 </scroll-view>
