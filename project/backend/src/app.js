@@ -6,17 +6,7 @@ const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
-const multer = require('multer');
 const config = require('./config');
-
-const upload = multer({
-  dest: path.join(__dirname, '../../uploads/gatherings/'),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    cb(null, allowed.includes(file.mimetype));
-  }
-});
 
 const app = express();
 

@@ -1,6 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const crypto = require('crypto');
+const multer = require('multer');
 const Gathering = require('../models/gathering');
+const oss = require('../utils/oss');
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
+function generateOssPath(originalname) {
+  const ext = path.extname(originalname).toLowerCase() || '.jpg';
+  const filename = crypto.randomUUID() + ext;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `map/checkins/${year}/${month}/${filename}`;
+}
 
 router.post('/checkin', async (req, res) => {
   try {
@@ -140,6 +163,26 @@ router.get('/city-records', async (req, res) => {
     }).sort({ dateTime: -1 }).lean();
     res.json({ data: gatherings });
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/upload', upload.array('photos', 9), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: '请选择照片' });
+    }
+    const files = [];
+    for (const f of req.files) {
+      const ossPath = generateOssPath(f.originalname);
+      const url = await oss.uploadBuffer(f.buffer, ossPath);
+      files.push({ url, originalName: f.originalname, size: f.size });
+    }
+    res.json({ data: files });
+  } catch (e) {
+    if (e.code === 'OSS_MISCONFIG') {
+      return res.status(500).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });

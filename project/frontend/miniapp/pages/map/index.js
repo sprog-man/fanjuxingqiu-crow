@@ -53,9 +53,11 @@ Page({
     locating: false,
 
     serverUrl: 'http://localhost:2001',
+    uploadingPhotos: false,
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     this.fetchFootprints()
     this.fetchAchievements()
     this.fetchCheckins()
@@ -360,6 +362,25 @@ Page({
     this.setData({ 'checkin.photos': [], firstPhoto: '', noPhotos: true, hasPhotos: false })
   },
 
+  uploadCheckinPhotos(photos) {
+    const tasks = photos.map(path => {
+      return new Promise((resolve) => {
+        if (path.indexOf('http') === 0) { resolve([{ url: path }]); return }
+        wx.uploadFile({
+          url: this.data.serverUrl + '/api/map/upload',
+          filePath: path,
+          name: 'photos',
+          timeout: 10000,
+          success: (res) => {
+            try { resolve(JSON.parse(res.data).data || []) } catch (e) { resolve([]) }
+          },
+          fail: () => resolve([])
+        })
+      })
+    })
+    return Promise.all(tasks).then(results => results.flat())
+  },
+
   async submitCheckin() {
     const c = this.data.checkin
     if (!c.city && !c.restaurant) {
@@ -369,6 +390,13 @@ Page({
 
     this.setData({ formLoading: true, submitBtnText: '打卡中…', submitBtnClass: 'loading' })
 
+    // Step 1: upload photos to OSS first
+    let photoUrls = c.photos
+    if (c.photos.length > 0 && c.photos[0].indexOf('http') !== 0) {
+      const uploaded = await this.uploadCheckinPhotos(c.photos)
+      photoUrls = uploaded.map(r => r.url).filter(Boolean)
+    }
+
     const payload = {
       userId: '我',
       restaurant: c.restaurant,
@@ -377,7 +405,7 @@ Page({
       lng: c.lng,
       city: c.city,
       province: c.province,
-      photos: c.photos,
+      photos: photoUrls,
       note: c.note,
       dateTime: new Date().toISOString(),
     }

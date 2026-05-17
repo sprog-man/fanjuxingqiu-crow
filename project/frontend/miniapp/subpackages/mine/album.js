@@ -7,6 +7,7 @@ Page({
     coverColors: ['#D85A30', '#1D9E75', '#534AB7', '#185FA5', '#BA7517', '#2C2C2A'],
     serverUrl: 'http://localhost:2001',
     showCoverPicker: false,
+    _photoUrls: [],
   },
 
   onShow() {
@@ -15,24 +16,45 @@ Page({
   },
 
   fetchAlbums() {
+    const self = this
     wx.request({
       url: this.data.serverUrl + '/api/gathering/list?limit=50',
       timeout: 3000,
-      success: (res) => this.setData({ albums: res.data.data.items || [] }),
+      success: (res) => {
+        const items = (res.data.data.items || []).filter(item => !item.isCheckin)
+        self.setData({ albums: items.map(a => self._decorateAlbum(a)) })
+      },
       fail: () => {
-        const local = wx.getStorageSync('gatherings') || []
-        this.setData({ albums: local })
+        const local = (wx.getStorageSync('gatherings') || []).filter(item => !item.isCheckin)
+        self.setData({ albums: local.map(a => self._decorateAlbum(a)) })
       }
     })
   },
 
-  getCover(album) {
+  _resolveUrl(url) {
+    if (!url) return ''
+    return url.startsWith('http') ? url : this.data.serverUrl + url
+  },
+
+  _decorateAlbum(album) {
     let url = ''
     if (album.cover) url = album.cover
     else if (album.photos && album.photos.length) url = album.photos[0]
-    else return ''
-    if (url.startsWith('/')) url = this.data.serverUrl + url
-    return url
+    if (url) url = this._resolveUrl(url)
+    return { ...album, _coverUrl: url }
+  },
+
+  onCoverError(e) {
+    const idx = e.currentTarget.dataset.index
+    const albums = [...this.data.albums]
+    if (idx >= 0 && idx < albums.length) {
+      albums[idx] = { ...albums[idx], _coverUrl: '' }
+      const update = { albums }
+      if (this.data.selectedAlbum && this.data.selectedIndex === idx) {
+        update.selectedAlbum = albums[idx]
+      }
+      this.setData(update)
+    }
   },
 
   fullUrl(path) {
@@ -49,6 +71,7 @@ Page({
   openAlbum(e) {
     const { index } = e.currentTarget.dataset
     const album = this.data.albums[index]
+    if (!album) return
     const participants = album.participants || []
     const loc = album.location || {}
     const avgCost = participants.length ? Math.round(album.totalCost / participants.length) : 0
@@ -60,13 +83,14 @@ Page({
       albumAvgCost: avgCost,
       albumStars: stars,
       showCoverPicker: false,
+      _photoUrls: (album.photos || []).map(p => this._resolveUrl(p)),
     })
     this.generateMemory()
   },
 
   previewPhoto(e) {
     const { url } = e.currentTarget.dataset
-    const photos = (this.data.selectedAlbum.photos || []).map(p => this.fullUrl(p))
+    const photos = (this.data.selectedAlbum.photos || []).map(p => this._resolveUrl(p))
     wx.previewImage({ current: url, urls: photos })
   },
 
@@ -117,13 +141,8 @@ Page({
 
     wx.showLoading({ title: '设置封面...' })
 
-    // 找出 photos 数组中匹配的索引，保存为相对路径
-    let coverPath = url
-    if (url && url.startsWith('http')) {
-      const idx = (album.photos || []).findIndex(p => p === url)
-      if (idx > -1) coverPath = '/uploads/gatherings/' + url.split('/').pop()
-      else coverPath = url
-    }
+    // 直接使用 OSS 完整 URL
+    const coverPath = url || ''
 
     wx.request({
       url: this.data.serverUrl + '/api/gathering/update-cover/' + (album._id || album.id),
@@ -133,7 +152,7 @@ Page({
       success: (res) => {
         wx.hideLoading()
         if (res.data && res.data.data) {
-          const updated = res.data.data
+          const updated = this._decorateAlbum(res.data.data)
           const albums = [...this.data.albums]
           albums[this.data.selectedIndex] = updated
           this.setData({ albums, selectedAlbum: updated, showCoverPicker: false })

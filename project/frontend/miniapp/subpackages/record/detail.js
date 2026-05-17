@@ -1,15 +1,21 @@
 const app = getApp()
 
 Page({
-  data: { gathering: null, avgCost: 0, starDisplay: '', loadFailed: false, serverUrl: 'http://localhost:2001' },
+  data: { gathering: null, avgCost: 0, starDisplay: '', loadFailed: false, serverUrl: 'http://localhost:2001', photoUrls: [] },
 
   onLoad(options) {
+    this.setData({ serverUrl: app.getServerUrl() })
     if (options.id) {
       this.gatheringId = options.id
       this.fetchDetail(options.id)
     } else {
       this.setData({ loadFailed: true })
     }
+  },
+
+  fullUrl(path) {
+    if (!path) return ''
+    return path.indexOf('http') === 0 ? path : this.data.serverUrl + path
   },
 
   fetchDetail(id) {
@@ -42,7 +48,13 @@ Page({
   setGathering(g) {
     const avg = g.participants && g.participants.length ? Math.round(g.totalCost / g.participants.length) : 0
     const stars = g.moodScore ? '★'.repeat(g.moodScore) : ''
-    this.setData({ gathering: g, avgCost: avg, starDisplay: stars })
+    const photoUrls = (g.photos || []).map(p => this.fullUrl(p))
+    this.setData({ gathering: g, avgCost: avg, starDisplay: stars, photoUrls })
+  },
+
+  previewPhoto(e) {
+    const { url } = e.currentTarget.dataset
+    wx.previewImage({ current: url, urls: this.data.photoUrls })
   },
 
   formatTime(dateStr) {

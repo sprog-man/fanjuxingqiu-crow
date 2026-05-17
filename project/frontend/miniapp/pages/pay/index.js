@@ -30,8 +30,14 @@ Page({
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     const userInfo = app.globalData.userInfo
     if (userInfo && userInfo.nickname) this.setData({ currentUser: userInfo.nickname })
+  },
+
+  fullUrl(path) {
+    if (!path) return ''
+    return path.indexOf('http') === 0 ? path : this.data.serverUrl + path
   },
   onUnload() {
     if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
@@ -54,7 +60,11 @@ Page({
   /* ========== 通用饭搭子导入 ========== */
 
   markBuddiesAdded(buddies, list) {
-    return buddies.map(b => ({ ...b, added: list.includes(b.name) }))
+    return buddies.map(b => ({
+      ...b,
+      added: list.includes(b.name),
+      _avatarUrl: b.avatar ? this.fullUrl(b.avatar) : '',
+    }))
   },
 
   openDrawBuddy() {

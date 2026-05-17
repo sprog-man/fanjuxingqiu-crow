@@ -44,6 +44,15 @@
       <text class="section-title">备注</text>
       <text class="note-text">{{gathering.note}}</text>
     </view>
+
+    <view wx:if="{{photoUrls.length > 0}}" class="section-card">
+      <text class="section-title">照片（{{photoUrls.length}}）</text>
+      <view class="detail-photo-grid">
+        <view wx:for="{{photoUrls}}" wx:key="*this" class="detail-photo-item" data-url="{{item}}" bindtap="previewPhoto">
+          <image class="detail-photo-img" src="{{item}}" mode="aspectFill" />
+        </view>
+      </view>
+    </view>
   </view>
 
   <view wx:if="{{loadFailed}}" class="error-state">

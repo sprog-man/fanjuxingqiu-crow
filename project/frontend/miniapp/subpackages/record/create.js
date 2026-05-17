@@ -17,6 +17,7 @@ Page({
   },
 
   onLoad() {
+    this.setData({ serverUrl: app.getServerUrl() })
     const userInfo = app.globalData.userInfo
     if (userInfo && userInfo.nickname) {
       this.setData({
@@ -102,8 +103,16 @@ Page({
   },
 
   // 饭搭子
+  fullUrl(path) {
+    if (!path) return ''
+    return path.indexOf('http') === 0 ? path : this.data.serverUrl + path
+  },
   markBuddiesAdded(buddies, list) {
-    return buddies.map(b => ({ ...b, added: list.includes(b.name) }))
+    return buddies.map(b => ({
+      ...b,
+      added: list.includes(b.name),
+      _avatarUrl: b.avatar ? this.fullUrl(b.avatar) : '',
+    }))
   },
   showBuddyPicker() {
     this.setData({
@@ -169,7 +178,8 @@ Page({
         payer: self.data.payerIndex >= 0 ? f.participants[self.data.payerIndex] : null,
         moodScore: f.moodScore || null, moodTags: f.moodTags, note: f.note,
         photos: photoUrls, foodTags: [], createdAt: new Date().toISOString(),
-        creatorId: self.data.currentUser
+        creatorId: self.data.currentUser,
+        cover: photoUrls.length > 0 ? photoUrls[0] : ''
       }
 
       // Save locally

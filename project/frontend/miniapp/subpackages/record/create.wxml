@@ -141,7 +141,8 @@
       <input class="buddy-search" placeholder="搜索..." value="{{buddySearch}}" bindinput="onBuddySearch" />
       <scroll-view class="buddy-list" scroll-y>
         <view wx:for="{{filteredBuddies}}" wx:key="id" class="buddy-pick-item" data-name="{{item.name}}" bindtap="pickBuddy">
-          <view class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
+          <view wx:if="{{!item._avatarUrl}}" class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
+          <image wx:else class="bp-avatar-img" src="{{item._avatarUrl}}" mode="aspectFill"></image>
           <text class="bp-name">{{item.name}}</text>
           <text wx:if="{{item.phone}}" class="bp-phone">{{item.phone}}</text>
           <text wx:if="{{!item.added}}" class="bp-add">+</text>

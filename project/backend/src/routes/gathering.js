@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const fs = require('fs');
+const crypto = require('crypto');
 const multer = require('multer');
 const Gathering = require('../models/gathering');
-const config = require('../config');
+const oss = require('../utils/oss');
 
+const storage = multer.memoryStorage();
 const upload = multer({
-  dest: path.join(__dirname, '../../../uploads/gatherings/'),
+  storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
@@ -15,17 +16,28 @@ const upload = multer({
   }
 });
 
+function generateOssPath(prefix, originalname) {
+  const ext = path.extname(originalname).toLowerCase() || '.jpg';
+  const filename = crypto.randomUUID() + ext;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${prefix}/${year}/${month}/${filename}`;
+}
+
 router.post('/create', async (req, res) => {
   try {
     const { title, dateTime, location, participants, totalCost, payer, photos, moodScore, moodTags, note, foodTags, creatorId } = req.body;
     if (!title || !dateTime || !location || !participants || !totalCost) {
       return res.status(400).json({ error: '缺少必填字段' });
     }
+    const photoList = photos || [];
     const record = await Gathering.create({
       title, dateTime: new Date(dateTime), location, participants,
       totalCost: Number(totalCost), payer: payer || null,
-      photos: photos || [], moodScore: moodScore || null,
+      photos: photoList, moodScore: moodScore || null,
       moodTags: moodTags || [], note: note || '', foodTags: foodTags || [], creatorId: creatorId || '',
+      cover: photoList.length > 0 ? photoList[0] : '',
     });
     res.json({ data: record });
   } catch (e) {
@@ -108,10 +120,13 @@ router.get('/stats', async (req, res) => {
 router.post('/update-photos', async (req, res) => {
   try {
     const { gatheringId, photos } = req.body;
-    await Gathering.updateOne(
-      { _id: gatheringId },
-      { $push: { photos: { $each: photos } } }
-    );
+    const existing = await Gathering.findById(gatheringId).lean();
+    if (!existing) return res.status(404).json({ error: '记录不存在' });
+    const update = { $push: { photos: { $each: photos } } };
+    if (!existing.cover && photos.length > 0) {
+      update.$set = { cover: photos[0] };
+    }
+    await Gathering.updateOne({ _id: gatheringId }, update);
     res.json({ data: { updated: true } });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -123,38 +138,17 @@ router.post('/upload', upload.array('photos', 9), async (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请选择照片' });
     }
-    let files = req.files.map(f => ({
-      url: '/uploads/gatherings/' + f.filename,
-      originalName: f.originalname,
-      size: f.size,
-    }));
-
-    if (config.oss.accessKeyId && config.oss.bucket) {
-      try {
-        const OSS = require('ali-oss');
-        const client = new OSS({
-          region: config.oss.region,
-          accessKeyId: config.oss.accessKeyId,
-          accessKeySecret: config.oss.accessKeySecret,
-          bucket: config.oss.bucket,
-        });
-        for (const f of req.files) {
-          const ossKey = 'gatherings/' + f.filename;
-          await client.put(ossKey, f.path, { headers: { 'x-oss-object-acl': 'public-read' } });
-          fs.unlinkSync(f.path);
-        }
-        files = req.files.map(f => ({
-          url: (config.oss.baseUrl || `https://${config.oss.bucket}.${config.oss.region}.aliyuncs.com`) + '/gatherings/' + f.filename,
-          originalName: f.originalname,
-          size: f.size,
-        }));
-      } catch (ossErr) {
-        console.error('OSS upload failed, fallback to local:', ossErr.message);
-      }
+    const files = [];
+    for (const f of req.files) {
+      const ossPath = generateOssPath('gatherings/photos', f.originalname);
+      const url = await oss.uploadBuffer(f.buffer, ossPath);
+      files.push({ url, originalName: f.originalname, size: f.size });
     }
-
     res.json({ data: files });
   } catch (e) {
+    if (e.code === 'OSS_MISCONFIG') {
+      return res.status(500).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });

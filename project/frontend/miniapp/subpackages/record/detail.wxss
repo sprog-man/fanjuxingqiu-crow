@@ -166,3 +166,18 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+.detail-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.detail-photo-item {
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.detail-photo-img {
+  width: 100%;
+  height: 100%;
+}
