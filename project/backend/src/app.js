@@ -61,7 +61,13 @@ mongoose.connection.on('disconnected', () => {
 
 // 建立连接
 mongoose.connect(config.mongoUri, mongoOptions)
-  .then(() => console.log('🔗 MongoDB 正在连接 →', config.mongoUri.replace(/:\/\/[^:]+:[^@]+@', ':***@')))
+  .then(() => {
+    // 安全地隐藏密码后打印
+    const safeUri = config.mongoUri
+      .replace(/:([^:@/]+)@/, ':***@')  // 替换 password@ 部分
+      .replace(/\/\/[^:]+:[^@]+@/, '//***@'); // 替换 user:password@ 部分
+    console.log('🔗 MongoDB 正在连接 →', safeUri);
+  })
   .catch(err => {
     console.error('💥 MongoDB 初始连接失败:', err.message);
     console.error('💥 请检查 MONGO_URI 环境变量是否正确配置');
