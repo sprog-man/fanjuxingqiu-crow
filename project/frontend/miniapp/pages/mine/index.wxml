@@ -23,34 +23,10 @@
       <text class="menu-name">饭搭子</text>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item" bindtap="showPreference">
-      <text class="menu-icon">🌶️</text>
-      <text class="menu-name">我的口味</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="seedData">
-      <text class="menu-icon">🌱</text>
-      <text class="menu-name">导入示例数据</text>
-      <text class="menu-arrow">›</text>
-    </view>
     <view class="menu-item" bindtap="doLogout" wx:if="{{userInfo}}">
       <text class="menu-icon">🚪</text>
       <text class="menu-name" style="color:#e55">退出登录</text>
       <text class="menu-arrow">›</text>
-    </view>
-  </view>
-
-  <!-- Preference Modal -->
-  <view wx:if="{{showPref}}" class="pref-modal" bindtap="hidePreference">
-    <view class="pref-card" catchtap>
-      <text class="pref-title">🌶️ 我的口味</text>
-      <text class="pref-sub">标记你喜欢的菜系，转盘会更偏向推荐</text>
-      <view class="pref-grid">
-        <view wx:for="{{prefCuisines}}" wx:key="id" class="pref-tag {{item.liked ? 'active' : ''}}" data-id="{{item.id}}" bindtap="togglePrefCuisine">
-          <text>{{item.icon}} {{item.name}}</text>
-        </view>
-      </view>
-      <view class="pref-close" bindtap="hidePreference">完成</view>
     </view>
   </view>
 </view>

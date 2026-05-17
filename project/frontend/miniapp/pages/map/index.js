@@ -27,6 +27,10 @@ Page({
     submitBtnText: '✅ 打卡',
     submitBtnClass: '',
 
+    // City detail expand
+    expandedCity: '',
+    cityRecords: [],
+
     // Import picker
     showImport: false,
     importList: [],
@@ -453,17 +457,34 @@ Page({
     wx.showToast({ title: '已导入 ✔', icon: 'none' })
   },
 
-  /* ===== City Detail ===== */
+  /* ===== City Detail Expand ===== */
 
-  showCityDetail(e) {
+  async showCityDetail(e) {
     const city = e.currentTarget.dataset.city
-    const cityData = this.data.cities.find(c => c.city === city)
-    if (cityData) {
-      wx.showModal({
-        title: cityData.city,
-        content: `共 ${cityData.count} 次聚餐\n美食: ${(cityData.foods || []).join('、') || '暂无'}`,
-        showCancel: false,
-      })
+    // Toggle: collapse if same city tapped
+    if (this.data.expandedCity === city) {
+      this.setData({ expandedCity: '', cityRecords: [] })
+      return
+    }
+    // Show the city expand area immediately with loading
+    this.setData({ expandedCity: city, cityRecords: [] })
+    try {
+      const res = await this.request(this.data.serverUrl + '/api/map/city-records?city=' + encodeURIComponent(city))
+      const body = res.data
+      const records = ((body && body.data) || [])
+        .map(r => ({
+          ...r,
+          cardYear: r.dateTime ? new Date(r.dateTime).getFullYear() : '',
+          cardDate: r.dateTime ? ('0' + new Date(r.dateTime).getDate()).slice(-2) : '',
+          cardMonth: r.dateTime ? ('0' + (new Date(r.dateTime).getMonth() + 1)).slice(-2) : '',
+          cardWeekday: r.dateTime ? ['日','一','二','三','四','五','六'][new Date(r.dateTime).getDay()] : '',
+          cardTime: r.dateTime ? new Date(r.dateTime).toTimeString().slice(0, 5) : '',
+          foodsStr: (r.foodTags || []).join('、'),
+          photosList: r.photos || [],
+        }))
+      this.setData({ cityRecords: records })
+    } catch (e) {
+      this.setData({ cityRecords: [] })
     }
   },
 })

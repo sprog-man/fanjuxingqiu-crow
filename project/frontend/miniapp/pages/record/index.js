@@ -172,6 +172,6 @@ Page({
     return `${p[0]}年${parseInt(p[1])}月`
   },
 
-  goCreate() { wx.navigateTo({ url: '/pages/record/create' }) },
-  goDetail(e) { wx.navigateTo({ url: '/pages/record/detail?id=' + (e.currentTarget.dataset.id) }) }
+  goCreate() { wx.navigateTo({ url: '/subpackages/record/create' }) },
+  goDetail(e) { wx.navigateTo({ url: '/subpackages/record/detail?id=' + (e.currentTarget.dataset.id) }) }
 })

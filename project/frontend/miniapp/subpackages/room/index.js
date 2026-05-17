@@ -1,5 +1,5 @@
-const ws = require('../../utils/ws');
-const anim = require('../../utils/anim');
+const ws = require('./utils/ws');
+const anim = require('./utils/anim');
 
 const MEMBER_COLORS = ['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'];
 
@@ -106,7 +106,7 @@ Page({
   shareRoom() {
     wx.shareAppMessage({
       title: '快来一起抽签谁买单！',
-      path: '/pages/room/index?roomCode=' + this.data.roomCode,
+      path: '/subpackages/room/index?roomCode=' + this.data.roomCode,
     });
   },
 

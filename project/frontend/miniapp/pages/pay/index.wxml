@@ -46,24 +46,76 @@
       </view>
       <text wx:if="{{players.length < 2}}" class="hint">至少需要 2 人参与</text>
     </view>
-    <view class="draw-area">
-      <view class="draw-box" bindtap="startDraw">
-        <view class="draw-cards">
-          <view wx:for="{{players}}" wx:key="index"
-            class="draw-card {{drawing && drawIndex === index ? 'fly-out' : ''}} {{drawResult === item ? 'winner' : ''}} {{drawResult && drawResult !== item ? 'dim' : ''}}">
-            <text class="draw-card-name">{{item}}</text>
+    <!-- ===== 抽签动画：5 阶段（多人在线复刻版） ===== -->
+    <view class="draw-stage {{drawPhase === 'reveal' ? 'draw-reveal-bg' : ''}}" wx:if="{{drawPhase !== 'idle' && drawPhase !== ''}}">
+
+      <!-- 第1阶段：倒计时 -->
+      <view wx:if="{{drawPhase === 'countdown'}}" class="ds-countdown">
+        <text class="countdown-num">{{countdown}}</text>
+      </view>
+
+      <!-- 第2-3阶段：加速 → 高速 → 减速聚拢 -->
+      <view wx:if="{{drawPhase === 'spinning'}}" class="ds-spin">
+        <view class="spin-stage-wrap">
+          <text class="drumroll-label">{{spinPhase === 'accelerate' ? '🌀 命运之轮启动...' : spinPhase === 'cruise' ? '⚡ 高速旋转中！' : '💥 空间压缩中！'}}</text>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-1"></view>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-2"></view>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-3"></view>
+          <view class="spin-stage" style="transform: rotate({{spinAngle}}deg)">
+            <view wx:for="{{players}}" wx:key="index" class="spin-item {{spinPhase === 'cruise' ? 'si-blur' : ''}}" style="transform: rotate({{index * 360 / players.length}}deg) translateY(-{{spinRadius}}px)">
+              <view class="si-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{item.slice(0,1)}}</view>
+              <text class="si-name">{{item}}</text>
+            </view>
           </view>
         </view>
-        <view wx:if="!drawResult && !drawing" class="draw-hint">
-          <text class="draw-hint-icon">👆</text>
-          <text>点击开始抽签</text>
+      </view>
+
+      <!-- 第4阶段：碰撞弹射 -->
+      <view wx:if="{{drawPhase === 'eject'}}" class="ds-eject">
+        <view class="eject-stage">
+          <view wx:for="{{players}}" wx:key="index" class="eject-item"
+                style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}};{{ejectStyles[index]}}">
+            <text>{{item.slice(0,1)}}</text>
+          </view>
+        </view>
+        <text class="eject-label">{{ejectLabel}}</text>
+      </view>
+
+      <!-- 第5阶段：金色揭晓 -->
+      <view wx:if="{{drawPhase === 'reveal'}}" class="ds-reveal">
+        <view class="particle-field">
+          <view class="particle pt-1"></view><view class="particle pt-2"></view><view class="particle pt-3"></view>
+          <view class="particle pt-4"></view><view class="particle pt-5"></view><view class="particle pt-6"></view>
+          <view class="particle pt-7"></view><view class="particle pt-8"></view>
+        </view>
+        <view class="reveal-winner reveal-bounce-in">
+          <view class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
+          <text class="rw-name">{{drawWinner}}</text>
+        </view>
+        <view class="reveal-label-wrap">
+          <text class="rw-label-line">🎉 今晚的幸运儿是 🎉</text>
+        </view>
+        <text class="rw-verdict">请这位朋友买单~ 😄</text>
+        <text class="rw-humor">{{humorLine}}</text>
+        <button class="reset-btn" bindtap="resetDraw">再来一次</button>
+      </view>
+    </view>
+
+    <!-- idle 准备阶段 -->
+    <view wx:if="{{drawPhase === 'idle' || drawPhase === ''}}" class="draw-idle-wrap">
+      <view class="draw-idle-circle">
+        <view wx:for="{{players}}" wx:key="index" class="dic-item" style="transform:rotate({{index * 360 / (players.length || 1)}}deg) translateY(-70px)">
+          <view class="dic-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{item.slice(0,1)}}</view>
+          <text class="dic-name">{{item}}</text>
+        </view>
+        <view wx:if="{{players.length < 2}}" class="dic-placeholder">
+          <text class="dic-placeholder-icon">👥</text>
+          <text class="dic-placeholder-text">添加至少 2 人开始</text>
         </view>
       </view>
-      <view wx:if="{{drawResult}}" class="result-box">
-        <text class="result-label">🎉 恭喜</text>
-        <text class="result-name">{{drawResult}}</text>
-        <text class="result-desc">本次请客！</text>
-        <button class="reset-btn" bindtap="resetDraw">重新抽签</button>
+      <text wx:if="{{players.length >= 2}}" class="draw-ready-hint">抽签准备就绪</text>
+      <view wx:if="{{players.length >= 2}}" class="draw-start-btn-wrap">
+        <button class="draw-start-btn" bindtap="startDraw">🎯 开始抽签</button>
       </view>
     </view>
   </view>

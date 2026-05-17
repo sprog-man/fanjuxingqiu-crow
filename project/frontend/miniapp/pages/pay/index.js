@@ -5,7 +5,9 @@ Page({
     activeTab: 'draw',
     currentGame: null,
     // 抽签
-    inputName: '', players: [], drawResult: null, drawing: false, drawIndex: -1,
+    inputName: '', players: [], drawPhase: 'idle', countdown: 0,
+    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '',
+    ejectStyles: [], ejectLabel: '',
     showDrawBuddy: false, drawBuddySearch: '', drawBuddies: [],
     showGameBuddy: false, gameBuddySearch: '', gameBuddies: [],
     // 鳄鱼
@@ -30,6 +32,10 @@ Page({
   onShow() {
     const userInfo = app.globalData.userInfo
     if (userInfo && userInfo.nickname) this.setData({ currentUser: userInfo.nickname })
+  },
+  onUnload() {
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
   },
 
   switchTab(e) {
@@ -127,7 +133,7 @@ Page({
   },
 
   goMultiplayer() {
-    wx.navigateTo({ url: '/pages/room/index' });
+    wx.navigateTo({ url: '/subpackages/room/index' });
   },
 
   /* ========== 抽签 ========== */
@@ -141,27 +147,92 @@ Page({
   removePlayer(e) {
     const { index } = e.currentTarget.dataset
     const players = [...this.data.players]; players.splice(index, 1)
-    this.setData({ players, drawResult: null })
+    this.setData({ players, drawPhase: 'idle', drawWinner: '' })
   },
+  /* ========== 抽签动画 — 多人在线复刻版 ========== */
   startDraw() {
-    if (this.data.drawing) return
+    if (this.data.drawPhase !== 'idle' && this.data.drawPhase !== 'reveal' && this.data.drawPhase !== '') return
     if (this.data.players.length < 2) { wx.showToast({ title: '至少需要2人', icon: 'none' }); return }
-    this.setData({ drawing: true, drawResult: null })
-    const players = this.data.players, total = 6 + players.length
-    let cycle = 0
-    const self = this
-    function run() {
-      if (cycle >= total) {
-        const w = Math.floor(Math.random() * players.length)
-        self.setData({ drawResult: players[w], drawing: false, drawIndex: -1 }); return
-      }
-      self.setData({ drawIndex: cycle % players.length })
-      cycle++
-      setTimeout(run, 60 + (cycle / total) ** 2 * 240)
-    }
-    run()
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ drawPhase: 'countdown', countdown: 3, spinAngle: 0, drawWinner: '', humorLine: '', ejectStyles: [], ejectLabel: '' });
+    let count = 3;
+    const tick = () => {
+      count--;
+      if (count > 0) { this.setData({ countdown: count }); this._spinTimer = setTimeout(tick, 800); }
+      else { this.setData({ drawPhase: 'spinning' }); this._runSpinAnim(); }
+    };
+    this._spinTimer = setTimeout(tick, 800);
   },
-  resetDraw() { this.setData({ drawResult: null, drawing: false, drawIndex: -1 }) },
+  resetDraw() {
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ drawPhase: 'idle', countdown: 0, spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '', ejectStyles: [], ejectLabel: '' });
+  },
+  _runSpinAnim() {
+    const players = this.data.players;
+    if (!players.length) return;
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ spinAngle: 0, spinPhase: 'accelerate', spinRadius: 150 });
+    const startTime = Date.now();
+    let angle = 0;
+    const tick = () => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      let speed, radius, phase;
+      if (elapsed < 0.5) {
+        speed = (elapsed / 0.5) * 360; radius = 150; phase = 'accelerate';
+      } else if (elapsed < 2.0) {
+        speed = 540; radius = 150; phase = 'cruise';
+      } else if (elapsed < 4.0) {
+        const t = (elapsed - 2.0) / 2.0;
+        speed = Math.round(540 * (1 - t * 0.6));
+        radius = Math.round(150 - 120 * t);
+        phase = 'shrink';
+      } else {
+        this.setData({ spinPhase: 'clustered', spinAngle: angle % 360, spinRadius: 30 });
+        this._spinTimer = null;
+        this._ejectWinner();
+        return;
+      }
+      angle += speed * 0.016;
+      this.setData({ spinAngle: angle, spinPhase: phase, spinRadius: radius });
+      this._spinTimer = setTimeout(tick, 16);
+    };
+    tick();
+  },
+  _ejectWinner() {
+    const players = this.data.players;
+    const winner = players.length ? players[Math.floor(Math.random() * players.length)] : '';
+    if (!players.length || !winner) return;
+    this.setData({
+      drawPhase: 'eject',
+      ejectStyles: players.map(() => 'transform:translate(0,0);'),
+      ejectLabel: '🎯 幸运儿弹出！',
+    });
+    this._ejectTimer = setTimeout(() => {
+      this._ejectTimer = null;
+      const flyX = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
+      const flyY = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
+      const flyRotate = (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 360);
+      const finalStyles = players.map(p =>
+        p === winner
+          ? `transform:translate(${flyX}px,${flyY}px) rotate(${flyRotate}deg) scale(1.4);opacity:0;`
+          : 'transform:translate(0,0) scale(0.6);opacity:0.7;'
+      );
+      const humorLines = ['恭喜成为本局幸运鹅 🦆','今晚这顿安排上了 🍷','这顿饭你请，大家记住你了 😎','运气也是实力的一部分 👏','恭喜中奖！下次继续努力 💪','恭喜成为今晚的「财务大臣」💰','这一顿，值得！🍽️'];
+      this.setData({
+        ejectStyles: finalStyles,
+        ejectLabel: `💥 ${winner} 被撞飞！他就是幸运儿！`,
+        drawWinner: winner,
+        humorLine: humorLines[Math.floor(Math.random() * humorLines.length)],
+      });
+      this._ejectTimer = setTimeout(() => {
+        this._ejectTimer = null;
+        this.setData({ drawPhase: 'reveal' });
+      }, 700);
+    }, 50);
+  },
 
   /* ========== 鳄鱼 ========== */
 

@@ -46,7 +46,14 @@
     </view>
   </view>
 
-  <view wx:if="!gathering" class="loading">
+  <view wx:if="{{loadFailed}}" class="error-state">
+    <text class="error-icon">😅</text>
+    <text class="error-text">加载失败，无法获取详情</text>
+    <view class="error-retry" bindtap="retry">重新加载</view>
+  </view>
+
+  <view wx:elif="{{!gathering}}" class="loading">
+    <view class="loading-spinner"></view>
     <text>加载中...</text>
   </view>
 </scroll-view>

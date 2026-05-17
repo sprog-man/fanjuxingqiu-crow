@@ -2,7 +2,8 @@ App({
   globalData: {
     userInfo: null,
     token: '',
-    serverUrl: 'http://localhost:2001'
+    serverUrl: 'http://localhost:2001',
+    ossBase: 'https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com'
   },
 
   onLaunch() {

@@ -7,6 +7,7 @@ const cuisineSchema = new mongoose.Schema({
   color: { type: String, default: '#D85A30' },
   tags: [{ type: String }],
   enabled: { type: Boolean, default: true },
+  tarotCover: { type: String, default: '' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Cuisine', cuisineSchema);

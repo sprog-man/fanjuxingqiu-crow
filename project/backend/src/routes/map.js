@@ -129,4 +129,19 @@ router.get('/checkins', async (req, res) => {
   }
 });
 
+router.get('/city-records', async (req, res) => {
+  try {
+    const userId = req.query.user_id || '我';
+    const city = req.query.city;
+    if (!city) return res.status(400).json({ error: 'city required' });
+    const gatherings = await Gathering.find({
+      $or: [{ participants: userId }, { creatorId: userId }],
+      'location.city': city,
+    }).sort({ dateTime: -1 }).lean();
+    res.json({ data: gatherings });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

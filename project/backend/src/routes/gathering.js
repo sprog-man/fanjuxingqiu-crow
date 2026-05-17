@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const Gathering = require('../models/gathering');
+const config = require('../config');
 
 const upload = multer({
   dest: path.join(__dirname, '../../../uploads/gatherings/'),
@@ -121,11 +123,36 @@ router.post('/upload', upload.array('photos', 9), async (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请选择照片' });
     }
-    const files = req.files.map(f => ({
+    let files = req.files.map(f => ({
       url: '/uploads/gatherings/' + f.filename,
       originalName: f.originalname,
       size: f.size,
     }));
+
+    if (config.oss.accessKeyId && config.oss.bucket) {
+      try {
+        const OSS = require('ali-oss');
+        const client = new OSS({
+          region: config.oss.region,
+          accessKeyId: config.oss.accessKeyId,
+          accessKeySecret: config.oss.accessKeySecret,
+          bucket: config.oss.bucket,
+        });
+        for (const f of req.files) {
+          const ossKey = 'gatherings/' + f.filename;
+          await client.put(ossKey, f.path, { headers: { 'x-oss-object-acl': 'public-read' } });
+          fs.unlinkSync(f.path);
+        }
+        files = req.files.map(f => ({
+          url: (config.oss.baseUrl || `https://${config.oss.bucket}.${config.oss.region}.aliyuncs.com`) + '/gatherings/' + f.filename,
+          originalName: f.originalname,
+          size: f.size,
+        }));
+      } catch (ossErr) {
+        console.error('OSS upload failed, fallback to local:', ossErr.message);
+      }
+    }
+
     res.json({ data: files });
   } catch (e) {
     res.status(500).json({ error: e.message });

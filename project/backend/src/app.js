@@ -57,6 +57,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/wheel', require('./routes/wheel'));
+app.use('/api/tarot', require('./routes/tarot'));
 app.use('/api/game', require('./routes/game'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/gathering', require('./routes/gathering'));
@@ -71,6 +72,9 @@ app.use('/api/admin', require('./routes/admin'));
 
 // 上传文件静态访问
 app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+
+// 塔罗图片静态服务（从代码包移出，减轻主包体积）
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // 管理后台前端静态文件
 app.use('/admin', express.static(path.join(__dirname, '../../frontend/admin')));
