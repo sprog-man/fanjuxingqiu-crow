@@ -144,7 +144,7 @@ module.exports = function attachWS(server) {
     });
   }
 
-  // 心跳保活：每 30s ping，40s（两次检测）无响应则 terminate
+  // 心跳保活：每 30s ping，超出 1 个周期无 pong 响应则 terminate
   const heartbeat = setInterval(() => {
     wss.clients.forEach(ws => {
       if (!ws._alive) {
@@ -155,4 +155,6 @@ module.exports = function attachWS(server) {
       ws.ping();
     });
   }, 30000);
+
+  wss.on('close', () => clearInterval(heartbeat));
 };
