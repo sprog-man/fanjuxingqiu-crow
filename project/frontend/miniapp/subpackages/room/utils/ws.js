@@ -4,12 +4,14 @@ let pendingMessages = [];
 let currentRoomCode = '';
 let currentNickname = '';
 let currentAvatar = '';
+let currentOpenid = '';
 let listenersRegistered = false;
 
-function connect(roomCode, nickname, avatar) {
+function connect(roomCode, nickname, avatar, openid) {
   currentRoomCode = roomCode || '';
   currentNickname = nickname || '我';
   currentAvatar = avatar || '';
+  currentOpenid = openid || '';
   console.log('[WS] connect 调用 - roomCode:', roomCode, 'nickname:', nickname, 'avatar:', avatar);
   const app = getApp();
   const httpUrl = (app && app.getServerUrl) ? app.getServerUrl() : 'http://localhost:2001';
@@ -23,10 +25,11 @@ function connect(roomCode, nickname, avatar) {
       socketOpen = true;
       pendingMessages.forEach(msg => wx.sendSocketMessage({ data: msg }));
       pendingMessages = [];
-      const msg = currentRoomCode 
-        ? { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar }
-        : { nickname: currentNickname, avatar: currentAvatar };
-      console.log('[WS] Socket 打开，发送消息:', JSON.stringify(msg));
+      // 注册用户身份（用于接收邀请推送）
+      if (currentOpenid) {
+        send('room:register', { openid: currentOpenid, nickname: currentNickname });
+      }
+      console.log('[WS] Socket 打开，发送消息:', JSON.stringify({ roomCode: currentRoomCode, openid: currentOpenid }));
       if (currentRoomCode) {
         send('room:join', { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar });
       } else {

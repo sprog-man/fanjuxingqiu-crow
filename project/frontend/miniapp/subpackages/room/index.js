@@ -15,6 +15,18 @@ Page({
     ejectStyles: [], ejectLabel: '',
     gameBoard: [], gamePhase: 'idle', currentTurnName: '',
     currentTurnId: '', isMyTurn: false, gameResult: '',
+
+    // 邀请好友
+    showInvite: false,
+    inviteBuddies: [],
+    inviteLoading: false,
+    inviteSent: false,
+
+    // 被邀请弹窗
+    showInvitationModal: false,
+    invitationFrom: '',
+    invitationRoomCode: '',
+    invitationId: '',
   },
 
   onLoad(opts) {
@@ -65,6 +77,27 @@ Page({
         humorLine: anim.randomHumor(),
       });
     });
+    // 邀请好友
+    ws.on('room:invitation', (data) => {
+      console.log('[Room] 收到邀请:', JSON.stringify(data));
+      this.setData({
+        showInvitationModal: true,
+        invitationFrom: data.fromNickname,
+        invitationRoomCode: data.roomCode,
+      });
+    });
+    ws.on('room:join:invited', (data) => {
+      if (data.roomCode) {
+        this.setData({ inputRoomCode: data.roomCode, canJoin: true });
+        this._joinRoom();
+      }
+    });
+    ws.on('room:invite:sent', (data) => {
+      console.log('[Room] 邀请已发送:', data.status);
+      if (data.status === 'stored') {
+        wx.showToast({ title: '已发送，等待对方上线处理', icon: 'none' });
+      }
+    });
     ws.on('croc:start', (data) => this._initGame('croc', data));
     ws.on('croc:state', (data) => this._updateGame(data));
     ws.on('croc:result', (data) => this.setData({ gameResult: data.loser, gameBoard: data.board }));
@@ -89,12 +122,12 @@ Page({
   _createRoom() {
     if (this.data.connecting) return;
     this.setData({ connecting: true });
-    const userInfo = getApp().globalData.userInfo || {};
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || {};
     const nickname = userInfo.nickname || '我';
     const avatar = userInfo.avatar_url || '';
-    console.log('[Room] 创建房间 - 用户信息:', JSON.stringify(userInfo));
-    console.log('[Room] 创建房间 - 头像URL:', avatar);
-    ws.connect('', nickname, avatar);
+    const openid = (app.getOpenid && app.getOpenid()) || '';
+    ws.connect('', nickname, avatar, openid);
   },
 
   _joinRoom() {
@@ -105,12 +138,78 @@ Page({
       return;
     }
     this.setData({ connecting: true });
-    const userInfo = getApp().globalData.userInfo || {};
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || {};
     const nickname = userInfo.nickname || '我';
     const avatar = userInfo.avatar_url || '';
-    console.log('[Room] 加入房间 - 用户信息:', JSON.stringify(userInfo));
-    console.log('[Room] 加入房间 - 头像URL:', avatar);
-    ws.connect(code, nickname, avatar);
+    const openid = (app.getOpenid && app.getOpenid()) || '';
+    ws.connect(code, nickname, avatar, openid);
+  },
+
+  /* ====== 邀请好友 ====== */
+
+  showInvitePicker() {
+    this.setData({ inviteLoading: true, inviteSent: false });
+    const app = getApp();
+    app.apiGetBuddies().then(buddies => {
+      // 只显示已接受的饭搭子
+      const accepted = buddies.filter(b => b.status === 'accepted');
+      // 过滤已在房内的
+      const openids = this.data.members.map(m => m.openid).filter(Boolean);
+      const list = accepted.filter(b => !openids.includes(b.openid)).map(b => ({
+        id: b._id || b.id,
+        openid: b.openid,
+        name: b.remark || b.name,
+        avatar: b.avatar_url || '',
+        initial: (b.remark || b.name).slice(0, 1),
+        color: b.color || '#D85A30',
+      }));
+      this.setData({ inviteBuddies: list, inviteLoading: false, showInvite: true });
+    }).catch(() => {
+      this.setData({ inviteLoading: false });
+      wx.showToast({ title: '加载好友列表失败', icon: 'none' });
+    });
+  },
+
+  closeInvitePicker() {
+    this.setData({ showInvite: false });
+  },
+
+  sendInvite(e) {
+    const idx = e.currentTarget.dataset.index;
+    const buddy = this.data.inviteBuddies[idx];
+    if (!buddy) return;
+    const app = getApp();
+    const myNickname = (app.globalData.userInfo && app.globalData.userInfo.nickname) || '我';
+    ws.send('room:invite', { toOpenid: buddy.openid, roomCode: this.data.roomCode, fromNickname: myNickname });
+    this.setData({ inviteSent: true, showInvite: false });
+    wx.showToast({ title: `已邀请 ${buddy.name}`, icon: 'success' });
+
+    // 同时调 API 存离线邀请记录
+    const myOpenid = (app.getOpenid && app.getOpenid()) || '';
+    wx.request({
+      url: (app.getServerUrl()) + '/api/room/invite',
+      method: 'POST',
+      data: { fromOpenid: myOpenid, fromNickname: myNickname, toOpenid: buddy.openid, roomCode: this.data.roomCode },
+    });
+  },
+
+  /* ====== 被邀请弹窗 ====== */
+
+  closeInvitationModal() {
+    this.setData({ showInvitationModal: false });
+  },
+
+  acceptInvitation() {
+    const code = this.data.invitationRoomCode;
+    this.setData({ showInvitationModal: false });
+    if (code) {
+      ws.send('room:invite:accept', { roomCode: code });
+    }
+  },
+
+  rejectInvitation() {
+    this.setData({ showInvitationModal: false });
   },
 
   /* ====== 分享 ====== */

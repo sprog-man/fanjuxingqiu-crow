@@ -33,6 +33,7 @@
 .room-header { text-align: center; padding: 40px 24px 20px; }
 .room-code-label { display: block; font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
 .room-code { display: block; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #FFD700; font-family: monospace; margin-bottom: 12px; }
+.invite-btn { display: inline-block; height: 36px; line-height: 36px; padding: 0 16px; background: linear-gradient(135deg, #1D9E75, #238b65); border-radius: 18px; font-size: 13px; color: #fff; border: none; }
 .share-btn { display: inline-block; height: 36px; line-height: 36px; padding: 0 24px; background: rgba(255,255,255,0.1); border-radius: 18px; font-size: 13px; color: rgba(255,255,255,0.8); border: none; }
 
 /* === 成员 === */
@@ -160,6 +161,32 @@
 .result-name { display: block; font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
 .result-desc { display: block; font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
 .reset-btn { height: 40px; line-height: 40px; padding: 0 32px; background: rgba(255,255,255,0.1); color: #fff; font-size: 14px; border-radius: 10px; display: inline-block; border: none; }
+
+/* === 邀请好友弹窗 === */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.invite-card { width: 300px; max-height: 70vh; background: #1a1a2e; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+.invite-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 10px; }
+.invite-title { font-size: 16px; font-weight: 700; color: #fff; }
+.invite-close { font-size: 18px; color: rgba(255,255,255,0.4); padding: 4px; }
+.invite-list { padding: 0 12px 12px; max-height: 50vh; }
+.invite-empty { text-align: center; padding: 30px 0; font-size: 13px; color: rgba(255,255,255,0.4); }
+.invite-item { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 12px; }
+.invite-item:active { background: rgba(255,255,255,0.05); }
+.ii-avatar-img { width: 40px; height: 40px; border-radius: 50%; }
+.ii-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; }
+.ii-info { flex: 1; }
+.ii-name { display: block; font-size: 14px; color: #fff; font-weight: 500; }
+.ii-invite { font-size: 12px; color: #1D9E75; padding: 4px 12px; border-radius: 12px; border: 1px solid #1D9E75; }
+
+/* === 被邀请弹窗 === */
+.invitation-card { width: 280px; background: #1a1a2e; border-radius: 20px; padding: 30px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.invitation-icon { font-size: 48px; margin-bottom: 12px; }
+.invitation-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.invitation-desc { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+.invitation-actions { display: flex; gap: 12px; width: 100%; }
+.invitation-btn { flex: 1; height: 42px; line-height: 42px; border-radius: 21px; font-size: 15px; font-weight: 600; border: none; }
+.invitation-btn.accept { background: linear-gradient(135deg, #1D9E75, #238b65); color: #fff; }
+.invitation-btn.reject { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
 
 /* === Keyframes === */
 @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }

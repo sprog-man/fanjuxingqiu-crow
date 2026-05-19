@@ -2,6 +2,9 @@ const { WebSocketServer } = require('ws');
 const { RoomManager } = require('./roomManager');
 const { createGameHandler, handleGameEvent } = require('./gameHandler');
 
+// openid → {ws, nickname} 映射，用于向在线用户推送邀请
+const userSockets = new Map();
+
 module.exports = function attachWS(server) {
   const wss = new WebSocketServer({ server });
   const rooms = new RoomManager();
@@ -11,6 +14,7 @@ module.exports = function attachWS(server) {
     ws.id = req.headers['sec-websocket-key'] || Math.random().toString(36).slice(2);
     ws.roomCode = null;
     ws.nickname = null;
+    ws.openid = null;
 
     const send = (event, data) => {
       if (ws.readyState === 1) ws.send(JSON.stringify({ event, data }));
@@ -22,6 +26,15 @@ module.exports = function attachWS(server) {
       const { event, data } = msg;
 
       switch (event) {
+        case 'room:register': {
+          // 注册用户 openid 以便接收邀请推送
+          if (data && data.openid) {
+            ws.openid = data.openid;
+            userSockets.set(data.openid, { ws, nickname: data.nickname || '' });
+            console.log(`[ws] room:register -> openid=${data.openid}`);
+          }
+          break;
+        }
         case 'room:create': {
           const nickname = (data && data.nickname) || '匿名';
           const avatar = (data && data.avatar) || '';
@@ -55,6 +68,33 @@ module.exports = function attachWS(server) {
           broadcast(roomCode, 'room:members', { members: room.members }, ws.id);
           break;
         }
+        case 'room:invite': {
+          // 邀请好友：data = { toOpenid, roomCode, fromNickname }
+          const { toOpenid, roomCode: invRoomCode, fromNickname } = data || {};
+          console.log(`[ws] room:invite -> to=${toOpenid} room=${invRoomCode} from=${fromNickname}`);
+          if (!toOpenid || !invRoomCode) { send('room:error', { message: '参数不全' }); break; }
+          const target = userSockets.get(toOpenid);
+          if (target && target.ws && target.ws.readyState === 1) {
+            // 对方在线 → 直接推送
+            target.ws.send(JSON.stringify({
+              event: 'room:invitation',
+              data: { fromNickname, roomCode: invRoomCode },
+            }));
+            send('room:invite:sent', { toOpenid, status: 'pushed' });
+          } else {
+            // 对方离线 → 已存在 DB，告知发送方
+            send('room:invite:sent', { toOpenid, status: 'stored' });
+          }
+          break;
+        }
+        case 'room:invite:accept': {
+          // 被邀请人接受 → 发送房间码让客户端加入
+          const { roomCode: accRoomCode } = data || {};
+          if (accRoomCode) {
+            send('room:join:invited', { roomCode: accRoomCode });
+          }
+          break;
+        }
         case 'room:leave': {
           const leaveCode = ws.roomCode;
           if (!leaveCode) break;
@@ -76,6 +116,9 @@ module.exports = function attachWS(server) {
     });
 
     ws.on('close', () => {
+      // 清理 userSockets 映射
+      if (ws.openid) userSockets.delete(ws.openid);
+
       const leaveCode = ws.roomCode;
       if (!leaveCode) return;
       const leaveRoom = rooms.getRoom(leaveCode);

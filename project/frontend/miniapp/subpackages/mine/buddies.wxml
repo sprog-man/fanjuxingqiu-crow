@@ -58,6 +58,23 @@
       <text class="empty-text">{{activeTab === 'all' ? '还没有饭搭子' : activeTab === 'pending' ? '没有待处理的申请' : '还没有互为饭搭子的用户'}}</text>
       <text class="empty-hint">{{activeTab === 'all' ? '添加你的聚餐伙伴吧' : ''}}</text>
     </view>
+
+    <!-- ===== 房间邀请待处理 ===== -->
+    <view wx:if="{{roomInvitations.length > 0}}" class="section-divider"></view>
+    <view wx:if="{{roomInvitations.length > 0}}" class="invite-section">
+      <text class="section-title">📨 房间邀请（{{roomInvitations.length}}）</text>
+      <view wx:for="{{roomInvitations}}" wx:key="_id" class="room-invite-card">
+        <view class="ri-left">
+          <text class="ri-from">{{item.fromNickname || '好友'}}</text>
+          <text class="ri-room">邀请你加入房间 {{item.roomCode}}</text>
+          <text class="ri-time">{{item.timeAgo}}</text>
+        </view>
+        <view class="ri-actions">
+          <button class="ri-btn reject" data-id="{{item._id}}" bindtap="rejectRoomInvite">拒绝</button>
+          <button class="ri-btn accept" data-id="{{item._id}}" bindtap="acceptRoomInvite">接受</button>
+        </view>
+      </view>
+    </view>
   </view>
 
   <!-- Add/Edit Modal -->

@@ -48,7 +48,8 @@
       <text class="room-code-label">房间号</text>
       <text class="room-code">{{roomCode}}</text>
       <view class="header-actions">
-        <button class="share-btn" bindtap="shareRoom">邀请好友</button>
+        <button class="invite-btn" bindtap="showInvitePicker">👥 邀请好友</button>
+        <button class="share-btn" bindtap="shareRoom">分享</button>
         <button class="leave-btn" bindtap="leaveRoom">退出</button>
       </view>
     </view>
@@ -210,6 +211,43 @@
         <text class="result-name">{{gameResult}}</text>
         <text class="result-desc">你来买单！</text>
         <button class="reset-btn" bindtap="resetGame">再来一局</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 邀请好友弹窗 ========== -->
+  <view wx:if="{{showInvite}}" class="modal-overlay" bindtap="closeInvitePicker">
+    <view class="invite-card" catchtap>
+      <view class="invite-header">
+        <text class="invite-title">👥 邀请饭搭子</text>
+        <text class="invite-close" bindtap="closeInvitePicker">✕</text>
+      </view>
+      <scroll-view scroll-y class="invite-list">
+        <view wx:if="{{inviteBuddies.length === 0}}" class="invite-empty">
+          <text wx:if="{{inviteLoading}}">加载中…</text>
+          <text wx:else>暂无可用饭搭子</text>
+        </view>
+        <view wx:for="{{inviteBuddies}}" wx:key="id" class="invite-item" data-index="{{index}}" bindtap="sendInvite">
+          <image wx:if="{{item.avatar}}" class="ii-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+          <view wx:else class="ii-avatar" style="background:{{item.color}}">{{item.initial}}</view>
+          <view class="ii-info">
+            <text class="ii-name">{{item.name}}</text>
+          </view>
+          <text class="ii-invite">邀请</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- ========== 被邀请弹窗 ========== -->
+  <view wx:if="{{showInvitationModal}}" class="modal-overlay">
+    <view class="invitation-card">
+      <text class="invitation-icon">📨</text>
+      <text class="invitation-title">房间邀请</text>
+      <text class="invitation-desc">{{invitationFrom}} 邀请你加入房间</text>
+      <view class="invitation-actions">
+        <button class="invitation-btn reject" bindtap="rejectInvitation">拒绝</button>
+        <button class="invitation-btn accept" bindtap="acceptInvitation">接受</button>
       </view>
     </view>
   </view>

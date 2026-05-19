@@ -115,6 +115,7 @@ app.use('/api/map', require('./routes/map'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/preference', require('./routes/preference'));
 app.use('/api/buddy', require('./routes/buddy'));
+app.use('/api/room', require('./routes/room'));
 app.use('/api/seed', require('./routes/seed'));
 
 // 管理后台 API（需认证）

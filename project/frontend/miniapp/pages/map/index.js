@@ -71,8 +71,8 @@ Page({
     this.fetchFootprints()
     this.fetchAchievements()
     this.fetchCheckins()
-    this.tryAutoLocate()
-    
+    this._useCachedLoc() // 仅用缓存，不弹权限；用户点 📍 按钮触发真实定位
+
     // 从城市选择器插件返回后获取城市信息
     const selectedCity = citySelector.getCity()
     if (selectedCity) {
@@ -116,32 +116,41 @@ Page({
 
   /* ===== Location ===== */
 
-  tryAutoLocate() {
-    const cached = wx.getStorageSync('lastLocation')
-    if (cached) {
-      this.setData({ latitude: cached.lat, longitude: cached.lng, locationAuthorized: true })
-    }
+  tryAutoLocate() { // 用户手势触发（定位按钮），权限+定位都能正常工作
     wx.getSetting({
       success: (res) => {
         if (res.authSetting['scope.userLocation']) {
-          this._doGetLocate(cached)
+          this._doGetLocate()
         } else if (res.authSetting['scope.userLocation'] === undefined) {
           wx.authorize({
             scope: 'scope.userLocation',
-            success: () => this._doGetLocate(cached),
-            fail: () => this._locFailFallback(cached),
+            success: () => this._doGetLocate(),
+            fail: () => this._locFailFallback(),
           })
         } else {
-          this._locFailFallback(cached)
+          wx.showModal({
+            title: '位置权限已拒绝',
+            content: '请前往设置开启位置权限',
+            confirmText: '去设置',
+            success: (r) => { if (r.confirm) wx.openSetting() },
+          })
         }
       },
-      fail: () => this._locFailFallback(cached),
+      fail: () => this._locFailFallback(),
     })
   },
 
-  _doGetLocate(cached) {
+  _useCachedLoc() { // onShow 静默使用缓存，不弹权限窗
+    const cached = wx.getStorageSync('lastLocation')
+    if (cached && cached.lat) {
+      this.setData({ latitude: cached.lat, longitude: cached.lng, locationAuthorized: true })
+    }
+  },
+
+  _doGetLocate() {
     wx.getLocation({
       type: 'wgs84',
+      isHighAccuracy: true,
       success: (res) => {
         wx.setStorageSync('lastLocation', { lat: res.latitude, lng: res.longitude })
         this.setData({
@@ -151,12 +160,17 @@ Page({
           locationAuthorized: true,
         })
       },
-      fail: () => this._locFailFallback(cached),
+      fail: () => this._locFailFallback(),
     })
   },
 
-  _locFailFallback(cached) {
-    if (!cached) this.centerOnChina()
+  _locFailFallback() {
+    const cached = wx.getStorageSync('lastLocation')
+    if (cached && cached.lat) {
+      this.setData({ latitude: cached.lat, longitude: cached.lng, locationAuthorized: true })
+    } else {
+      this.centerOnChina()
+    }
   },
 
   centerOnChina() {
