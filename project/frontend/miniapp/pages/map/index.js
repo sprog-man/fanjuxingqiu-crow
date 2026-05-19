@@ -293,136 +293,58 @@ Page({
   startCheckin() {
     console.log('[打卡] 点击打卡按钮')
     this.setData({ formLoading: true })
-
-    wx.getLocation({
-      type: 'wgs84',
-      isHighAccuracy: true,
+    wx.chooseLocation({
       success: (res) => {
         wx.setStorageSync('lastLocation', { lat: res.latitude, lng: res.longitude })
-        wx.setStorageSync('lastLocationTime', Date.now())
-        this.reverseGeocode(res.latitude, res.longitude)
+        const city = this._parseCity(res.address || res.name || '')
+        this.setData({
+          'checkin.city': city,
+          'checkin.province': city,
+          'checkin.lat': res.latitude,
+          'checkin.lng': res.longitude,
+          locInfo: city || (res.address || ''),
+          noPhotos: true, hasPhotos: false, firstPhoto: '',
+          submitBtnText: '✅ 打卡', submitBtnClass: '',
+          formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
+        })
       },
       fail: () => {
-        console.log('[打卡] GPS 定位失败，显示城市列表')
-        this.openCityPicker()
+        this._manualCityInput()
       },
     })
   },
 
-  openCityPicker() {
-    const cities = ['北京','上海','广州','深圳','成都','杭州','重庆','武汉','西安','南京','长沙','天津','苏州','昆明','青岛','厦门','大连','宁波','无锡','合肥','福州','郑州','济南','沈阳','哈尔滨','贵阳','海口','兰州','西宁','拉萨']
-    wx.showActionSheet({
-      itemList: cities,
-      fail: () => { this.openManualCityInput() },
-      success: (res) => {
-        const city = cities[res.tapIndex]
-        this.setData({
-          'checkin.city': city, 'checkin.province': city, locInfo: city,
-          noPhotos: true, hasPhotos: false, firstPhoto: '',
-          formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
-        })
-      },
-    })
-  },
-    const cities = ['北京','上海','广州','深圳','成都','杭州','重庆','武汉','西安','南京','长沙','天津','苏州','昆明','青岛','厦门','大连','宁波','无锡','合肥']
-    wx.showActionSheet({
-      itemList: cities,
-      fail: () => { this.openManualCityInput() },
-      success: (res) => {
-        const city = cities[res.tapIndex]
-        this.setData({
-          'checkin.city': city, 'checkin.province': city, locInfo: city,
-          noPhotos: true, hasPhotos: false, firstPhoto: '',
-          formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
-        })
-      },
-    })
+  _parseCity(str) {
+    if (!str) return ''
+    for (const c of ['北京市','上海市','广州市','深圳市','天津市','重庆市','杭州市','成都市','武汉市','西安市','南京市','长沙市','苏州市','昆明市','青岛市','厦门市']) {
+      if (str.includes(c)) return c.replace('市', '')
+    }
+    for (const c of ['北京','上海','广州','深圳','天津','重庆','杭州','成都','武汉','西安','南京','长沙','苏州','昆明','青岛','厦门']) {
+      if (str.includes(c)) return c
+    }
+    const m = str.match(/([^省]+省|)([^市]+)市/)
+    return m ? m[2] : ''
   },
 
-  openManualCityInput() {
+  _manualCityInput() {
     wx.showModal({
-      title: '手动输入城市名',
-      content: '例如：北京、上海、成都',
+      title: '输入城市名',
+      content: '无法获取位置，请手动输入城市',
       confirmText: '确定',
       editable: true,
       success: (r) => {
         const cityName = (r.content || '').trim()
         if (cityName) {
           this.setData({
-            'checkin.city': cityName,
-            'checkin.province': cityName,
-            locInfo: cityName,
+            'checkin.city': cityName, 'checkin.province': cityName, locInfo: cityName,
             noPhotos: true, hasPhotos: false, firstPhoto: '',
-            formBodyH: this.calcFormBodyH(),
-            formLoading: false,
-            showForm: true,
+            formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
           })
         } else {
           this.setData({ formLoading: false })
         }
       },
       fail: () => { this.setData({ formLoading: false }) },
-    })
-  },
-
-  async reverseGeocode(lat, lng) {
-    console.log('[逆地理编码] 开始:', lat, lng)
-    const serverUrl = this.data.serverUrl || app.getServerUrl()
-
-    wx.request({
-      url: `${serverUrl}/api/map/geocode?lat=${lat}&lng=${lng}`,
-      success: (res) => {
-        if (res.data && res.data.data && res.data.data.city) {
-          const { city, province } = res.data.data
-          this._showFormWithCity(city, province, lat, lng)
-        } else {
-          this._directGeocode(lat, lng)
-        }
-      },
-      fail: () => this._directGeocode(lat, lng),
-    })
-  },
-
-  _directGeocode(lat, lng) {
-    wx.request({
-      url: 'https://apis.map.qq.com/ws/geocoder/v1/',
-      data: { location: lat + ',' + lng, key: '7JTBZ-P2N6W-QNURK-3QKJY-VYAXE-WOFBJ' },
-      success: (res) => {
-        if (res.data && res.data.result) {
-          const addr = res.data.result.address_component
-          const city = addr.city || addr.district || ''
-          const province = addr.province || ''
-          if (city) {
-            this._showFormWithCity(city, province, lat, lng)
-          } else {
-            this._geocodeFailOpenPicker()
-          }
-        } else {
-          this._geocodeFailOpenPicker()
-        }
-      },
-      fail: () => this._geocodeFailOpenPicker(),
-    })
-  },
-
-  _geocodeFailOpenPicker() {
-    wx.showToast({ title: '无法获取城市名，请手动选择', icon: 'none' })
-    setTimeout(() => this.openCityPicker(), 500)
-  },
-
-  _showFormWithCity(city, province, lat, lng) {
-    const fullName = (province ? province + ' ' : '') + (city || lat.toFixed(4) + ', ' + lng.toFixed(4))
-    this.setData({
-      'checkin.city': city || '',
-      'checkin.province': province || '',
-      'checkin.lat': lat,
-      'checkin.lng': lng,
-      locInfo: fullName,
-      noPhotos: true, hasPhotos: false, firstPhoto: '',
-      submitBtnText: '✅ 打卡', submitBtnClass: '',
-      formBodyH: this.calcFormBodyH(),
-      formLoading: false,
-      showForm: true,
     })
   },
 
