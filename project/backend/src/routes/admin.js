@@ -142,26 +142,18 @@ router.delete('/dishes/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// === 菜品图片上传 ===
-const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
-const adminUpload = multer({
-  storage: multer.diskStorage({
-    destination: path.join(__dirname, '../../../uploads/dishes/'),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-      cb(null, crypto.randomUUID() + ext);
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype));
-  },
-});
-router.post('/dishes/upload', adminUpload.single('file'), (req, res) => {
+// === 菜品图片上传（使用 OSS） ===
+const adminUploadMulter = require('multer')();
+router.post('/dishes/upload', adminUploadMulter.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请选择图片' });
-  res.json({ data: { url: '/uploads/dishes/' + req.file.filename } });
+  try {
+    const ossPath = `dishes/${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}.jpg`;
+    const url = await oss.uploadBuffer(req.file.buffer, ossPath);
+    res.json({ data: { url } });
+  } catch (e) {
+    if (e.code === 'OSS_MISCONFIG') return res.status(500).json({ error: e.message });
+    res.status(500).json({ error: '上传失败' });
+  }
 });
 
 // === 一键初始化菜系与菜品 ===

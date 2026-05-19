@@ -231,9 +231,11 @@ async function loadDishes() {
     dishCuisines = d.cuisines || [];
     const items = d.items || [];
 
-    // populate filter + modal selects
+    // populate filter + modal selects (保留当前选中)
+    const prevFilter = document.getElementById('dishCuisineFilter').value;
     const filterSel = document.getElementById('dishCuisineFilter');
     filterSel.innerHTML = '<option value="">全部菜系</option>' + dishCuisines.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    filterSel.value = prevFilter;
 
     const editSel = document.getElementById('dishEditCuisine');
     editSel.innerHTML = '<option value="">选择菜系</option>' + dishCuisines.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -338,14 +340,16 @@ function uploadDishImage(e) {
   if (!file) return;
   const formData = new FormData();
   formData.append('file', file);
-  fetch('/api/admin/dishes/upload', { method: 'POST', body: formData }).then(r => r.json()).then(d => {
+  const headers = {};
+  if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+  fetch('/api/admin/dishes/upload', { method: 'POST', body: formData, headers }).then(r => r.json()).then(d => {
     if (d.data && d.data.url) {
       document.getElementById('dishEditImage').value = d.data.url;
       const preview = document.getElementById('dishEditImagePreview');
       document.getElementById('dishEditImagePreviewImg').src = d.data.url;
       preview.style.display = 'block';
     } else {
-      alert('上传失败');
+      alert('上传失败: ' + (d.error || ''));
     }
   }).catch(() => alert('上传失败'));
 }
