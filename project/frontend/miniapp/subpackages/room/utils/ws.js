@@ -3,13 +3,19 @@ let socketOpen = false;
 let pendingMessages = [];
 let currentRoomCode = '';
 let currentNickname = '';
+let currentAvatar = '';
 let listenersRegistered = false;
 
-function connect(roomCode, nickname) {
+function connect(roomCode, nickname, avatar) {
   currentRoomCode = roomCode || '';
   currentNickname = nickname || '我';
-  const serverUrl = 'ws://localhost:2001';
-  wx.connectSocket({ url: serverUrl });
+  currentAvatar = avatar || '';
+  console.log('[WS] connect 调用 - roomCode:', roomCode, 'nickname:', nickname, 'avatar:', avatar);
+  const app = getApp();
+  const httpUrl = (app && app.getServerUrl) ? app.getServerUrl() : 'http://localhost:2001';
+  const wsUrl = httpUrl.replace(/^http/, 'ws');
+  console.log('[WS] 连接地址:', wsUrl);
+  wx.connectSocket({ url: wsUrl });
 
   if (!listenersRegistered) {
     listenersRegistered = true;
@@ -17,22 +23,31 @@ function connect(roomCode, nickname) {
       socketOpen = true;
       pendingMessages.forEach(msg => wx.sendSocketMessage({ data: msg }));
       pendingMessages = [];
+      const msg = currentRoomCode 
+        ? { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar }
+        : { nickname: currentNickname, avatar: currentAvatar };
+      console.log('[WS] Socket 打开，发送消息:', JSON.stringify(msg));
       if (currentRoomCode) {
-        send('room:join', { roomCode: currentRoomCode, nickname: currentNickname });
+        send('room:join', { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar });
       } else {
-        send('room:create', { nickname: currentNickname });
+        send('room:create', { nickname: currentNickname, avatar: currentAvatar });
       }
     });
     wx.onSocketMessage(res => {
       try {
         const { event, data } = JSON.parse(res.data);
+        console.log('[WS] 收到消息:', event, JSON.stringify(data));
         if (EVENTS[event]) EVENTS[event].forEach(fn => fn(data));
       } catch (e) {}
     });
     wx.onSocketClose(() => {
+      console.log('[WS] Socket 关闭');
       socketOpen = false;
     });
-    wx.onSocketError(() => { socketOpen = false; });
+    wx.onSocketError((err) => { 
+      console.log('[WS] Socket 错误:', err);
+      socketOpen = false; 
+    });
   }
 }
 

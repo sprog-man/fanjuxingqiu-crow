@@ -58,7 +58,8 @@
       <text class="section-title">在线成员（{{members.length}}人）</text>
       <view class="members-row">
         <view wx:for="{{members}}" wx:key="id" class="member-avatar">
-          <view class="ma-circle" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+          <image wx:if="{{item.avatar}}" class="ma-circle-img" src="{{item.avatar}}" mode="aspectFill" />
+          <view wx:else class="ma-circle" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
           <text class="ma-name">{{item.nickname}}</text>
           <text wx:if="{{item.isHost}}" class="ma-host">房主</text>
         </view>
@@ -103,7 +104,8 @@
       <view wx:if="{{drawPhase === 'idle'}}" class="draw-idle">
         <view class="draw-circle">
           <view wx:for="{{members}}" wx:key="id" class="draw-circle-item" style="transform:rotate({{index * 360 / members.length}}deg) translateY(-80px)">
-            <view class="dci-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+            <image wx:if="{{item.avatar}}" class="dci-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+            <view wx:else class="dci-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
             <text class="dci-name">{{item.nickname}}</text>
           </view>
         </view>
@@ -125,7 +127,8 @@
           <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-3"></view>
           <view class="spin-stage" style="transform: rotate({{spinAngle}}deg)">
             <view wx:for="{{members}}" wx:key="id" class="spin-item {{spinPhase === 'cruise' ? 'si-blur' : ''}}" style="transform: rotate({{index * 360 / members.length}}deg) translateY(-{{spinRadius}}px)">
-              <view class="si-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+              <image wx:if="{{item.avatar}}" class="si-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <view wx:else class="si-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
               <text class="si-name">{{item.nickname}}</text>
             </view>
           </view>
@@ -137,7 +140,8 @@
         <view class="eject-stage">
           <view wx:for="{{members}}" wx:key="id" class="eject-item"
                 style="background:{{item.color}};{{ejectStyles[index]}}">
-            <text>{{item.nickname.slice(0,1)}}</text>
+            <image wx:if="{{item.avatar}}" class="eject-item-img" src="{{item.avatar}}" mode="aspectFill" />
+            <text wx:else>{{item.nickname.slice(0,1)}}</text>
           </view>
         </view>
         <text class="eject-label">{{ejectLabel}}</text>

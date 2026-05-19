@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   preference_tags: { type: String, default: '{}' },
   friend_ids: [{ type: String }],
+  buddy_id: { type: String, unique: true, sparse: true },
 }, { timestamps: true });
+
+userSchema.index({ nickname: 1 });
 
 module.exports = mongoose.model('User', userSchema);

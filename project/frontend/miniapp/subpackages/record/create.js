@@ -117,13 +117,13 @@ Page({
   showBuddyPicker() {
     this.setData({
       showBuddyModal: true, buddySearch: '',
-      filteredBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.form.participants),
+      filteredBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.form.participants),
     })
   },
   closeBuddyPicker() { this.setData({ showBuddyModal: false }) },
   onBuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.data.form.participants)
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.form.participants)
     this.setData({ buddySearch: q, filteredBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickBuddy(e) {
@@ -189,8 +189,13 @@ Page({
 
       // Create on server with real photo URLs
       wx.request({
-        url: self.data.serverUrl + '/api/gathering/create',
-        method: 'POST', data: record, timeout: 3000,
+        url: app.globalData.serverUrl + '/api/gathering/create',
+        method: 'POST',
+        data: record,
+        header: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 3000,
       })
 
       wx.hideLoading()

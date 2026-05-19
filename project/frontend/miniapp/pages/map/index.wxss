@@ -465,12 +465,43 @@
 
 .ce-card {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 12px 0;
   border-bottom: 1px solid #f5f5f5;
 }
 
 .ce-card:last-child { border-bottom: none; }
+
+.ce-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.ce-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ce-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5f5f5;
+}
+
+.ce-action-delete {
+  background: #fff0f0;
+}
+
+.ce-action-icon {
+  font-size: 14px;
+}
 
 .ce-card-date {
   flex-shrink: 0;

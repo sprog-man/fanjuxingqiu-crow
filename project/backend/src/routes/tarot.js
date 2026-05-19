@@ -146,7 +146,12 @@ router.post('/draw', async (req, res) => {
     return res.status(400).json({ error: '请选择分类' });
   }
 
-  let dishes = await Dish.find({ cuisineId, enabled: true }).lean();
+  let dishes;
+  if (userId) {
+    dishes = await Dish.find({ cuisineId, enabled: true, $or: [{ openid: '' }, { openid: userId }] }).lean();
+  } else {
+    dishes = await Dish.find({ cuisineId, enabled: true }).lean();
+  }
   if (dishes.length === 0) {
     dishes = (defaultDishes[cuisineId] || []).map(d => ({
       name: d.name,
@@ -190,15 +195,16 @@ router.post('/draw', async (req, res) => {
 });
 
 router.get('/dishes', async (req, res) => {
-  const { cuisineId } = req.query;
-  console.log('GET /dishes cuisineId:', cuisineId);
+  const { cuisineId, openid } = req.query;
+  console.log('GET /dishes cuisineId:', cuisineId, 'openid:', openid);
   try {
     let dishes;
-    if (cuisineId) {
-      dishes = await Dish.find({ cuisineId, enabled: true }).lean();
-    } else {
-      dishes = await Dish.find({ enabled: true }).lean();
+    const filter = { enabled: true };
+    if (cuisineId) filter.cuisineId = cuisineId;
+    if (openid) {
+      filter.$or = [{ openid: '' }, { openid }];
     }
+    dishes = await Dish.find(filter).lean();
     console.log('Dishes found:', dishes.length);
     res.json({ data: dishes });
   } catch (e) {
@@ -208,13 +214,13 @@ router.get('/dishes', async (req, res) => {
 });
 
 router.post('/dishes', async (req, res) => {
-  const { name, cuisineId, image, tags, description } = req.body;
+  const { name, cuisineId, openid, image, tags, description } = req.body;
   console.log('POST /dishes received:', req.body);
   if (!name || !cuisineId) {
     return res.status(400).json({ error: '名称和分类必填' });
   }
   try {
-    const dish = await Dish.create({ name, cuisineId, image: image || '', tags: tags || [], description: description || '' });
+    const dish = await Dish.create({ name, cuisineId, openid: openid || '', image: image || '', tags: tags || [], description: description || '' });
     console.log('Dish created:', dish);
     res.json({ data: dish });
   } catch (e) {
@@ -225,6 +231,12 @@ router.post('/dishes', async (req, res) => {
 
 router.delete('/dishes/:id', async (req, res) => {
   try {
+    const { openid } = req.query;
+    const dish = await Dish.findById(req.params.id);
+    if (!dish) return res.status(404).json({ error: '菜品不存在' });
+    if (dish.openid && dish.openid !== openid) {
+      return res.status(403).json({ error: '无权删除此菜品' });
+    }
     await Dish.findByIdAndDelete(req.params.id);
     res.json({ data: { ok: true } });
   } catch (e) {
@@ -233,17 +245,21 @@ router.delete('/dishes/:id', async (req, res) => {
 });
 
 router.put('/dishes/:id', async (req, res) => {
-  const { name, cuisineId, image, tags, description } = req.body;
+  const { name, cuisineId, openid, image, tags, description } = req.body;
   if (!name || !cuisineId) {
     return res.status(400).json({ error: '名称和分类必填' });
   }
   try {
+    const existing = await Dish.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: '菜品不存在' });
+    if (existing.openid && existing.openid !== openid) {
+      return res.status(403).json({ error: '无权修改此菜品' });
+    }
     const dish = await Dish.findByIdAndUpdate(
       req.params.id,
-      { name, cuisineId, image: image || '', tags: tags || [], description: description || '' },
+      { name, cuisineId, openid: openid || '', image: image || '', tags: tags || [], description: description || '' },
       { new: true }
     );
-    if (!dish) return res.status(404).json({ error: '菜品不存在' });
     res.json({ data: dish });
   } catch (e) {
     res.status(500).json({ error: '修改失败' });
@@ -269,6 +285,7 @@ router.post('/seed', async (req, res) => {
           allDishes.push({
             name: d.name,
             cuisineId,
+            openid: '',
             tags: d.tags,
             description: d.description,
           });

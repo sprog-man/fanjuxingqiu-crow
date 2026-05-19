@@ -3,13 +3,17 @@ const app = getApp()
 // 图片 OSS 远程地址（移出代码包以减小主包体积）
 const IMG_BASE = 'https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com/tarot'
 
-function request(url, method = 'GET', data = {}) {
+function request(path, method = 'GET', data = {}) {
   return new Promise((resolve, reject) => {
+    const app = getApp()
+    const serverUrl = app.globalData.serverUrl || 'http://localhost:2001'
     wx.request({
-      url,
+      url: serverUrl + path,
       method,
       data,
-      timeout: 5000,
+      header: {
+        'Content-Type': 'application/json'
+      },
       success: (res) => resolve(res.data),
       fail: (err) => reject(err)
     })
@@ -74,7 +78,7 @@ Page({
     cards: [],
     flippedCount: 0,
     showResult: false,
-    serverUrl: 'http://localhost:2001',
+    serverUrl: app.globalData.serverUrl || 'http://localhost:2001',
     backImages: [
       IMG_BASE + '/back/back-1.png',
       IMG_BASE + '/back/back-2.png',
@@ -112,15 +116,21 @@ Page({
   stop() {},
 
   onLoad() {
-    this.setData({ serverUrl: app.getServerUrl() })
     this.fetchCategories()
   },
 
   async fetchCategories() {
     try {
-      const res = await request(this.data.serverUrl + '/api/tarot/categories')
+      const res = await request('/api/tarot/categories')
       if (res && res.data && res.data.length > 0) {
-        this.setData({ categories: res.data })
+        const categories = res.data.map(c => {
+          let tarotCover = c.tarotCover || ''
+          if (tarotCover && !tarotCover.startsWith('http')) {
+            tarotCover = IMG_BASE + tarotCover.replace('/images/tarot', '')
+          }
+          return { ...c, tarotCover }
+        })
+        this.setData({ categories })
       }
     } catch (e) {
       console.log('使用本地分类数据')
@@ -146,8 +156,8 @@ Page({
       drawnDishes: [],
     })
 
-    this.initCards()
     await this.fetchCategoryDishes(id)
+    this.initCards()
   },
 
   initCards() {
@@ -207,22 +217,13 @@ Page({
 
   async pickUniqueDish(cuisineId) {
     const drawnNames = this.data.drawnDishes
-    let pool = []
-
-    try {
-      const res = await request(this.data.serverUrl + '/api/tarot/dishes', 'GET', { cuisineId })
-      if (res && res.data && res.data.length > 0) {
-        pool = res.data.map(d => ({
-          ...d,
-          image: d.image && d.image.startsWith('/uploads/') ? this.data.serverUrl + d.image : d.image,
-        }))
-      }
-    } catch (e) {}
+    let pool = [...this.data.allDishes]
 
     if (pool.length === 0) {
       const localNames = defaultDishes[cuisineId] || ['神秘菜品']
       const localTags = dishTags[cuisineId] || []
       pool = localNames.map((name, i) => ({
+        _uid: 'local_' + cuisineId + '_' + i,
         name,
         cuisineId,
         tags: [localTags[i % localTags.length]],
@@ -233,8 +234,9 @@ Page({
 
     const available = pool.filter(d => !drawnNames.includes(d.name))
     if (available.length === 0) {
-      const fallback = pool[Math.floor(Math.random() * pool.length)]
-      return { ...fallback }
+      this.setData({ drawnDishes: [] })
+      const picked = pool[Math.floor(Math.random() * pool.length)]
+      return { ...picked }
     }
 
     const picked = available[Math.floor(Math.random() * available.length)]
@@ -512,6 +514,7 @@ Page({
     const dishData = {
       name,
       cuisineId: this.data.selectedCategory.id,
+      openid: app.getOpenid(),
       description: this.data.newDishDesc,
       tags: this.data.newDishTags,
       image: imageUrl,
@@ -519,11 +522,11 @@ Page({
 
     try {
       if (this.data.editingDishId) {
-        await request(this.data.serverUrl + '/api/tarot/dishes/' + this.data.editingDishId, 'PUT', dishData)
+        await request('/api/tarot/dishes/' + this.data.editingDishId, 'PUT', dishData)
         wx.hideLoading()
         wx.showToast({ title: '修改成功', icon: 'success' })
       } else {
-        await request(this.data.serverUrl + '/api/tarot/dishes', 'POST', dishData)
+        await request('/api/tarot/dishes', 'POST', dishData)
         wx.hideLoading()
         wx.showToast({ title: '添加成功', icon: 'success' })
       }
@@ -548,7 +551,8 @@ Page({
   async fetchCategoryDishes(cuisineId) {
     let dbDishes = []
     try {
-      const res = await request(this.data.serverUrl + '/api/tarot/dishes', 'GET', { cuisineId })
+      const openid = app.getOpenid()
+      const res = await request('/api/tarot/dishes', 'GET', { cuisineId, openid })
       if (res && res.data && Array.isArray(res.data)) {
         dbDishes = res.data.map(d => ({
           ...d,
@@ -561,17 +565,7 @@ Page({
       console.error('fetch dishes failed:', e)
     }
 
-    const localDishes = (defaultDishes[cuisineId] || []).map((name, i) => ({
-      _uid: 'local_' + cuisineId + '_' + i,
-      name,
-      cuisineId,
-      tags: dishTags[cuisineId] ? [dishTags[cuisineId][i % dishTags[cuisineId].length]] : [],
-      description: '',
-      image: '',
-      _local: true,
-    }))
-
-    const allDishes = [...dbDishes, ...localDishes]
+    const allDishes = dbDishes
     const hasDishes = allDishes.length > 0
     const tagSet = new Set()
     allDishes.forEach(d => (d.tags || []).forEach(t => tagSet.add(t)))
@@ -586,18 +580,22 @@ Page({
     const dish = this.data.allDishes.find(d => d._id === id || d._uid === id)
     if (!dish) return
 
-    if (dish._local) {
-      wx.showToast({ title: '系统预设不可删除', icon: 'none' })
-      return
-    }
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除「${dish.name}」吗？`,
+      success: async (res) => {
+        if (!res.confirm) return
 
-    try {
-      await request(this.data.serverUrl + '/api/tarot/dishes/' + id, 'DELETE')
-      wx.showToast({ title: '已删除', icon: 'success' })
-      await this.fetchCategoryDishes(this.data.selectedCategory.id)
-    } catch (e) {
-      wx.showToast({ title: '删除失败', icon: 'none' })
-    }
+        try {
+          const openid = app.getOpenid()
+          await request('/api/tarot/dishes/' + (dish._id || id) + '?openid=' + encodeURIComponent(openid), 'DELETE')
+          wx.showToast({ title: '已删除', icon: 'success' })
+          await this.fetchCategoryDishes(this.data.selectedCategory.id)
+        } catch (e) {
+          wx.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    })
   },
 
   editDish(e) {
@@ -605,25 +603,10 @@ Page({
     const dish = this.data.allDishes.find(d => d._id === id || d._uid === id)
     if (!dish) return
 
-    if (dish._local) {
-      this.setData({
-        showAddDish: true,
-        showManageDish: false,
-        editingDishId: null,
-        newDishName: dish.name,
-        newDishDesc: dish.description || '',
-        newDishTags: dish.tags || [],
-        newDishImage: dish.image || '',
-        newDishImagePath: '',
-        customTagInput: '',
-      })
-      return
-    }
-
     this.setData({
       showAddDish: true,
       showManageDish: false,
-      editingDishId: id,
+      editingDishId: dish._id || null,
       newDishName: dish.name,
       newDishDesc: dish.description || '',
       newDishTags: dish.tags || [],
@@ -631,5 +614,14 @@ Page({
       newDishImagePath: '',
       customTagInput: '',
     })
+  },
+
+  onCoverError(e) {
+    const { index } = e.currentTarget.dataset
+    const categories = [...this.data.categories]
+    if (categories[index]) {
+      categories[index].tarotCover = ''
+      this.setData({ categories })
+    }
   },
 })

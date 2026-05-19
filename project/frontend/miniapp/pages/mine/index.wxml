@@ -1,12 +1,19 @@
 <view class="page">
   <view class="profile-header">
-    <view class="avatar" bindtap="doLogin">
-      <image wx:if="{{userInfo && userInfo.avatar_url}}" class="avatar-img" src="{{userInfo.avatar_url}}" mode="aspectFill"></image>
-      <text wx:else class="avatar-placeholder">{{userInfo ? userInfo.nickname.slice(0,1) : '👤'}}</text>
+    <view class="avatar" wx:if="{{userInfo}}">
+      <image class="avatar-img" src="{{userInfo.avatar_url}}" mode="aspectFill"></image>
     </view>
-    <text class="nickname" bindtap="doLogin">{{userInfo ? userInfo.nickname : '点击登录'}}</text>
+    <view class="avatar" wx:else>
+      <text class="avatar-placeholder">👤</text>
+    </view>
+    <text class="nickname" wx:if="{{userInfo}}">{{userInfo.nickname}}</text>
+    <text class="nickname" wx:else>未登录</text>
+    <text class="buddy-id-label" wx:if="{{userInfo && userInfo.buddy_id}}">{{'饭搭子ID: ' + userInfo.buddy_id}}</text>
     <text class="bio">{{userInfo ? '已登录' : '登录后享受完整功能'}}</text>
+    
+    <button wx:if="{{!userInfo}}" class="login-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">微信一键登录</button>
   </view>
+  
   <view class="menu-list">
     <view class="menu-item" bindtap="goRelation">
       <text class="menu-icon">🔗</text>
@@ -28,5 +35,15 @@
       <text class="menu-name" style="color:#e55">退出登录</text>
       <text class="menu-arrow">›</text>
     </view>
+  </view>
+</view>
+
+<view class="login-modal" wx:if="{{showLoginModal}}">
+  <view class="modal-mask" bindtap="closeLoginModal"></view>
+  <view class="modal-content">
+    <text class="modal-title">完善您的信息</text>
+    <image class="avatar-preview-large" src="{{tempAvatar}}" mode="aspectFill"></image>
+    <input class="nickname-input" type="nickname" placeholder="输入您的昵称" bindblur="onNicknameInput" focus="{{true}}" />
+    <button class="confirm-login-btn" bindtap="doLogin">确认登录</button>
   </view>
 </view>

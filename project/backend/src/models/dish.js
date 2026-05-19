@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dishSchema = new mongoose.Schema({
   name: { type: String, required: true },
   cuisineId: { type: String, required: true, index: true },
+  openid: { type: String, default: '', index: true },
   image: { type: String, default: '' },
   tags: [{ type: String }],
   description: { type: String, default: '' },
@@ -11,5 +12,6 @@ const dishSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 dishSchema.index({ cuisineId: 1, enabled: 1 });
+dishSchema.index({ cuisineId: 1, openid: 1 });
 
 module.exports = mongoose.model('Dish', dishSchema);

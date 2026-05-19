@@ -143,7 +143,11 @@
         <view wx:for="{{filteredBuddies}}" wx:key="id" class="buddy-pick-item" data-name="{{item.name}}" bindtap="pickBuddy">
           <view wx:if="{{!item._avatarUrl}}" class="bp-avatar" style="background:{{item.color}}">{{item.name.slice(0,1)}}</view>
           <image wx:else class="bp-avatar-img" src="{{item._avatarUrl}}" mode="aspectFill"></image>
-          <text class="bp-name">{{item.name}}</text>
+          <view class="bp-info-col">
+            <text class="bp-name">{{item.name}}</text>
+            <text class="bp-status">已互为饭搭子</text>
+            <text class="bp-buddy-id" wx:if="{{item.buddy_id}}">{{'ID: ' + item.buddy_id}}</text>
+          </view>
           <text wx:if="{{item.phone}}" class="bp-phone">{{item.phone}}</text>
           <text wx:if="{{!item.added}}" class="bp-add">+</text>
           <text wx:if="{{item.added}}" class="bp-added">已添加</text>
