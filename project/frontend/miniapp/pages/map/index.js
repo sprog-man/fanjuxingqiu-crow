@@ -1,5 +1,6 @@
 const app = getApp()
-const citySelector = requirePlugin('citySelector')
+let citySelector = null
+try { citySelector = requirePlugin('citySelector') } catch (e) {}
 
 Page({
   data: {
@@ -53,11 +54,6 @@ Page({
     locationAuthorized: false,
     locating: false,
 
-    // City selector
-    showCitySelector: false,
-    tencentMapKey: 'DMMBZ-JWCKI-VHEGO-UCKRA-ZKTA7-KMFCF',
-    tencentMapReferer: '饭局星球',
-
     // Edit mode
     editingId: '',
     isEditMode: false,
@@ -71,47 +67,36 @@ Page({
     this.fetchFootprints()
     this.fetchAchievements()
     this.fetchCheckins()
-    this._useCachedLoc() // 仅用缓存，不弹权限；用户点 📍 按钮触发真实定位
+    this._useCachedLoc()
 
-    // 从城市选择器插件返回后获取城市信息
-    const selectedCity = citySelector.getCity()
-    if (selectedCity) {
-      console.log('[城市选择器] 选择的城市:', JSON.stringify(selectedCity))
-      this.handleCitySelected(selectedCity)
-      citySelector.clearCity()
+    if (citySelector) {
+      const selectedCity = citySelector.getCity()
+      if (selectedCity && selectedCity.location) {
+        this.handleCitySelected(selectedCity)
+        citySelector.clearCity()
+      } else if (selectedCity && selectedCity.errMsg === 'cancel') {
+        citySelector.clearCity()
+      }
     }
   },
 
   onUnload() {
-    citySelector.clearCity()
+    if (citySelector) citySelector.clearCity()
   },
 
   handleCitySelected(cityInfo) {
     if (!cityInfo || !cityInfo.location) return
-    
-    const lat = cityInfo.location.latitude
-    const lng = cityInfo.location.longitude
-    const cityName = cityInfo.name || ''
-    const fullName = cityInfo.fullname || ''
-    
-    console.log('[城市选择器] 处理城市选择:', cityName, lat, lng)
-    
     this.setData({
-      'checkin.city': cityName,
-      'checkin.province': fullName,
-      'checkin.lat': lat,
-      'checkin.lng': lng,
-      locInfo: fullName,
-      noPhotos: true,
-      hasPhotos: false,
-      firstPhoto: '',
-      submitBtnText: '✅ 打卡',
-      submitBtnClass: '',
-      formBodyH: this.calcFormBodyH(),
-      formLoading: false,
-      showForm: true,
+      'checkin.city': cityInfo.name || '',
+      'checkin.province': cityInfo.fullname || '',
+      'checkin.lat': cityInfo.location.latitude,
+      'checkin.lng': cityInfo.location.longitude,
+      locInfo: cityInfo.fullname || cityInfo.name || '',
+      noPhotos: true, hasPhotos: false, firstPhoto: '',
+      submitBtnText: '✅ 打卡', submitBtnClass: '',
+      formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
     })
-    wx.setStorageSync('lastLocation', { lat, lng })
+    wx.setStorageSync('lastLocation', { lat: cityInfo.location.latitude, lng: cityInfo.location.longitude })
   },
 
   /* ===== Location ===== */
@@ -336,45 +321,111 @@ Page({
   startCheckin() {
     console.log('[打卡] 点击打卡按钮')
     this.setData({ formLoading: true })
-    
-    // 优先使用缓存的位置（避免频繁调用 wx.getLocation 导致权限问题）
-    const cached = wx.getStorageSync('lastLocation')
-    console.log('[打卡] 缓存位置:', cached)
-    if (cached && cached.lat && cached.lng) {
-      // 检查缓存是否过期（30分钟内有效）
-      const cacheTime = wx.getStorageSync('lastLocationTime') || 0
-      const now = Date.now()
-      console.log('[打卡] 缓存时间:', now - cacheTime, 'ms')
-      if (now - cacheTime < 30 * 60 * 1000) {
-        console.log('[打卡] 使用缓存位置:', cached)
-        this.reverseGeocode(cached.lat, cached.lng)
-        return
-      }
-    }
 
-    // 缓存过期或不存在，使用腾讯地图城市选择器插件
-    console.log('[打卡] 打开腾讯地图城市选择器')
-    this.openCitySelector()
+    wx.getLocation({
+      type: 'wgs84',
+      isHighAccuracy: true,
+      success: (res) => {
+        wx.setStorageSync('lastLocation', { lat: res.latitude, lng: res.longitude })
+        wx.setStorageSync('lastLocationTime', Date.now())
+        this.reverseGeocode(res.latitude, res.longitude)
+      },
+      fail: () => {
+        console.log('[打卡] GPS 定位失败，显示城市列表')
+        this.openCityPicker()
+      },
+    })
   },
 
-  openCitySelector() {
-    const { tencentMapKey, tencentMapReferer } = this.data
-    wx.navigateTo({
-      url: `plugin://citySelector/index?key=${tencentMapKey}&referer=${tencentMapReferer}&accurate=1`,
-      fail: (err) => {
-        console.error('[城市选择器] 打开失败:', err)
-        wx.showToast({ title: '定位服务不可用', icon: 'none' })
-        this.setData({ formLoading: false })
-        this.openFormManually()
-      }
+  openCityPicker() {
+    if (citySelector) {
+      wx.navigateTo({
+        url: `plugin://citySelector/index?key=7JTBZ-P2N6W-QNURK-3QKJY-VYAXE-WOFBJ&referer=饭局星球&accurate=1`,
+        fail: () => this._showNativeCityPicker(),
+      })
+    } else {
+      this._showNativeCityPicker()
+    }
+  },
+
+  _showNativeCityPicker() {
+    const cities = ['北京','上海','广州','深圳','成都','杭州','重庆','武汉','西安','南京','长沙','天津','苏州','昆明','青岛','厦门','大连','宁波','无锡','合肥']
+    wx.showActionSheet({
+      itemList: cities,
+      fail: () => { this.openManualCityInput() },
+      success: (res) => {
+        const city = cities[res.tapIndex]
+        this.setData({
+          'checkin.city': city, 'checkin.province': city, locInfo: city,
+          noPhotos: true, hasPhotos: false, firstPhoto: '',
+          formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
+        })
+      },
+    })
+  },
+
+  openManualCityInput() {
+    wx.showModal({
+      title: '手动输入城市名',
+      content: '例如：北京、上海、成都',
+      confirmText: '确定',
+      editable: true,
+      success: (r) => {
+        const cityName = (r.content || '').trim()
+        if (cityName) {
+          this.setData({
+            'checkin.city': cityName,
+            'checkin.province': cityName,
+            locInfo: cityName,
+            noPhotos: true, hasPhotos: false, firstPhoto: '',
+            formBodyH: this.calcFormBodyH(),
+            formLoading: false,
+            showForm: true,
+          })
+        } else {
+          this.setData({ formLoading: false })
+        }
+      },
+      fail: () => { this.setData({ formLoading: false }) },
     })
   },
 
   async reverseGeocode(lat, lng) {
     console.log('[逆地理编码] 开始:', lat, lng)
-    
-    // 使用腾讯地图城市选择器插件获取地址信息
-    this.openCitySelector()
+    const serverUrl = this.data.serverUrl || app.getServerUrl()
+
+    wx.request({
+      url: `${serverUrl}/api/map/geocode?lat=${lat}&lng=${lng}`,
+      success: (res) => {
+        if (res.data && res.data.data && res.data.data.city) {
+          const { city, province } = res.data.data
+          this._showFormWithCity(city, province, lat, lng)
+        } else {
+          console.warn('[逆地理编码] 服务器返回无效')
+          this._showFormWithCity('', '', lat, lng)
+        }
+      },
+      fail: () => {
+        console.warn('[逆地理编码] 请求失败')
+        this._showFormWithCity('', '', lat, lng)
+      },
+    })
+  },
+
+  _showFormWithCity(city, province, lat, lng) {
+    const fullName = (province ? province + ' ' : '') + (city || lat.toFixed(4) + ', ' + lng.toFixed(4))
+    this.setData({
+      'checkin.city': city || '',
+      'checkin.province': province || '',
+      'checkin.lat': lat,
+      'checkin.lng': lng,
+      locInfo: fullName,
+      noPhotos: true, hasPhotos: false, firstPhoto: '',
+      submitBtnText: '✅ 打卡', submitBtnClass: '',
+      formBodyH: this.calcFormBodyH(),
+      formLoading: false,
+      showForm: true,
+    })
   },
 
   calcFormBodyH() {
