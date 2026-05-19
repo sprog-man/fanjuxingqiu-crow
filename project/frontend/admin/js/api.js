@@ -362,6 +362,7 @@ async function clearUserDishes() {
   try {
     const d = await api('/api/admin/dishes/clear-user', { method: 'DELETE' });
     alert(`已清除 ${d.data.deleted} 道用户菜品`);
+    await loadDishes();
   } catch (e) {
     alert('清除失败: ' + e.message);
   }
