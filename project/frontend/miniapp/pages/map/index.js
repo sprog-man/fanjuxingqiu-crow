@@ -401,14 +401,28 @@ Page({
           const { city, province } = res.data.data
           this._showFormWithCity(city, province, lat, lng)
         } else {
-          console.warn('[逆地理编码] 服务器返回无效')
+          this._directGeocode(lat, lng)
+        }
+      },
+      fail: () => this._directGeocode(lat, lng),
+    })
+  },
+
+  _directGeocode(lat, lng) {
+    wx.request({
+      url: 'https://apis.map.qq.com/ws/geocoder/v1/',
+      data: { location: lat + ',' + lng, key: '7JTBZ-P2N6W-QNURK-3QKJY-VYAXE-WOFBJ' },
+      success: (res) => {
+        if (res.data && res.data.result) {
+          const addr = res.data.result.address_component
+          const city = addr.city || addr.district || ''
+          const province = addr.province || ''
+          this._showFormWithCity(city, province, lat, lng)
+        } else {
           this._showFormWithCity('', '', lat, lng)
         }
       },
-      fail: () => {
-        console.warn('[逆地理编码] 请求失败')
-        this._showFormWithCity('', '', lat, lng)
-      },
+      fail: () => this._showFormWithCity('', '', lat, lng),
     })
   },
 

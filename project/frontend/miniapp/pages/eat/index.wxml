@@ -257,8 +257,11 @@
             </view>
           </view>
           <view class="manage-item-actions">
-            <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
-            <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
+            <text wx:if="{{item.type === 'system'}}" class="system-badge">系统预设</text>
+            <block wx:else>
+              <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
+              <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
+            </block>
           </view>
         </view>
       </scroll-view>

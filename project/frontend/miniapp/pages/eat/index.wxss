@@ -891,6 +891,15 @@
   border: 1px solid rgba(216, 90, 48, 0.3);
 }
 
+.system-badge {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
 .manage-item-left {
   display: flex;
   align-items: center;
@@ -994,6 +1003,15 @@
   background: rgba(216, 90, 48, 0.15);
   color: #d85a30;
   border: 1px solid rgba(216, 90, 48, 0.3);
+}
+
+.system-badge {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .form-group {
