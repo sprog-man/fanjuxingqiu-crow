@@ -598,6 +598,30 @@ Page({
     })
   },
 
+  async clearCategoryDishes() {
+    const cat = this.data.selectedCategory
+    if (!cat) return
+    wx.showModal({
+      title: '清空本菜系菜品',
+      content: `确定要清空「${cat.name}」中所有你添加的菜品吗？系统预设菜品不受影响。`,
+      success: async (res) => {
+        if (!res.confirm) return
+        wx.showLoading({ title: '清空中...' })
+        try {
+          const openid = app.getOpenid()
+          const r = await request('/api/tarot/dishes/clear?cuisineId=' + cat.id + '&openid=' + encodeURIComponent(openid), 'DELETE')
+          wx.hideLoading()
+          wx.showToast({ title: `已清空 ${r.data.deleted} 道菜品`, icon: 'success' })
+          await this.fetchCategoryDishes(cat.id)
+          this.applyManageFilter()
+        } catch (e) {
+          wx.hideLoading()
+          wx.showToast({ title: '清空失败', icon: 'none' })
+        }
+      },
+    })
+  },
+
   editDish(e) {
     const { id } = e.currentTarget.dataset
     const dish = this.data.allDishes.find(d => d._id === id || d._uid === id)
