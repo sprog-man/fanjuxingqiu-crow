@@ -62,6 +62,7 @@ document.getElementById('adminLayout').addEventListener('click', (e) => {
   if (nav.dataset.page === 'dashboard') loadDashboard();
   if (nav.dataset.page === 'gatherings') loadGatherings();
   if (nav.dataset.page === 'users') loadUsers();
+  if (nav.dataset.page === 'dishes') loadDishes();
 });
 
 // === Dashboard ===
@@ -76,7 +77,8 @@ async function loadDashboard() {
       <td>${g.totalCost}元</td><td>${(g.participants || []).join(', ')}</td>
     </tr>`).join('');
   } catch (e) {
-    document.getElementById('recentBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e55;padding:24px">加载失败</td></tr>';
+    console.error('loadUserTable error:', e);
+    document.getElementById('usersBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e55;padding:24px">加载失败</td></tr>';
   }
 }
 
@@ -195,19 +197,19 @@ async function loadUserTable() {
     const d = await api('/api/admin/users');
     const items = d.items || [];
     if (items.length === 0) {
-      document.getElementById('usersBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ccc;padding:24px">暂无用户</td></tr>';
+      document.getElementById('usersBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ccc;padding:24px">暂无用户</td></tr>';
       return;
     }
     document.getElementById('usersBody').innerHTML = items.map(u => `<tr>
       <td>${u.nickname || '-'}</td>
       <td style="font-size:11px;color:#999">${u.openid || '-'}</td>
       <td>${u.avatar_url ? '<img src="'+u.avatar_url+'" style="width:28px;height:28px;border-radius:50%">' : '-'}</td>
-      <td>${(u.preference_tags || []).map(t => `<span class="badge">${t}</span>`).join('') || '-'}</td>
       <td>${(u.friend_ids || []).length}</td>
       <td>${fmtDate(u.createdAt)}</td>
     </tr>`).join('');
   } catch (e) {
-    document.getElementById('usersBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e55;padding:24px">加载失败</td></tr>';
+    console.error('loadUserTable error:', e);
+    document.getElementById('usersBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e55;padding:24px">加载失败</td></tr>';
   }
 }
 
@@ -215,4 +217,139 @@ function fmtDate(d) {
   if (!d) return '-';
   const dt = new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+// === Dishes ===
+let dishEditId = null;
+let dishCuisines = [];
+
+async function loadDishes() {
+  try {
+    const d = await api('/api/admin/dishes');
+    dishCuisines = d.cuisines || [];
+    const items = d.items || [];
+
+    // populate filter + modal selects
+    const filterSel = document.getElementById('dishCuisineFilter');
+    filterSel.innerHTML = '<option value="">全部菜系</option>' + dishCuisines.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    const editSel = document.getElementById('dishEditCuisine');
+    editSel.innerHTML = '<option value="">选择菜系</option>' + dishCuisines.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    if (items.length === 0) {
+      document.getElementById('dishesBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ccc;padding:24px">暂无公共菜品</td></tr>';
+      return;
+    }
+    document.getElementById('dishesBody').innerHTML = items.map(d => {
+      const cname = dishCuisines.find(c => c.id === d.cuisineId);
+      return `<tr>
+        <td>${cname ? cname.name : d.cuisineId}</td>
+        <td>${d.name}</td>
+        <td>${(d.tags || []).map(t => `<span class="badge">${t}</span>`).join('')}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.description || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editDish('${d._id}')">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteDish('${d._id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('dishesBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e55;padding:24px">加载失败</td></tr>';
+  }
+}
+
+function showAddDish() {
+  dishEditId = null;
+  document.getElementById('dishModalTitle').textContent = '新增公共菜品';
+  document.getElementById('dishEditName').value = '';
+  document.getElementById('dishEditTags').value = '';
+  document.getElementById('dishEditDesc').value = '';
+  document.getElementById('dishEditCuisine').value = '';
+  document.getElementById('dishModal').style.display = 'flex';
+}
+
+function editDish(id) {
+  dishEditId = id;
+  const row = document.getElementById('dishesBody').querySelector(`button[onclick*="'${id}'"]`);
+  // fetch dish data from the table row
+  const tr = row ? row.closest('tr') : null;
+  if (!tr) return;
+  const cells = tr.querySelectorAll('td');
+  if (cells.length < 4) return;
+  const cuisineText = cells[0].textContent.trim();
+  const nameText = cells[1].textContent.trim();
+  const tagsText = cells[2].textContent.trim();
+  const descText = cells[3].textContent.trim();
+
+  document.getElementById('dishModalTitle').textContent = '编辑菜品';
+  document.getElementById('dishEditName').value = nameText;
+  document.getElementById('dishEditTags').value = tagsText;
+  document.getElementById('dishEditDesc').value = descText;
+  // find cuisine id by name
+  const matched = dishCuisines.find(c => c.name === cuisineText);
+  document.getElementById('dishEditCuisine').value = matched ? matched.id : '';
+  document.getElementById('dishModal').style.display = 'flex';
+}
+
+function closeDishModal(e) {
+  if (e && e.target !== document.getElementById('dishModal')) return;
+  document.getElementById('dishModal').style.display = 'none';
+}
+
+async function saveDish() {
+  const name = document.getElementById('dishEditName').value.trim();
+  const cuisineId = document.getElementById('dishEditCuisine').value;
+  const tagsStr = document.getElementById('dishEditTags').value.trim();
+  const description = document.getElementById('dishEditDesc').value.trim();
+
+  if (!name || !cuisineId) {
+    alert('请填写菜品名称并选择菜系');
+    return;
+  }
+
+  const tags = tagsStr ? tagsStr.split(/[,，、\s]+/).filter(Boolean) : [];
+
+  try {
+    if (dishEditId) {
+      await api('/api/admin/dishes/' + dishEditId, {
+        method: 'PUT',
+        body: JSON.stringify({ name, cuisineId, tags, description }),
+      });
+    } else {
+      await api('/api/admin/dishes', {
+        method: 'POST',
+        body: JSON.stringify({ name, cuisineId, tags, description }),
+      });
+    }
+    document.getElementById('dishModal').style.display = 'none';
+    await loadDishes();
+  } catch (e) {
+    alert('保存失败: ' + e.message);
+  }
+}
+
+async function initDishes() {
+  if (!confirm('将初始化6个菜系并为每个菜系创建12个示例菜品，继续吗？')) return;
+  const btn = document.querySelector('button[onclick="initDishes()"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '初始化中...';
+  try {
+    const d = await api('/api/admin/dishes/init', { method: 'POST' });
+    alert(d.data.message);
+    await loadDishes();
+  } catch (e) {
+    alert('初始化失败: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+async function deleteDish(id) {
+  if (!confirm('确定要删除这个公共菜品吗？')) return;
+  try {
+    await api('/api/admin/dishes/' + id, { method: 'DELETE' });
+    await loadDishes();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
 }

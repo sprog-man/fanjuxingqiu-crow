@@ -47,6 +47,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica
 /* Buttons */
 .btn { display: inline-block; padding: 8px 20px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; background: #e8e8e8; color: #333; }
 .btn-primary { background: #D85A30; color: #fff; }
+.btn-secondary { background: #534AB7; color: #fff; }
 .btn-danger { background: #e55; color: #fff; }
 .btn-sm { padding: 4px 12px; font-size: 12px; }
 .btn + .btn { margin-left: 6px; }
@@ -61,6 +62,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica
 .form-input:focus { border-color: #D85A30; }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
 .modal-actions .btn { min-width: 80px; }
+
+/* Modal Overlay */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 420px; max-width: 90vw; }
+.modal-box h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 
 /* Badge */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #FAECE7; color: #D85A30; margin: 1px; }

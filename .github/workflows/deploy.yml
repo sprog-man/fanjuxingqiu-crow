@@ -1,0 +1,40 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [yunfuwu, master]
+    paths:
+      - 'project/backend/**'
+      - 'project/frontend/admin/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy backend (excludes node_modules)
+        run: |
+          rsync -avz --delete --exclude=node_modules --exclude=.env \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            project/backend/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/opt/fanjuxingqiu/backend/
+
+      - name: Deploy admin frontend
+        run: |
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            project/frontend/admin/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/opt/fanjuxingqiu/frontend/admin/
+
+      - name: Restart backend service
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            cd /opt/fanjuxingqiu/backend
+            if command -v pm2 &>/dev/null; then
+              pm2 restart fanjuxingqiu
+            else
+              pkill -f "node src/app.js" 2>/dev/null || true
+              nohup node src/app.js > app.log 2>&1 &
+            fi
+          EOF
