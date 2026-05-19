@@ -154,8 +154,9 @@ router.post('/dishes/upload', adminUploadMulter.single('file'), async (req, res)
     const url = await oss.uploadBuffer(req.file.buffer, ossPath);
     res.json({ data: { url } });
   } catch (e) {
+    console.error('[admin upload]', e);
     if (e.code === 'OSS_MISCONFIG') return res.status(500).json({ error: e.message });
-    res.status(500).json({ error: '上传失败' });
+    res.status(500).json({ error: '上传失败: ' + e.message });
   }
 });
 
