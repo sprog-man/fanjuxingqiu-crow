@@ -65,13 +65,51 @@
   <!-- City Ranking -->
   <view class="section">
     <text class="section-title">城市排行榜</text>
-    <view wx:for="{{cities}}" wx:key="city" class="rank-item" data-city="{{item.city}}" bindtap="showCityDetail">
-      <text class="rank-num {{item.rankClass}}">{{item.rankNum}}</text>
-      <view class="rank-info">
-        <text class="rank-city">{{item.city}}</text>
-        <text class="rank-foods">{{item.foodsStr || ''}}</text>
+    <view wx:for="{{cities}}" wx:key="city" class="city-rank-wrap">
+      <view class="rank-item" data-city="{{item.city}}" bindtap="showCityDetail">
+        <text class="rank-num {{item.rankClass}}">{{item.rankNum}}</text>
+        <view class="rank-info">
+          <text class="rank-city">{{item.city}}</text>
+          <text class="rank-foods">{{item.foodsStr || ''}}</text>
+        </view>
+        <text class="rank-count">{{item.count}}次</text>
+        <text class="rank-arrow">{{expandedCity === item.city ? '▲' : '▼'}}</text>
       </view>
-      <text class="rank-count">{{item.count}}次</text>
+      <view wx:if="{{expandedCity === item.city}}" class="city-expand">
+        <view wx:if="{{cityRecords.length === 0}}" class="ce-empty">
+          <text class="ce-empty-icon">🗺️</text>
+          <text class="ce-empty-text">暂无打卡记录</text>
+        </view>
+        <view wx:for="{{cityRecords}}" wx:key="_id" class="ce-card">
+          <view class="ce-card-header">
+            <view class="ce-card-date">
+              <text class="ce-card-year">{{item.cardYear}}</text>
+              <view class="ce-card-date-row">
+                <text class="ce-card-day">{{item.cardDate}}</text>
+                <text class="ce-card-month">{{item.cardMonth}}月</text>
+                <text class="ce-card-weekday">周{{item.cardWeekday}}</text>
+              </view>
+              <text class="ce-card-time">{{item.cardTime}}</text>
+            </view>
+            <view class="ce-card-actions">
+              <view class="ce-action-btn" data-id="{{item._id}}" bindtap="editCheckin">
+                <text class="ce-action-icon">✏️</text>
+              </view>
+              <view class="ce-action-btn ce-action-delete" data-id="{{item._id}}" bindtap="deleteCheckin">
+                <text class="ce-action-icon">🗑️</text>
+              </view>
+            </view>
+          </view>
+          <view class="ce-card-body">
+            <text class="ce-card-title">{{item.title}}</text>
+            <text wx:if="{{item.foodsStr}}" class="ce-card-foods">🍜 {{item.foodsStr}}</text>
+            <text wx:if="{{item.note}}" class="ce-card-note">{{item.note}}</text>
+            <view wx:if="{{item.photosList.length > 0}}" class="ce-card-photos">
+              <image wx:for="{{item.photosList}}" wx:key="index" class="ce-card-photo" src="{{item}}" mode="aspectFill" />
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
     <view wx:if="{{isEmptyCities}}" class="empty-state">
       <text class="empty-icon">🗺️</text>
@@ -84,7 +122,7 @@
   <view wx:if="{{showForm}}" class="form-overlay" bindtap="closeForm">
     <view class="form-card" catchtap>
       <view class="form-header">
-        <text class="form-title">📍 美食打卡</text>
+        <text class="form-title">{{isEditMode ? '✏️ 编辑打卡' : '📍 美食打卡'}}</text>
         <text class="form-close" bindtap="closeForm">✕</text>
       </view>
 
@@ -161,4 +199,6 @@
       </scroll-view>
     </view>
   </view>
+
+
 </scroll-view>

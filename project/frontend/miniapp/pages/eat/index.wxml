@@ -1,99 +1,271 @@
 <scroll-view class="page" scroll-y>
-  <!-- Header -->
-  <view class="header">
-    <text class="header-title">今晚吃什么？</text>
-    <text class="header-sub">让转盘帮你决定</text>
-  </view>
 
-  <!-- Mode Switch -->
-  <view class="mode-switch">
-    <view class="mode-btn {{mode === 'single' ? 'active' : ''}}" data-mode="single" bindtap="switchMode">
-      <text class="mode-icon">👤</text>
-      <text>单人模式</text>
+  <!-- 分类选择页 -->
+  <view wx:if="{{view === 'categories'}}">
+    <view class="header">
+      <text class="header-title">今晚吃什么？</text>
+      <text class="header-sub">翻牌决定你的命运</text>
     </view>
-    <view class="mode-btn {{mode === 'multi' ? 'active' : ''}}" data-mode="multi" bindtap="switchMode">
-      <text class="mode-icon">👥</text>
-      <text>多人模式</text>
-    </view>
-  </view>
 
-  <!-- Mood Tags -->
-  <view class="section">
-    <text class="section-title">今日氛围</text>
-    <scroll-view class="mood-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="mood-tags">
+    <view class="section">
+      <text class="section-title">选择菜系</text>
+      <view class="category-grid">
         <view
-          wx:for="{{moods}}"
+          wx:for="{{categories}}"
           wx:key="id"
-          class="mood-tag {{selectedMood === item.id ? 'selected' : ''}}"
+          class="category-card"
           data-id="{{item.id}}"
-          bindtap="selectMood"
+          bindtap="selectCategory"
+          hover-class="category-hover"
         >
-          <text class="mood-icon">{{item.icon}}</text>
-          <text class="mood-name">{{item.name}}</text>
+          <image class="category-cover" src="{{item.tarotCover}}" mode="aspectFill" lazy-load binderror="onCoverError" data-index="{{index}}" />
+          <view class="category-mask"></view>
+          <text class="category-name">{{item.name}}</text>
         </view>
       </view>
-    </scroll-view>
+    </view>
   </view>
 
-  <!-- Flavor Filter -->
-  <view class="section">
-    <text class="section-title">口味偏好</text>
-    <view class="tag-group">
+  <!-- 翻牌页 -->
+  <view wx:if="{{view === 'flip'}}">
+    <view class="flip-header">
+      <view class="flip-left">
+        <view class="flip-back" bindtap="backToCategories">
+          <text class="back-icon">←</text>
+          <text class="back-text">返回</text>
+        </view>
+        <text class="flip-category">{{selectedCategory.name}}</text>
+      </view>
+      <view class="header-btns">
+        <view class="header-btn" bindtap="openManageDish">管理</view>
+        <view class="header-btn primary" bindtap="openAddDish">+ 添加</view>
+      </view>
+    </view>
+
+    <view class="mood-row">
       <view
-        wx:for="{{['辣', '清淡', '重口', '鲜美', '精致', '健康', '烤肉', '浪漫']}}"
-        wx:key="*this"
-        class="tag-btn {{tagStates[index] ? 'selected' : ''}}"
-        data-tag="{{item}}"
-        hover-class="tag-hover"
-        hover-stay-time="100"
-        bindtap="toggleTag"
+        wx:for="{{moods}}"
+        wx:key="id"
+        class="mood-tag {{selectedMood === item.id ? 'selected' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="selectMood"
       >
-        {{item}}
+        <text>{{item.icon}}</text>
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+
+    <view class="flip-area">
+      <view class="cards-container">
+        <view
+          wx:for="{{cards}}"
+          wx:key="index"
+          class="card-wrapper {{item.flipped ? 'flipped' : ''}} {{item.animating ? 'animating' : ''}} {{index === activeCardIndex ? 'active' : ''}}"
+          data-index="{{item.index}}"
+          bindtap="flipCard"
+        >
+          <view class="card-back">
+            <image class="card-back-img" src="{{item.backImage}}" mode="aspectFill" />
+            <text class="card-back-hint">?</text>
+          </view>
+          <view class="card-front">
+            <view class="tarot-card">
+              <view class="tarot-border-outer"></view>
+              <view class="tarot-border-inner"></view>
+              <view class="tarot-corner tl"><text class="corner-symbol">✦</text></view>
+              <view class="tarot-corner tr"><text class="corner-symbol">✦</text></view>
+              <view class="tarot-corner bl"><text class="corner-symbol">✦</text></view>
+              <view class="tarot-corner br"><text class="corner-symbol">✦</text></view>
+
+              <view class="tarot-title-area">
+                <view class="tarot-title-deco"><text class="deco-line">───</text></view>
+                <text class="tarot-title-text">{{selectedCategory.name}}</text>
+                <view class="tarot-title-deco"><text class="deco-line">───</text></view>
+              </view>
+
+              <view class="tarot-image-area">
+                <view class="tarot-image-frame">
+                  <image wx:if="{{item.dish && item.dish.image}}" class="tarot-dish-img" src="{{item.dish.image}}" mode="aspectFill" />
+                  <view wx:else class="tarot-image-placeholder">
+                    <text class="placeholder-icon">🍽️</text>
+                  </view>
+                </view>
+              </view>
+
+              <view class="tarot-divider">
+                <view class="divider-line"></view>
+                <text class="divider-symbol">◆</text>
+                <view class="divider-line"></view>
+              </view>
+
+              <view class="tarot-text-area">
+                <text class="tarot-dish-name">{{item.dish ? item.dish.name : ''}}</text>
+                <text class="tarot-dish-desc">{{item.dish ? (item.dish.description || item.dish.tags.join(' · ') || '') : ''}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="flip-progress">
+        <text class="progress-text">已翻 {{flippedCount}}/5</text>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width:{{flippedCount * 20}}%"></view>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- Wheel + Spin + Progress (hidden when result shown) -->
-  <view wx:if="{{!showResult}}">
-    <view class="wheel-container">
-      <canvas
-        type="2d"
-        id="wheelCanvas"
-        class="wheel-canvas"
-        style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;"
-      ></canvas>
-      <view class="wheel-center" bindtap="spin">
-        <text class="wheel-center-text">{{spinning ? '...' : 'GO'}}</text>
-      </view>
-    </view>
-
-    <button class="spin-btn {{spinning ? 'disabled' : ''}}" disabled="{{spinning}}" bindtap="spin">
-      {{spinning ? '转动中...' : '开始转！'}}
-    </button>
-
-    <view wx:if="{{mode === 'multi'}}" class="vote-progress">
-      <text class="vote-progress-text">{{voteProgress.submitted}}/{{voteProgress.total}}人已提交</text>
-      <view class="progress-bar">
-        <view class="progress-fill" style="width:{{(voteProgress.submitted/voteProgress.total)*100}}%"></view>
-      </view>
-    </view>
-  </view>
-
-  <!-- Result Card (replaces wheel, not overlay) -->
-  <view wx:if="{{showResult && result}}" class="result-section">
-    <view class="result-content">
-      <view class="result-icon-wrap">
-        <text class="result-icon">{{result.icon || '🍽️'}}</text>
-      </view>
-      <text class="result-name">{{result.name}}</text>
-      <text class="result-desc">就吃这个吧！</text>
+  <!-- 翻牌结果弹窗 -->
+  <view wx:if="{{showResult && resultDish}}" class="result-overlay">
+    <view class="result-card" catchtap="stop">
+      <view class="result-glow"></view>
+      <text class="result-label">命运之选</text>
+      <text class="result-name">{{resultDish.name}}</text>
+      <text class="result-desc">{{resultDish.description || '就吃这个吧！'}}</text>
       <view class="result-tags">
-        <text class="result-tag" wx:for="{{result.tags}}" wx:key="*this">{{item}}</text>
+        <text class="result-tag" wx:for="{{resultDish.tags}}" wx:key="*this">{{item}}</text>
       </view>
       <view class="result-actions">
-        <button class="result-btn primary" bindtap="resetSpin">换一个</button>
-        <button class="result-btn secondary" bindtap="resetSpin">就它了！</button>
+        <view class="result-btn secondary" bindtap="retryFlip">再翻一次</view>
+        <view class="result-btn primary" bindtap="confirmResult">就它了！</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 单张翻牌展示（旋转放大） -->
+  <view wx:if="{{activeCardIndex >= 0 && showContinue}}" class="flip-result-overlay" bindtap="dismissFlipResult">
+    <view class="flip-result-card" catchtap="stop">
+      <view class="flip-result-glow"></view>
+      <view class="flip-result-close" catchtap="dismissFlipResult">×</view>
+      <text class="flip-result-label">翻开</text>
+      <text class="flip-result-name">{{activeDish.name}}</text>
+      <text class="flip-result-desc">{{activeDish.description || '就吃这个吧！'}}</text>
+      <view class="flip-result-tags">
+        <text class="flip-result-tag" wx:for="{{activeDish.tags}}" wx:key="*this">{{item}}</text>
+      </view>
+      <view class="flip-result-actions">
+        <view class="flip-result-btn pick" bindtap="continueFlip">{{isLastFlip ? '让系统帮我选' : '继续翻牌'}}</view>
+        <view class="flip-result-btn confirm" bindtap="confirmDish">就它了！</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加/编辑菜品弹窗 -->
+  <view wx:if="{{showAddDish}}" class="add-dish-modal" bindtap="closeAddDish">
+    <view class="add-dish-panel" catchtap="stop">
+      <text class="panel-title">{{editingDishId ? '编辑菜品' : '添加菜品到'}}{{!editingDishId ? selectedCategory.name : ''}}</text>
+
+      <view class="form-group">
+        <text class="form-label">菜品图片（选填）</text>
+        <view class="image-picker">
+          <view wx:if="{{newDishImage}}" class="image-preview">
+            <image class="preview-img" src="{{newDishImage}}" mode="aspectFill" />
+            <view class="image-del" bindtap="removeImage">×</view>
+          </view>
+          <view wx:else class="image-add" bindtap="chooseImage">
+            <text class="add-icon">+</text>
+            <text class="add-text">选择图片</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">菜品名称</text>
+        <input class="form-input" placeholder="请输入菜品名称" value="{{newDishName}}" bindinput="onDishNameInput" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">菜品描述（选填）</text>
+        <textarea class="form-textarea" placeholder="一句话描述这个菜品" value="{{newDishDesc}}" bindinput="onDishDescInput" maxlength="50" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">标签（选填）</text>
+        <view class="form-tags">
+          <view
+            wx:for="{{availableTags}}"
+            wx:key="*this"
+            class="form-tag-btn {{newDishTags.indexOf(item) > -1 ? 'selected' : ''}}"
+            data-tag="{{item}}"
+            bindtap="toggleDishTag"
+          >
+            {{item}}
+          </view>
+        </view>
+        <view class="custom-tag-row">
+          <input class="custom-tag-input" placeholder="输入自定义标签" value="{{customTagInput}}" bindinput="onCustomTagInput" />
+          <view class="custom-tag-add" bindtap="addCustomTag">添加</view>
+        </view>
+        <view wx:if="{{newDishTags.length > 0}}" class="selected-custom-tags">
+          <view wx:for="{{newDishTags}}" wx:key="*this" class="selected-tag-item">
+            <text>{{item}}</text>
+            <text class="selected-tag-del" data-tag="{{item}}" bindtap="toggleDishTag">×</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-actions">
+        <view class="form-btn cancel" bindtap="closeAddDish">取消</view>
+        <view class="form-btn primary" bindtap="submitDish">{{editingDishId ? '保存修改' : '确认添加'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 菜品管理弹窗 -->
+  <view wx:if="{{showManageDish}}" class="add-dish-modal" bindtap="closeManageDish">
+    <view class="manage-panel" catchtap="stop">
+      <text class="panel-title">{{selectedCategory.name}} · 菜品管理</text>
+
+      <view class="manage-filter">
+        <input class="filter-input" placeholder="搜索菜品名称…" value="{{filterText}}" bindinput="onFilterInput" />
+        <view wx:if="{{allDishTags.length > 0}}" class="filter-tags">
+          <view
+            wx:for="{{allDishTags}}"
+            wx:key="*this"
+            class="filter-tag-btn {{filterTags.indexOf(item) > -1 ? 'selected' : ''}}"
+            data-tag="{{item}}"
+            bindtap="toggleFilterTag"
+          >
+            {{item}}
+          </view>
+          <view wx:if="{{filterText || filterTags.length > 0}}" class="filter-clear" bindtap="clearFilter">清除</view>
+        </view>
+      </view>
+
+      <view wx:if="{{allDishes.length === 0}}" class="empty-tip">
+        <text>暂无菜品，点击下方"添加菜品"按钮开始添加</text>
+      </view>
+
+      <view wx:elif="{{filteredManageDishes.length === 0}}" class="empty-tip">
+        <text>没有匹配的菜品，试试其他关键词或标签</text>
+      </view>
+
+      <scroll-view class="manage-list" scroll-y wx:elif="{{filteredManageDishes.length > 0}}">
+        <view class="manage-item" wx:for="{{filteredManageDishes}}" wx:key="_uid">
+          <view class="manage-item-left">
+            <image wx:if="{{item.image}}" class="manage-thumb" src="{{item.image}}" mode="aspectFill" />
+            <view wx:else class="manage-thumb-placeholder">
+              <text class="placeholder-emoji">🍽️</text>
+            </view>
+            <view class="manage-item-info">
+              <text class="manage-item-name">{{item.name}}</text>
+              <text class="manage-item-desc" wx:if="{{item.description}}">{{item.description}}</text>
+              <view class="manage-item-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+                <text class="manage-tag" wx:for="{{item.tags}}" wx:key="*this" wx:for-item="t">{{t}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="manage-item-actions">
+            <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
+            <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="form-actions">
+        <view class="form-btn cancel" bindtap="closeManageDish">关闭</view>
+        <view class="form-btn primary" bindtap="openAddDish">+ 添加菜品</view>
       </view>
     </view>
   </view>

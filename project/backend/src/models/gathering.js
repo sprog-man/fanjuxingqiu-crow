@@ -19,6 +19,7 @@ const gatheringSchema = new mongoose.Schema({
   foodTags: [{ type: String }],
   creatorId: { type: String, default: '' },
   isCheckin: { type: Boolean, default: false },
+  cover: { type: String, default: '' },
 }, { timestamps: true });
 
 gatheringSchema.index({ creatorId: 1, dateTime: -1 });

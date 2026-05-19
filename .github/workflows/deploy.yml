@@ -1,0 +1,49 @@
+name: Deploy to Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [yunfuwu, master]
+    paths:
+      - 'project/backend/**'
+      - 'project/frontend/admin/**'
+      - '.github/workflows/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy backend (excludes node_modules)
+        run: |
+          rsync -avz --delete --exclude=node_modules --exclude=.env \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            project/backend/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/fanjuxingqiu/backend/
+
+      - name: Deploy admin frontend
+        run: |
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            project/frontend/admin/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/fanjuxingqiu/frontend/admin/
+
+      - name: Restart backend service
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /opt/fanjuxingqiu/backend
+            if command -v pm2 &>/dev/null; then
+              pm2 restart fanjuxingqiu
+            else
+              pkill -f "node src/app.js" 2>/dev/null || true
+              nohup node src/app.js > app.log 2>&1 &
+            fi
+          EOF

@@ -1,0 +1,747 @@
+[
+  {
+    "_id": "6a07c573277abdd7b1aef2d4",
+    "title": "重庆火锅之夜",
+    "dateTime": "2026-05-15T11:00:00.000Z",
+    "location": {
+      "name": "渝味晓宇火锅",
+      "lat": 29.5,
+      "lng": 106.5,
+      "city": "重庆"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小红"
+    ],
+    "payer": "小明",
+    "totalCost": 368,
+    "photos": [],
+    "moodScore": 5,
+    "moodTags": [
+      "开心",
+      "美味"
+    ],
+    "note": "",
+    "foodTags": [
+      "麻辣",
+      "火锅",
+      "毛肚"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2d5",
+    "title": "胡同里的烤鸭",
+    "dateTime": "2026-05-10T04:00:00.000Z",
+    "location": {
+      "name": "四季民福烤鸭",
+      "lat": 39.9,
+      "lng": 116.4,
+      "city": "北京"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小刚"
+    ],
+    "payer": "我",
+    "totalCost": 456,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "美味",
+      "难忘"
+    ],
+    "note": "",
+    "foodTags": [
+      "烤鸭",
+      "京菜"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2d6",
+    "title": "深夜居酒屋",
+    "dateTime": "2026-05-05T12:30:00.000Z",
+    "location": {
+      "name": "鸟安居酒屋",
+      "lat": 31.2,
+      "lng": 121.5,
+      "city": "上海"
+    },
+    "participants": [
+      "我",
+      "小红",
+      "小丽"
+    ],
+    "payer": "小红",
+    "totalCost": 520,
+    "photos": [],
+    "moodScore": 5,
+    "moodTags": [
+      "开心",
+      "搞笑",
+      "美味"
+    ],
+    "note": "",
+    "foodTags": [
+      "日料",
+      "刺身",
+      "清酒"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2d7",
+    "title": "街角烧烤摊",
+    "dateTime": "2026-04-28T13:00:00.000Z",
+    "location": {
+      "name": "老王烧烤",
+      "lat": 30.6,
+      "lng": 104.1,
+      "city": "成都"
+    },
+    "participants": [
+      "我",
+      "小刚",
+      "小强"
+    ],
+    "payer": "小刚",
+    "totalCost": 280,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "开心",
+      "日常"
+    ],
+    "note": "",
+    "foodTags": [
+      "烧烤",
+      "串串"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2d8",
+    "title": "广式早茶",
+    "dateTime": "2026-04-20T01:00:00.000Z",
+    "location": {
+      "name": "点都德",
+      "lat": 23.1,
+      "lng": 113.3,
+      "city": "广州"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小丽"
+    ],
+    "payer": "我",
+    "totalCost": 198,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "美味",
+      "日常"
+    ],
+    "note": "",
+    "foodTags": [
+      "粤菜",
+      "点心",
+      "虾饺"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2d9",
+    "title": "川菜馆辣翻",
+    "dateTime": "2026-04-15T04:30:00.000Z",
+    "location": {
+      "name": "眉州东坡",
+      "lat": 39.9,
+      "lng": 116.4,
+      "city": "北京"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小红",
+      "小刚"
+    ],
+    "payer": "小明",
+    "totalCost": 420,
+    "photos": [],
+    "moodScore": 5,
+    "moodTags": [
+      "开心",
+      "搞笑",
+      "辣到哭"
+    ],
+    "note": "",
+    "foodTags": [
+      "川菜",
+      "辣",
+      "水煮鱼"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2da",
+    "title": "日料放题",
+    "dateTime": "2026-04-08T11:30:00.000Z",
+    "location": {
+      "name": "万岛日本料理",
+      "lat": 31.2,
+      "lng": 121.5,
+      "city": "上海"
+    },
+    "participants": [
+      "我",
+      "小红",
+      "小丽",
+      "小明"
+    ],
+    "payer": "小红",
+    "totalCost": 680,
+    "photos": [],
+    "moodScore": 5,
+    "moodTags": [
+      "开心",
+      "美味",
+      "难忘"
+    ],
+    "note": "",
+    "foodTags": [
+      "日料",
+      "刺身",
+      "和牛"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2db",
+    "title": "南山烤肉",
+    "dateTime": "2026-04-01T10:00:00.000Z",
+    "location": {
+      "name": "姜虎东烤肉",
+      "lat": 22.5,
+      "lng": 114.1,
+      "city": "深圳"
+    },
+    "participants": [
+      "我",
+      "小刚"
+    ],
+    "payer": "小刚",
+    "totalCost": 320,
+    "photos": [],
+    "moodScore": 3,
+    "moodTags": [
+      "日常"
+    ],
+    "note": "",
+    "foodTags": [
+      "韩餐",
+      "烤肉"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2dc",
+    "title": "素食轻体验",
+    "dateTime": "2026-03-25T04:00:00.000Z",
+    "location": {
+      "name": "叶叶菩提",
+      "lat": 39.9,
+      "lng": 116.4,
+      "city": "北京"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小丽"
+    ],
+    "payer": "小明",
+    "totalCost": 260,
+    "photos": [],
+    "moodScore": 3,
+    "moodTags": [
+      "清淡",
+      "健康"
+    ],
+    "note": "",
+    "foodTags": [
+      "素食",
+      "健康",
+      "清淡"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2dd",
+    "title": "成都街头串串",
+    "dateTime": "2026-03-18T12:00:00.000Z",
+    "location": {
+      "name": "钢管厂五区小郡肝",
+      "lat": 30.6,
+      "lng": 104.1,
+      "city": "成都"
+    },
+    "participants": [
+      "我",
+      "小红",
+      "小强"
+    ],
+    "payer": "我",
+    "totalCost": 180,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "开心",
+      "日常",
+      "辣到哭"
+    ],
+    "note": "",
+    "foodTags": [
+      "串串",
+      "辣"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2de",
+    "title": "海底捞夜话",
+    "dateTime": "2026-03-10T14:00:00.000Z",
+    "location": {
+      "name": "海底捞",
+      "lat": 29.5,
+      "lng": 106.5,
+      "city": "重庆"
+    },
+    "participants": [
+      "我",
+      "小明",
+      "小红",
+      "小刚",
+      "小丽",
+      "小强"
+    ],
+    "payer": "小明",
+    "totalCost": 580,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "开心",
+      "搞笑",
+      "美味"
+    ],
+    "note": "",
+    "foodTags": [
+      "火锅",
+      "川菜"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2df",
+    "title": "西湖边龙井虾仁",
+    "dateTime": "2026-03-05T10:30:00.000Z",
+    "location": {
+      "name": "楼外楼",
+      "lat": 30.3,
+      "lng": 120.2,
+      "city": "杭州"
+    },
+    "participants": [
+      "我",
+      "小红"
+    ],
+    "payer": "小红",
+    "totalCost": 380,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "美味",
+      "难忘"
+    ],
+    "note": "",
+    "foodTags": [
+      "杭帮菜",
+      "清淡",
+      "鲜"
+    ],
+    "creatorId": "我",
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.439Z",
+    "updatedAt": "2026-05-16T01:16:35.439Z"
+  },
+  {
+    "_id": "6a07ce503c9c62888a6e3778",
+    "title": "������",
+    "dateTime": "2026-05-16T12:00:00.000Z",
+    "location": {
+      "name": "������",
+      "lat": 39.9042,
+      "lng": 116.4074,
+      "city": "����"
+    },
+    "participants": [
+      "��"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "�óԣ�",
+    "foodTags": [],
+    "creatorId": "��",
+    "isCheckin": true,
+    "createdAt": "2026-05-16T01:54:24.970Z",
+    "updatedAt": "2026-05-16T01:54:24.970Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a07ce7c3c9c62888a6e3781",
+    "title": "Haidilao",
+    "dateTime": "2026-05-16T12:00:00.000Z",
+    "location": {
+      "name": "Haidilao",
+      "lat": 39.9042,
+      "lng": 116.4074,
+      "city": "Beijing"
+    },
+    "participants": [
+      "testuser"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "Great!",
+    "foodTags": [],
+    "creatorId": "testuser",
+    "isCheckin": true,
+    "createdAt": "2026-05-16T01:55:08.517Z",
+    "updatedAt": "2026-05-16T01:55:08.517Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a07e3daa52f262fe3d6739f",
+    "title": "重庆火锅之夜",
+    "dateTime": "2026-05-16T03:26:18.156Z",
+    "location": {
+      "name": "重庆火锅之夜",
+      "lat": 29.5,
+      "lng": 106.5,
+      "city": "重庆"
+    },
+    "participants": [
+      "我"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "",
+    "foodTags": [
+      "麻辣"
+    ],
+    "creatorId": "我",
+    "isCheckin": true,
+    "createdAt": "2026-05-16T03:26:18.166Z",
+    "updatedAt": "2026-05-16T03:26:18.166Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a0874cd3eccfcd9279fa9b3",
+    "title": "AAA",
+    "dateTime": "2026-05-15T19:00:00.000Z",
+    "location": {
+      "name": "潮流",
+      "lat": 0,
+      "lng": 0,
+      "city": "aaa"
+    },
+    "participants": [
+      "微信用户",
+      "小明",
+      "小刚",
+      "小丽"
+    ],
+    "payer": null,
+    "totalCost": 457,
+    "photos": [],
+    "moodScore": 5,
+    "moodTags": [
+      "踩雷"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "微信用户",
+    "isCheckin": false,
+    "createdAt": "2026-05-16T13:44:45.175Z",
+    "updatedAt": "2026-05-16T13:44:45.175Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a0875143eccfcd9279fa9bc",
+    "title": "牛肉",
+    "dateTime": "2026-05-13T16:00:00.000Z",
+    "location": {
+      "name": "呵呵呵",
+      "lat": 0,
+      "lng": 0,
+      "city": "12131"
+    },
+    "participants": [
+      "微信用户",
+      "小明",
+      "小丽"
+    ],
+    "payer": "小丽",
+    "totalCost": 567,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "搞笑"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "微信用户",
+    "isCheckin": false,
+    "createdAt": "2026-05-16T13:45:56.404Z",
+    "updatedAt": "2026-05-16T13:45:56.404Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a0876eb3eccfcd9279fa9ce",
+    "title": "牛杂",
+    "dateTime": "2026-05-16T22:00:00.000Z",
+    "location": {
+      "name": "希望火锅",
+      "lat": 0,
+      "lng": 0,
+      "city": "广州"
+    },
+    "participants": [
+      "微信用户",
+      "小红",
+      "小明"
+    ],
+    "payer": null,
+    "totalCost": 2331,
+    "photos": [],
+    "moodScore": 4,
+    "moodTags": [
+      "难忘"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "微信用户",
+    "isCheckin": false,
+    "createdAt": "2026-05-16T13:53:47.469Z",
+    "updatedAt": "2026-05-16T13:53:47.469Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a096415d8cdceca9f325889",
+    "title": "牛杂",
+    "dateTime": "2026-05-17T06:45:41.819Z",
+    "location": {
+      "name": "牛杂",
+      "lat": 0,
+      "lng": 0,
+      "city": "广州"
+    },
+    "participants": [
+      "我"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [
+      "http://tmp/F9C3GkiI-n007a5a95de969588e7c6d396bc227db05b.png"
+    ],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "我",
+    "isCheckin": true,
+    "createdAt": "2026-05-17T06:45:41.826Z",
+    "updatedAt": "2026-05-17T07:49:52.213Z",
+    "__v": 0,
+    "cover": "/uploads/gatherings/F9C3GkiI-n007a5a95de969588e7c6d396bc227db05b.png"
+  },
+  {
+    "_id": "6a0974c973086dcabeaf2708",
+    "title": "康乐之行",
+    "dateTime": "2026-05-16T22:00:00.000Z",
+    "location": {
+      "name": "康乐火锅",
+      "lat": 0,
+      "lng": 0,
+      "city": "广州"
+    },
+    "participants": [
+      "微信用户",
+      "康乐"
+    ],
+    "payer": null,
+    "totalCost": 123,
+    "photos": [
+      "/uploads/gatherings/53c2c67309cc9addf1c8e7b3c6b503e3"
+    ],
+    "moodScore": 5,
+    "moodTags": [
+      "搞笑"
+    ],
+    "note": "666",
+    "foodTags": [],
+    "creatorId": "微信用户",
+    "isCheckin": false,
+    "cover": "",
+    "createdAt": "2026-05-17T07:56:57.431Z",
+    "updatedAt": "2026-05-17T07:56:57.431Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a097a1e8f7aff021d7c608f",
+    "title": "皮皮夜",
+    "dateTime": "2026-05-16T19:00:00.000Z",
+    "location": {
+      "name": "海底捞",
+      "lat": 0,
+      "lng": 0,
+      "city": "邵阳"
+    },
+    "participants": [
+      "微信用户",
+      "邱邱",
+      "康乐"
+    ],
+    "payer": null,
+    "totalCost": 589,
+    "photos": [
+      "https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com/gatherings/photos/2026/05/e535d8cf-d75c-4f47-9d83-6ddc70fa8887.jpg"
+    ],
+    "moodScore": 4,
+    "moodTags": [
+      "踩雷"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "微信用户",
+    "isCheckin": false,
+    "cover": "",
+    "createdAt": "2026-05-17T08:19:42.343Z",
+    "updatedAt": "2026-05-17T08:19:42.343Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a097a558f7aff021d7c609b",
+    "title": "皮皮夜",
+    "dateTime": "2026-05-17T08:20:37.869Z",
+    "location": {
+      "name": "皮皮夜",
+      "lat": 0,
+      "lng": 0,
+      "city": "邵阳"
+    },
+    "participants": [
+      "我"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [
+      "https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com/gatherings/photos/2026/05/e535d8cf-d75c-4f47-9d83-6ddc70fa8887.jpg"
+    ],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "我",
+    "isCheckin": true,
+    "cover": "",
+    "createdAt": "2026-05-17T08:20:37.875Z",
+    "updatedAt": "2026-05-17T08:20:37.875Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a097a8d8f7aff021d7c60ac",
+    "title": "皮皮夜",
+    "dateTime": "2026-05-17T08:21:33.945Z",
+    "location": {
+      "name": "皮皮夜",
+      "lat": 0,
+      "lng": 0,
+      "city": "邵阳"
+    },
+    "participants": [
+      "我"
+    ],
+    "payer": null,
+    "totalCost": 0,
+    "photos": [
+      "http://tmp/m909ARK1uSTXaf361af84ef7e784c49bb8edab259b12.jpg"
+    ],
+    "moodScore": null,
+    "moodTags": [
+      "打卡"
+    ],
+    "note": "",
+    "foodTags": [],
+    "creatorId": "我",
+    "isCheckin": true,
+    "cover": "",
+    "createdAt": "2026-05-17T08:21:33.950Z",
+    "updatedAt": "2026-05-17T08:21:33.950Z",
+    "__v": 0
+  }
+]

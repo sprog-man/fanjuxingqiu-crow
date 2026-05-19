@@ -2,17 +2,72 @@ App({
   globalData: {
     userInfo: null,
     token: '',
-    serverUrl: 'http://localhost:2001'
+    serverUrl: 'http://localhost:2001',
+    prodServerUrl: 'https://sprog-man.fanjuxingqiu.ccwu.cc',
+    ossBase: 'https://fanjuxingqiu.oss-cn-beijing.aliyuncs.com'
   },
 
   onLaunch() {
+    // 初始化云开发环境
+    wx.cloud.init({
+      env: 'prod-d4guifrt160355bbc',
+      traceUser: true
+    });
+    console.log('[云开发] 已初始化环境:', 'prod-d4guifrt160355bbc');
+    
     // 恢复登录态
     const token = wx.getStorageSync('token');
-    const userInfo = wx.getStorageSync('userInfo');
+    let userInfo = wx.getStorageSync('userInfo');
     if (token) {
-      this.globalData.token = token;
-      this.globalData.userInfo = userInfo;
+      // 检查头像是否是临时路径，如果是则清除本地存储
+      if (userInfo && userInfo.avatar_url && (userInfo.avatar_url.startsWith('wxfile://') || userInfo.avatar_url.includes('tmp'))) {
+        console.log('[登录] 检测到临时头像，清除本地存储');
+        wx.removeStorageSync('token');
+        wx.removeStorageSync('userInfo');
+        this.globalData.token = '';
+        this.globalData.userInfo = null;
+      } else {
+        this.globalData.token = token;
+        this.globalData.userInfo = userInfo;
+      }
     }
+    // 自动识别环境：开发版走本地，体验版/正式版走美国服务器
+    try {
+      const env = wx.getAccountInfoSync().miniProgram.envVersion;
+      if (env === 'develop') {
+        console.log('[环境] 开发模式 → 本地服务器:', this.globalData.serverUrl);
+      } else if (env === 'trial' || env === 'release') {
+        this.globalData.serverUrl = this.globalData.prodServerUrl;
+        console.log('[环境] 体验/正式模式 → 美国服务器:', this.globalData.prodServerUrl);
+      }
+    } catch (e) {
+      console.error('[环境] 检测版本失败:', e);
+    }
+  },
+
+  // 上传头像到服务器
+  uploadAvatar(filePath) {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      wx.uploadFile({
+        url: self.globalData.serverUrl + '/api/tarot/upload',
+        filePath,
+        name: 'file',
+        success: (res) => {
+          try {
+            const data = JSON.parse(res.data);
+            if (data.data && data.data.url) {
+              resolve(data.data.url);
+            } else {
+              reject(new Error('upload failed'));
+            }
+          } catch (e) {
+            reject(e);
+          }
+        },
+        fail: reject,
+      });
+    });
   },
 
   // 微信登录
@@ -26,40 +81,57 @@ App({
             reject(res.errMsg);
             return;
           }
-          // 调用后端登录接口
-          wx.request({
-            url: self.globalData.serverUrl + '/api/auth/login',
-            method: 'POST',
-            data: {
-              code: res.code,
-              nickName: nickName || '',
-              avatarUrl: avatarUrl || '',
-            },
-            timeout: 5000,
-            success(r) {
-              if (r.data && r.data.data) {
-                const { token, user } = r.data.data;
-                self.globalData.token = token;
-                self.globalData.userInfo = user;
-                wx.setStorageSync('token', token);
-                wx.setStorageSync('userInfo', user);
-                resolve(user);
-              } else {
-                reject(r.data.error || '登录失败');
+          // 如果头像是临时路径，先上传到服务器
+          const processLogin = (finalAvatarUrl) => {
+            wx.request({
+              url: self.globalData.serverUrl + '/api/auth/login',
+              method: 'POST',
+              data: {
+                code: res.code,
+                nickName: nickName || '',
+                avatarUrl: finalAvatarUrl || '',
+                savedOpenid: self.getSavedOpenid() || undefined,
+              },
+              header: {
+                'Content-Type': 'application/json'
+              },
+              success(r) {
+                if (r.data && r.data.data) {
+                  const { token, user } = r.data.data;
+                  self.globalData.token = token;
+                  self.globalData.userInfo = user;
+                  wx.setStorageSync('token', token);
+                  wx.setStorageSync('userInfo', user);
+                  if (user.openid) self.saveOpenid(user.openid);
+                  resolve(user);
+                } else {
+                  reject(r.data.error || '登录失败');
+                }
+              },
+              fail(err) {
+                console.error('[登录] 请求失败:', err);
+                const anon = { id: 'local', openid: 'local', nickname: nickName || '用户', avatar_url: finalAvatarUrl || '' };
+                self.globalData.token = 'local_token';
+                self.globalData.userInfo = anon;
+                wx.setStorageSync('userInfo', anon);
+                resolve(anon);
               }
-            },
-            fail() {
-              // 离线模式：本地匿名登录
-              const anon = { id: 'local', openid: 'local', nickname: nickName || '用户', avatar_url: avatarUrl || '' };
-              self.globalData.token = 'local_token';
-              self.globalData.userInfo = anon;
-              wx.setStorageSync('userInfo', anon);
-              resolve(anon);
-            }
-          });
+            });
+          };
+
+          // 判断是否是临时路径（wxfile:// 或 http://tmp/）
+          if (avatarUrl && (avatarUrl.startsWith('wxfile://') || avatarUrl.includes('tmp'))) {
+            self.uploadAvatar(avatarUrl).then(uploadedUrl => {
+              processLogin(uploadedUrl);
+            }).catch(() => {
+              // 上传失败，使用原始路径
+              processLogin(avatarUrl);
+            });
+          } else {
+            processLogin(avatarUrl);
+          }
         },
         fail() {
-          // wx.login 失败时也走匿名
           const anon = { id: 'local', openid: 'local', nickname: nickName || '用户', avatar_url: avatarUrl || '' };
           self.globalData.token = 'local_token';
           self.globalData.userInfo = anon;
@@ -88,6 +160,20 @@ App({
     });
   },
 
+  // 获取已互为饭搭子的好友（过滤掉待处理的申请）
+  getAcceptedBuddies() {
+    const buddies = this.getBuddies();
+    return buddies.filter(b => b.status === 'accepted' || !b.status);
+  },
+
+  // 持久化 openid / buddy_id（确保退出重登后不丢失）
+  saveOpenid(openid) {
+    if (openid) wx.setStorageSync('saved_openid', openid);
+  },
+  getSavedOpenid() {
+    return wx.getStorageSync('saved_openid') || '';
+  },
+
   // 退出登录
   logout() {
     this.globalData.token = '';
@@ -97,17 +183,189 @@ App({
   },
 
   // 饭搭子管理
-  getBuddies() { return wx.getStorageSync('buddies') || []; },
-  saveBuddy(buddy) {
+  getBuddies() {
+    const local = wx.getStorageSync('buddies') || [];
+    return local;
+  },
+  saveBuddyToLocal(buddy) {
     let buddies = this.getBuddies();
-    if (buddy.id) { const idx = buddies.findIndex(b => b.id === buddy.id); if (idx > -1) buddies[idx] = buddy; }
-    else { buddy.id = 'B' + Date.now(); buddies.push(buddy); }
+    if (buddy._id || buddy.id) {
+      const idKey = buddy._id || buddy.id;
+      const idx = buddies.findIndex(b => (b._id || b.id) === idKey);
+      if (idx > -1) buddies[idx] = buddy;
+    } else {
+      buddy.id = buddy._id || 'B' + Date.now();
+      buddies.push(buddy);
+    }
     wx.setStorageSync('buddies', buddies);
     return buddies;
   },
-  deleteBuddy(id) {
-    const buddies = this.getBuddies().filter(b => b.id !== id);
+  deleteBuddyFromLocal(id) {
+    const buddies = this.getBuddies().filter(b => (b._id || b.id) !== id);
     wx.setStorageSync('buddies', buddies);
     return buddies;
-  }
+  },
+  // 后端 API 同步饭搭子
+  getServerUrl() { return this.globalData.serverUrl; },
+  getOpenid() {
+    const user = this.globalData.userInfo;
+    return user ? (user.openid || user.id || '') : '';
+  },
+  apiSearchUsers(query) {
+    const self = this;
+    return new Promise((resolve) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        resolve([]);
+        return;
+      }
+      wx.request({
+        url: this.globalData.serverUrl + '/api/buddy/search?q=' + encodeURIComponent(query) + '&openid=' + encodeURIComponent(openid),
+        method: 'GET',
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success(r) {
+          if (r.data && r.data.data) resolve(r.data.data);
+          else resolve([]);
+        },
+        fail() { resolve([]); }
+      });
+    });
+  },
+  apiGetBuddies() {
+    const self = this;
+    return new Promise((resolve) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        resolve(self.getBuddies());
+        return;
+      }
+      wx.request({
+        url: this.globalData.serverUrl + '/api/buddy/list?openid=' + encodeURIComponent(openid),
+        method: 'GET',
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success(r) {
+          if (r.data && r.data.data) {
+            const list = r.data.data;
+            wx.setStorageSync('buddies', list);
+            resolve(list);
+          } else { resolve(self.getBuddies()); }
+        },
+        fail() { resolve(self.getBuddies()); }
+      });
+    });
+  },
+  apiSaveBuddy(buddy) {
+    const self = this;
+    return new Promise((resolve) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        resolve(self.saveBuddyToLocal(buddy));
+        return;
+      }
+      const url = buddy._id
+        ? self.globalData.serverUrl + '/api/buddy/update/' + buddy._id
+        : self.globalData.serverUrl + '/api/buddy/create';
+      const method = buddy._id ? 'PUT' : 'POST';
+      const data = buddy._id
+        ? { openid, remark: buddy.remark || '' }
+        : { openid, targetUserId: buddy.targetUserId, remark: buddy.remark || '', requestMessage: buddy.requestMessage || '' };
+      wx.request({
+        url: url,
+        method,
+        data,
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success(r) {
+          if (r.data && r.data.data) {
+            const saved = r.data.data;
+            let buddies = self.getBuddies();
+            if (buddy._id) {
+              const idx = buddies.findIndex(b => (b._id || b.id) === buddy._id);
+              if (idx > -1) buddies[idx] = saved;
+            } else { buddies.push(saved); }
+            wx.setStorageSync('buddies', buddies);
+            resolve(saved);
+          } else { resolve(self.saveBuddyToLocal(buddy)); }
+        },
+        fail() { resolve(self.saveBuddyToLocal(buddy)); }
+      });
+    });
+  },
+  apiAcceptBuddy(id) {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        reject(new Error('未登录'));
+        return;
+      }
+      wx.request({
+        url: this.globalData.serverUrl + '/api/buddy/accept/' + id,
+        method: 'PUT',
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success(r) {
+          if (r.data && r.data.data) {
+            resolve(r.data.data);
+          } else { reject(new Error(r.data.error || '操作失败')); }
+        },
+        fail() { reject(new Error('网络请求失败')); }
+      });
+    });
+  },
+  apiRejectBuddy(id, reason) {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        reject(new Error('未登录'));
+        return;
+      }
+      wx.request({
+        url: this.globalData.serverUrl + '/api/buddy/reject/' + id,
+        method: 'PUT',
+        data: { rejectedReason: reason || '' },
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success(r) {
+          if (r.data && r.data.data) {
+            resolve(r.data.data);
+          } else { reject(new Error(r.data.error || '操作失败')); }
+        },
+        fail() { reject(new Error('网络请求失败')); }
+      });
+    });
+  },
+  apiDeleteBuddy(id) {
+    const self = this;
+    return new Promise((resolve) => {
+      const openid = self.getOpenid();
+      if (!openid || !self.globalData.token || self.globalData.token === 'local_token') {
+        resolve(self.deleteBuddyFromLocal(id));
+        return;
+      }
+      wx.request({
+        url: this.globalData.serverUrl + '/api/buddy/delete/' + id,
+        method: 'DELETE',
+        header: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + self.globalData.token
+        },
+        success() { resolve(self.deleteBuddyFromLocal(id)); },
+        fail() { resolve(self.deleteBuddyFromLocal(id)); }
+      });
+    });
+  },
 });

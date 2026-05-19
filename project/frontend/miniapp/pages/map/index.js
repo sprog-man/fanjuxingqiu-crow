@@ -1,4 +1,5 @@
 const app = getApp()
+const citySelector = requirePlugin('citySelector')
 
 Page({
   data: {
@@ -27,6 +28,10 @@ Page({
     submitBtnText: '✅ 打卡',
     submitBtnClass: '',
 
+    // City detail expand
+    expandedCity: '',
+    cityRecords: [],
+
     // Import picker
     showImport: false,
     importList: [],
@@ -48,14 +53,65 @@ Page({
     locationAuthorized: false,
     locating: false,
 
+    // City selector
+    showCitySelector: false,
+    tencentMapKey: 'DMMBZ-JWCKI-VHEGO-UCKRA-ZKTA7-KMFCF',
+    tencentMapReferer: '饭局星球',
+
+    // Edit mode
+    editingId: '',
+    isEditMode: false,
+
     serverUrl: 'http://localhost:2001',
+    uploadingPhotos: false,
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     this.fetchFootprints()
     this.fetchAchievements()
     this.fetchCheckins()
     this.tryAutoLocate()
+    
+    // 从城市选择器插件返回后获取城市信息
+    const selectedCity = citySelector.getCity()
+    if (selectedCity) {
+      console.log('[城市选择器] 选择的城市:', JSON.stringify(selectedCity))
+      this.handleCitySelected(selectedCity)
+      citySelector.clearCity()
+    }
+  },
+
+  onUnload() {
+    citySelector.clearCity()
+  },
+
+  handleCitySelected(cityInfo) {
+    if (!cityInfo || !cityInfo.location) return
+    
+    const lat = cityInfo.location.latitude
+    const lng = cityInfo.location.longitude
+    const cityName = cityInfo.name || ''
+    const fullName = cityInfo.fullname || ''
+    
+    console.log('[城市选择器] 处理城市选择:', cityName, lat, lng)
+    
+    this.setData({
+      'checkin.city': cityName,
+      'checkin.province': fullName,
+      'checkin.lat': lat,
+      'checkin.lng': lng,
+      locInfo: fullName,
+      noPhotos: true,
+      hasPhotos: false,
+      firstPhoto: '',
+      submitBtnText: '✅ 打卡',
+      submitBtnClass: '',
+      formBodyH: this.calcFormBodyH(),
+      formLoading: false,
+      showForm: true,
+    })
+    wx.setStorageSync('lastLocation', { lat, lng })
   },
 
   /* ===== Location ===== */
@@ -72,6 +128,7 @@ Page({
       type: 'wgs84',
       success: (res) => {
         wx.setStorageSync('lastLocation', { lat: res.latitude, lng: res.longitude })
+        wx.setStorageSync('lastLocationTime', Date.now())
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
@@ -188,10 +245,11 @@ Page({
     }))
   },
 
-  request(url, method, data) {
+  request(path, method, data) {
     return new Promise((resolve, reject) => {
+      const serverUrl = app.globalData.serverUrl || 'http://localhost:2001'
       wx.request({
-        url: url,
+        url: serverUrl + path,
         method: method || 'GET',
         data: data || {},
         timeout: 5000,
@@ -203,7 +261,7 @@ Page({
 
   async fetchFootprints() {
     try {
-      const res = await this.request(this.data.serverUrl + '/api/map/footprints')
+      const res = await this.request('/api/map/footprints')
       const body = res.data
       if (!body || !body.data) return
       const { cities, ...stats } = body.data
@@ -224,7 +282,7 @@ Page({
 
   async fetchAchievements() {
     try {
-      const res = await this.request(this.data.serverUrl + '/api/map/achievements')
+      const res = await this.request('/api/map/achievements')
       const body = res.data
       if (!body || !body.data) return
       const { achievements, unlockedCount, totalCount } = body.data
@@ -235,7 +293,7 @@ Page({
 
   async fetchCheckins() {
     try {
-      const res = await this.request(this.data.serverUrl + '/api/map/checkins')
+      const res = await this.request('/api/map/checkins')
       const body = res.data
       if (!body || !body.data) return
       const checkins = body.data || []
@@ -247,14 +305,36 @@ Page({
   /* ===== Check-in Flow ===== */
 
   startCheckin() {
+    console.log('[打卡] 点击打卡按钮')
     this.setData({ formLoading: true })
-    wx.getLocation({
-      type: 'wgs84',
-      success: (res) => {
-        this.reverseGeocode(res.latitude, res.longitude)
-      },
-      fail: () => {
-        wx.showToast({ title: '定位失败，请开启位置权限', icon: 'none' })
+    
+    // 优先使用缓存的位置（避免频繁调用 wx.getLocation 导致权限问题）
+    const cached = wx.getStorageSync('lastLocation')
+    console.log('[打卡] 缓存位置:', cached)
+    if (cached && cached.lat && cached.lng) {
+      // 检查缓存是否过期（30分钟内有效）
+      const cacheTime = wx.getStorageSync('lastLocationTime') || 0
+      const now = Date.now()
+      console.log('[打卡] 缓存时间:', now - cacheTime, 'ms')
+      if (now - cacheTime < 30 * 60 * 1000) {
+        console.log('[打卡] 使用缓存位置:', cached)
+        this.reverseGeocode(cached.lat, cached.lng)
+        return
+      }
+    }
+
+    // 缓存过期或不存在，使用腾讯地图城市选择器插件
+    console.log('[打卡] 打开腾讯地图城市选择器')
+    this.openCitySelector()
+  },
+
+  openCitySelector() {
+    const { tencentMapKey, tencentMapReferer } = this.data
+    wx.navigateTo({
+      url: `plugin://citySelector/index?key=${tencentMapKey}&referer=${tencentMapReferer}&accurate=1`,
+      fail: (err) => {
+        console.error('[城市选择器] 打开失败:', err)
+        wx.showToast({ title: '定位服务不可用', icon: 'none' })
         this.setData({ formLoading: false })
         this.openFormManually()
       }
@@ -262,39 +342,10 @@ Page({
   },
 
   async reverseGeocode(lat, lng) {
-    try {
-      const res = await new Promise((resolve, reject) => {
-        wx.request({
-          url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&accept-language=zh`,
-          timeout: 5000,
-          success: resolve,
-          fail: reject,
-        })
-      })
-      const addr = res.data.address || {}
-      const city = addr.city || addr.town || addr.county || addr.state || ''
-      const province = addr.state || ''
-      this.setData({
-        'checkin.city': city,
-        'checkin.province': province,
-        'checkin.lat': lat,
-        'checkin.lng': lng,
-        locInfo: province ? city + ' · ' + province : city,
-        noPhotos: true,
-        hasPhotos: false,
-        firstPhoto: '',
-        submitBtnText: '✅ 打卡',
-        submitBtnClass: '',
-        formBodyH: this.calcFormBodyH(),
-        formLoading: false,
-        showForm: true,
-      })
-      wx.setStorageSync('lastLocation', { lat, lng })
-    } catch (e) {
-      wx.showToast({ title: '获取位置信息失败，请手动填写', icon: 'none' })
-      this.setData({ formLoading: false })
-      this.openFormManually()
-    }
+    console.log('[逆地理编码] 开始:', lat, lng)
+    
+    // 使用腾讯地图城市选择器插件获取地址信息
+    this.openCitySelector()
   },
 
   calcFormBodyH() {
@@ -327,7 +378,89 @@ Page({
       firstPhoto: '',
       submitBtnText: '✅ 打卡',
       submitBtnClass: '',
+      editingId: '',
+      isEditMode: false,
       checkin: { restaurant: '', food: '', note: '', photos: [], city: '', province: '', lat: 0, lng: 0 }
+    })
+  },
+
+  async editCheckin(e) {
+    const id = e.currentTarget.dataset.id
+    console.log('[编辑打卡] ID:', id)
+    
+    // 从城市记录中找到对应的数据
+    const record = this.data.cityRecords.find(r => r._id === id)
+    if (!record) {
+      wx.showToast({ title: '未找到记录', icon: 'none' })
+      return
+    }
+
+    // 填充表单数据
+    this.setData({
+      'checkin.restaurant': record.title || '',
+      'checkin.food': (record.foodTags && record.foodTags[0]) || '',
+      'checkin.note': record.note || '',
+      'checkin.photos': record.photosList || [],
+      'checkin.city': record.city || '',
+      'checkin.province': record.province || '',
+      'checkin.lat': record.lat || 0,
+      'checkin.lng': record.lng || 0,
+      locInfo: record.city || '',
+      noPhotos: !record.photosList || record.photosList.length === 0,
+      hasPhotos: record.photosList && record.photosList.length > 0,
+      firstPhoto: (record.photosList && record.photosList[0]) || '',
+      editingId: id,
+      isEditMode: true,
+      showForm: true,
+      formBodyH: this.calcFormBodyH(),
+      formLoading: false,
+      submitBtnText: '💾 保存',
+      submitBtnClass: '',
+    })
+    
+    wx.showToast({ title: '已进入编辑模式', icon: 'none' })
+  },
+
+  async deleteCheckin(e) {
+    const id = e.currentTarget.dataset.id
+    console.log('[删除打卡] ID:', id)
+
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这条打卡记录吗？此操作不可撤销。',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (!res.confirm) return
+
+        wx.showLoading({ title: '删除中...' })
+        
+        try {
+          const response = await this.request('/api/map/checkin/' + id, 'DELETE')
+          if (response.statusCode !== 200) throw new Error('API error')
+
+          // 从本地存储中删除
+          const localCheckins = wx.getStorageSync('checkins') || []
+          const filtered = localCheckins.filter(item => item._id !== id)
+          wx.setStorageSync('checkins', filtered)
+
+          wx.hideLoading()
+          wx.showToast({ title: '删除成功', icon: 'success' })
+
+          // 刷新数据
+          this.fetchFootprints()
+          this.fetchAchievements()
+          this.fetchCheckins()
+          
+          // 如果在城市详情页面，刷新当前城市的记录
+          if (this.data.expandedCity) {
+            this.showCityDetail({ currentTarget: { dataset: { city: this.data.expandedCity } } })
+          }
+        } catch (err) {
+          console.error('[删除失败]', err)
+          wx.hideLoading()
+          wx.showToast({ title: '删除失败，请重试', icon: 'none' })
+        }
+      }
     })
   },
 
@@ -356,6 +489,25 @@ Page({
     this.setData({ 'checkin.photos': [], firstPhoto: '', noPhotos: true, hasPhotos: false })
   },
 
+  uploadCheckinPhotos(photos) {
+    const tasks = photos.map(path => {
+      return new Promise((resolve) => {
+        if (path.indexOf('http') === 0) { resolve([{ url: path }]); return }
+        wx.uploadFile({
+          url: this.data.serverUrl + '/api/map/upload',
+          filePath: path,
+          name: 'photos',
+          timeout: 10000,
+          success: (res) => {
+            try { resolve(JSON.parse(res.data).data || []) } catch (e) { resolve([]) }
+          },
+          fail: () => resolve([])
+        })
+      })
+    })
+    return Promise.all(tasks).then(results => results.flat())
+  },
+
   async submitCheckin() {
     const c = this.data.checkin
     if (!c.city && !c.restaurant) {
@@ -365,6 +517,13 @@ Page({
 
     this.setData({ formLoading: true, submitBtnText: '打卡中…', submitBtnClass: 'loading' })
 
+    // Step 1: upload photos to OSS first
+    let photoUrls = c.photos
+    if (c.photos.length > 0 && c.photos[0].indexOf('http') !== 0) {
+      const uploaded = await this.uploadCheckinPhotos(c.photos)
+      photoUrls = uploaded.map(r => r.url).filter(Boolean)
+    }
+
     const payload = {
       userId: '我',
       restaurant: c.restaurant,
@@ -373,29 +532,49 @@ Page({
       lng: c.lng,
       city: c.city,
       province: c.province,
-      photos: c.photos,
+      photos: photoUrls,
       note: c.note,
       dateTime: new Date().toISOString(),
     }
 
     try {
-      const res = await this.request(this.data.serverUrl + '/api/map/checkin', 'POST', payload)
+      let res
+      if (this.data.isEditMode && this.data.editingId) {
+        // 编辑模式：更新打卡记录
+        res = await this.request('/api/map/checkin/' + this.data.editingId, 'PUT', payload)
+      } else {
+        // 新增模式：创建打卡记录
+        res = await this.request('/api/map/checkin', 'POST', payload)
+      }
+      
       if (res.statusCode !== 200) throw new Error('API error: ' + (res.data && res.data.error))
 
       // Save locally for offline
       const localCheckins = wx.getStorageSync('checkins') || []
-      localCheckins.unshift(payload)
+      if (this.data.isEditMode) {
+        const idx = localCheckins.findIndex(item => item._id === this.data.editingId)
+        if (idx !== -1) {
+          localCheckins[idx] = { ...localCheckins[idx], ...payload }
+        }
+      } else {
+        localCheckins.unshift(payload)
+      }
       wx.setStorageSync('checkins', localCheckins)
 
-      wx.showToast({ title: '打卡成功 🎉' })
+      wx.showToast({ title: this.data.isEditMode ? '更新成功 🎉' : '打卡成功 🎉' })
       this.closeForm()
       this.fetchFootprints()
       this.fetchAchievements()
       this.fetchCheckins()
+      
+      // 如果在城市详情页面，刷新当前城市的记录
+      if (this.data.expandedCity) {
+        this.showCityDetail({ currentTarget: { dataset: { city: this.data.expandedCity } } })
+      }
     } catch (e) {
-      console.error('[打卡失败]', e)
-      wx.showToast({ title: '打卡失败，请重试', icon: 'none' })
-      this.setData({ formLoading: false, submitBtnText: '✅ 打卡', submitBtnClass: '' })
+      console.error(this.data.isEditMode ? '[更新失败]' : '[打卡失败]', e)
+      wx.showToast({ title: this.data.isEditMode ? '更新失败，请重试' : '打卡失败，请重试', icon: 'none' })
+      this.setData({ formLoading: false, submitBtnText: this.data.isEditMode ? '💾 保存' : '✅ 打卡', submitBtnClass: '' })
       return
     }
     this.setData({ formLoading: false })
@@ -453,17 +632,34 @@ Page({
     wx.showToast({ title: '已导入 ✔', icon: 'none' })
   },
 
-  /* ===== City Detail ===== */
+  /* ===== City Detail Expand ===== */
 
-  showCityDetail(e) {
+  async showCityDetail(e) {
     const city = e.currentTarget.dataset.city
-    const cityData = this.data.cities.find(c => c.city === city)
-    if (cityData) {
-      wx.showModal({
-        title: cityData.city,
-        content: `共 ${cityData.count} 次聚餐\n美食: ${(cityData.foods || []).join('、') || '暂无'}`,
-        showCancel: false,
-      })
+    // Toggle: collapse if same city tapped
+    if (this.data.expandedCity === city) {
+      this.setData({ expandedCity: '', cityRecords: [] })
+      return
+    }
+    // Show the city expand area immediately with loading
+    this.setData({ expandedCity: city, cityRecords: [] })
+    try {
+      const res = await this.request('/api/map/city-records?city=' + encodeURIComponent(city))
+      const body = res.data
+      const records = ((body && body.data) || [])
+        .map(r => ({
+          ...r,
+          cardYear: r.dateTime ? new Date(r.dateTime).getFullYear() : '',
+          cardDate: r.dateTime ? ('0' + new Date(r.dateTime).getDate()).slice(-2) : '',
+          cardMonth: r.dateTime ? ('0' + (new Date(r.dateTime).getMonth() + 1)).slice(-2) : '',
+          cardWeekday: r.dateTime ? ['日','一','二','三','四','五','六'][new Date(r.dateTime).getDay()] : '',
+          cardTime: r.dateTime ? new Date(r.dateTime).toTimeString().slice(0, 5) : '',
+          foodsStr: (r.foodTags || []).join('、'),
+          photosList: r.photos || [],
+        }))
+      this.setData({ cityRecords: records })
+    } catch (e) {
+      this.setData({ cityRecords: [] })
     }
   },
 })

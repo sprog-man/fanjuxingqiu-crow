@@ -1,6 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const crypto = require('crypto');
+const multer = require('multer');
 const Gathering = require('../models/gathering');
+const oss = require('../utils/oss');
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
+function generateOssPath(originalname) {
+  const ext = path.extname(originalname).toLowerCase() || '.jpg';
+  const filename = crypto.randomUUID() + ext;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `map/checkins/${year}/${month}/${filename}`;
+}
 
 router.post('/checkin', async (req, res) => {
   try {
@@ -125,6 +148,84 @@ router.get('/checkins', async (req, res) => {
     }).sort({ dateTime: -1 }).lean();
     res.json({ data: gatherings });
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/city-records', async (req, res) => {
+  try {
+    const userId = req.query.user_id || '我';
+    const city = req.query.city;
+    if (!city) return res.status(400).json({ error: 'city required' });
+    const gatherings = await Gathering.find({
+      $or: [{ participants: userId }, { creatorId: userId }],
+      'location.city': city,
+    }).sort({ dateTime: -1 }).lean();
+    res.json({ data: gatherings });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.put('/checkin/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { restaurant, food, lat, lng, city, province, photos, note, dateTime } = req.body;
+    
+    const gathering = await Gathering.findById(id);
+    if (!gathering) {
+      return res.status(404).json({ error: '打卡记录不存在' });
+    }
+
+    gathering.title = restaurant || (city ? `${city}打卡` : '美食打卡');
+    if (dateTime) gathering.dateTime = dateTime;
+    if (lat !== undefined) gathering.location.lat = lat;
+    if (lng !== undefined) gathering.location.lng = lng;
+    if (city) gathering.location.city = city;
+    if (restaurant) gathering.location.name = restaurant;
+    if (photos !== undefined) gathering.photos = photos;
+    if (note !== undefined) gathering.note = note;
+    if (food !== undefined) gathering.foodTags = [food];
+
+    await gathering.save();
+    
+    res.json({ data: { ...gathering.toObject(), _id: gathering._id, id: gathering._id } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete('/checkin/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const gathering = await Gathering.findByIdAndDelete(id);
+    if (!gathering) {
+      return res.status(404).json({ error: '打卡记录不存在' });
+    }
+
+    res.json({ data: { success: true } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/upload', upload.array('photos', 9), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: '请选择照片' });
+    }
+    const files = [];
+    for (const f of req.files) {
+      const ossPath = generateOssPath(f.originalname);
+      const url = await oss.uploadBuffer(f.buffer, ossPath);
+      files.push({ url, originalName: f.originalname, size: f.size });
+    }
+    res.json({ data: files });
+  } catch (e) {
+    if (e.code === 'OSS_MISCONFIG') {
+      return res.status(500).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });

@@ -9,13 +9,16 @@ Page({
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     this.loadRecords()
     this.loadStats()
   },
 
   loadRecords() {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/gathering/list',
+      url: serverUrl + '/api/gathering/list',
+      method: 'GET',
       timeout: 3000,
       success: (res) => {
         const items = this._normalize(res.data.data.items)
@@ -57,8 +60,10 @@ Page({
   },
 
   loadStats() {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/gathering/stats',
+      url: serverUrl + '/api/gathering/stats',
+      method: 'GET',
       timeout: 3000,
       success: (res) => {
         const stats = res.data.data
@@ -172,6 +177,6 @@ Page({
     return `${p[0]}年${parseInt(p[1])}月`
   },
 
-  goCreate() { wx.navigateTo({ url: '/pages/record/create' }) },
-  goDetail(e) { wx.navigateTo({ url: '/pages/record/detail?id=' + (e.currentTarget.dataset.id) }) }
+  goCreate() { wx.navigateTo({ url: '/subpackages/record/create' }) },
+  goDetail(e) { wx.navigateTo({ url: '/subpackages/record/detail?id=' + (e.currentTarget.dataset.id) }) }
 })

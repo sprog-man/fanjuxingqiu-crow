@@ -1,0 +1,98 @@
+[
+  {
+    "_id": "6a07c573277abdd7b1aef2e2",
+    "id": "chuan",
+    "name": "川菜",
+    "icon": "🌶️",
+    "color": "#D85A30",
+    "tags": [
+      "辣",
+      "麻辣",
+      "重口"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.444Z",
+    "updatedAt": "2026-05-16T01:16:35.444Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2e3",
+    "id": "yue",
+    "name": "粤菜",
+    "icon": "🥟",
+    "color": "#1D9E75",
+    "tags": [
+      "清淡",
+      "鲜美",
+      "精致"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.445Z",
+    "updatedAt": "2026-05-16T01:16:35.445Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2e4",
+    "id": "ri",
+    "name": "日料",
+    "icon": "🍣",
+    "color": "#534AB7",
+    "tags": [
+      "清淡",
+      "生鲜",
+      "精致"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.445Z",
+    "updatedAt": "2026-05-16T01:16:35.445Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2e5",
+    "id": "han",
+    "name": "韩餐",
+    "icon": "🥘",
+    "color": "#185FA5",
+    "tags": [
+      "辣",
+      "重口",
+      "烤肉"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.445Z",
+    "updatedAt": "2026-05-16T01:16:35.445Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2e6",
+    "id": "xi",
+    "name": "西餐",
+    "icon": "🥩",
+    "color": "#BA7517",
+    "tags": [
+      "精致",
+      "牛排",
+      "浪漫"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.445Z",
+    "updatedAt": "2026-05-16T01:16:35.445Z"
+  },
+  {
+    "_id": "6a07c573277abdd7b1aef2e7",
+    "id": "su",
+    "name": "素食",
+    "icon": "🥗",
+    "color": "#1D9E75",
+    "tags": [
+      "清淡",
+      "健康",
+      "轻食"
+    ],
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-16T01:16:35.445Z",
+    "updatedAt": "2026-05-16T01:16:35.445Z"
+  }
+]

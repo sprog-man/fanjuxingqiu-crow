@@ -1,0 +1,216 @@
+<scroll-view class="page" scroll-y>
+  <!-- ========== 入口页面：创建 / 加入房间 ========== -->
+  <view wx:if="{{pageState === 'entry'}}" class="entry-page">
+    <view class="entry-hero">
+      <text class="entry-icon">👥</text>
+      <text class="entry-title">多人在线</text>
+      <text class="entry-sub">邀请好友一起决定谁买单</text>
+    </view>
+
+    <view class="entry-body">
+      <view class="entry-card create-card" bindtap="_createRoom">
+        <text class="ec-icon">🎲</text>
+        <view class="ec-text">
+          <text class="ec-title">创建房间</text>
+          <text class="ec-desc">自己开一个房间，邀请好友加入</text>
+        </view>
+        <text class="ec-arrow">›</text>
+      </view>
+
+      <view class="entry-divider">
+        <text class="ed-line"></text>
+        <text class="ed-text">或者</text>
+        <text class="ed-line"></text>
+      </view>
+
+      <view class="entry-card join-card">
+        <text class="ec-icon">🔑</text>
+        <view class="ec-text">
+          <text class="ec-title">加入房间</text>
+          <text class="ec-desc">输入房主分享给你的房间号</text>
+        </view>
+      </view>
+      <view class="join-input-row">
+        <input class="join-input" type="text" placeholder="输入6位房间号" maxlength="6" value="{{inputRoomCode}}" bindinput="onInputRoomCode" />
+        <button class="join-btn" bindtap="_joinRoom" disabled="{{!canJoin}}">加入</button>
+      </view>
+
+      <view wx:if="{{connecting}}" class="connecting-bar">
+        <text class="connecting-text">正在连接…</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 房间内页面 ========== -->
+  <view wx:if="{{pageState === 'inroom'}}" class="inroom-page">
+    <!-- 顶部：房间码 + 分享 -->
+    <view class="room-header">
+      <text class="room-code-label">房间号</text>
+      <text class="room-code">{{roomCode}}</text>
+      <view class="header-actions">
+        <button class="share-btn" bindtap="shareRoom">邀请好友</button>
+        <button class="leave-btn" bindtap="leaveRoom">退出</button>
+      </view>
+    </view>
+
+    <!-- 在线成员 -->
+    <view class="members-section">
+      <text class="section-title">在线成员（{{members.length}}人）</text>
+      <view class="members-row">
+        <view wx:for="{{members}}" wx:key="id" class="member-avatar">
+          <image wx:if="{{item.avatar}}" class="ma-circle-img" src="{{item.avatar}}" mode="aspectFill" />
+          <view wx:else class="ma-circle" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+          <text class="ma-name">{{item.nickname}}</text>
+          <text wx:if="{{item.isHost}}" class="ma-host">房主</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 游戏选择（仅房主可见） -->
+    <view wx:if="{{isHost && gameMode === ''}}" class="game-picker-host">
+      <text class="section-title">选择游戏</text>
+      <view class="gp-card" data-mode="draw" bindtap="startDraw">
+        <text class="gp-icon">🎯</text>
+        <view class="gp-text">
+          <text class="gp-name">抽签</text>
+          <text class="gp-desc">让运气决定谁买单</text>
+        </view>
+      </view>
+      <view class="gp-card" data-mode="croc" bindtap="startGame">
+        <text class="gp-icon">🐊</text>
+        <view class="gp-text">
+          <text class="gp-name">鳄鱼牙齿</text>
+          <text class="gp-desc">轮流按牙齿，谁中招谁买单</text>
+        </view>
+      </view>
+      <view class="gp-card" data-mode="pirate" bindtap="startGame">
+        <text class="gp-icon">🏴‍☠️</text>
+        <view class="gp-text">
+          <text class="gp-name">海盗插刀</text>
+          <text class="gp-desc">往木桶插刀，触发海盗的人买单</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 非房主等待提示 -->
+    <view wx:if="{{!isHost && gameMode === ''}}" class="waiting-msg">
+      <text class="waiting-text">等待房主开始游戏…</text>
+    </view>
+
+    <!-- ========== 抽签区域 ========== -->
+    <view wx:if="{{gameMode === 'draw'}}" class="draw-section">
+
+      <!-- 准备阶段：围成圆形 -->
+      <view wx:if="{{drawPhase === 'idle'}}" class="draw-idle">
+        <view class="draw-circle">
+          <view wx:for="{{members}}" wx:key="id" class="draw-circle-item" style="transform:rotate({{index * 360 / members.length}}deg) translateY(-80px)">
+            <image wx:if="{{item.avatar}}" class="dci-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+            <view wx:else class="dci-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+            <text class="dci-name">{{item.nickname}}</text>
+          </view>
+        </view>
+        <text class="draw-ready-hint">抽签准备就绪</text>
+        <button wx:if="{{isHost}}" class="draw-start-btn" bindtap="doDraw">🎯 开始抽签</button>
+      </view>
+
+      <!-- 倒计时 -->
+      <view wx:if="{{drawPhase === 'countdown'}}" class="draw-countdown">
+        <text class="countdown-num">{{countdown}}</text>
+      </view>
+
+      <!-- 第1-3阶段：加速旋转 → 高速巡航 → 减速 -->
+      <view wx:if="{{drawPhase === 'spinning'}}" class="draw-spin">
+        <view class="spin-stage-wrap">
+          <view class="drumroll-label">{{spinPhase === 'accelerate' ? '🌀 命运之轮启动...' : spinPhase === 'cruise' ? '⚡ 高速旋转中！' : '💥 空间压缩中！'}}</view>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-1"></view>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-2"></view>
+          <view wx:if="{{spinPhase === 'cruise'}}" class="spin-glow-ring sr-3"></view>
+          <view class="spin-stage" style="transform: rotate({{spinAngle}}deg)">
+            <view wx:for="{{members}}" wx:key="id" class="spin-item {{spinPhase === 'cruise' ? 'si-blur' : ''}}" style="transform: rotate({{index * 360 / members.length}}deg) translateY(-{{spinRadius}}px)">
+              <image wx:if="{{item.avatar}}" class="si-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <view wx:else class="si-avatar" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+              <text class="si-name">{{item.nickname}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 第4阶段：碰撞弹射 → 幸运儿飞出 -->
+      <view wx:if="{{drawPhase === 'eject'}}" class="draw-eject">
+        <view class="eject-stage">
+          <view wx:for="{{members}}" wx:key="id" class="eject-item"
+                style="background:{{item.color}};{{ejectStyles[index]}}">
+            <image wx:if="{{item.avatar}}" class="eject-item-img" src="{{item.avatar}}" mode="aspectFill" />
+            <text wx:else>{{item.nickname.slice(0,1)}}</text>
+          </view>
+        </view>
+        <text class="eject-label">{{ejectLabel}}</text>
+      </view>
+
+      <!-- 第5阶段：最终揭晓 -->
+      <view wx:if="{{drawPhase === 'reveal'}}" class="draw-reveal">
+        <!-- 金色粒子装饰 -->
+        <view class="particle-field">
+          <view class="particle pt-1"></view><view class="particle pt-2"></view><view class="particle pt-3"></view>
+          <view class="particle pt-4"></view><view class="particle pt-5"></view><view class="particle pt-6"></view>
+          <view class="particle pt-7"></view><view class="particle pt-8"></view>
+        </view>
+        <!-- 中奖者 -->
+        <view class="reveal-winner reveal-bounce-in">
+          <view class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
+          <text class="rw-name draw-name">{{drawWinner}}</text>
+        </view>
+        <view class="reveal-label-wrap">
+          <text class="rw-label-line">🎉 今晚的幸运儿是 🎉</text>
+        </view>
+        <text class="rw-verdict">请这位朋友买单~ 😄</text>
+        <text class="rw-humor">{{humorLine}}</text>
+        <button class="reset-btn" bindtap="resetDraw">再来一次</button>
+      </view>
+    </view>
+
+    <!-- ========== 鳄鱼牙齿 / 海盗插刀 ========== -->
+    <view wx:if="{{gameMode === 'croc' || gameMode === 'pirate'}}" class="game-section">
+      <view class="turn-indicator">
+        <text class="turn-label">当前轮到</text>
+        <text class="turn-name">{{currentTurnName}}</text>
+      </view>
+
+      <view wx:if="{{gameMode === 'croc'}}" class="croc-wrap">
+        <view class="croc-body {{gameResult ? 'bite' : ''}}">
+          <view class="croc-head"></view>
+          <view class="croc-jaw-upper">
+            <view class="teeth-row">
+              <view wx:for="{{gameBoard}}" wx:key="index" class="tooth {{item.state}} {{isMyTurn ? 'clickable' : ''}}" data-index="{{index}}" bindtap="pressTooth"></view>
+            </view>
+          </view>
+          <view class="croc-jaw-lower"></view>
+        </view>
+      </view>
+
+      <view wx:if="{{gameMode === 'pirate'}}" class="barrel-section">
+        <view class="barrel {{gameResult ? 'shake' : ''}}">
+          <view class="barrel-body">
+            <view class="slot-grid">
+              <view wx:for="{{gameBoard}}" wx:key="index" class="slot {{item.state}} {{isMyTurn ? 'clickable' : ''}}" data-index="{{index}}" bindtap="stabSlot">
+                <view wx:if="{{item.state === 'stabbed'}}" class="knife"></view>
+                <view wx:if="{{item.state === 'boom'}}" class="boom-effect">💥</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{!isMyTurn && gamePhase === 'playing' && !gameResult}}" class="waiting-overlay">
+        <text class="wo-text">等待 {{currentTurnName}} 操作…</text>
+      </view>
+
+      <view wx:if="{{gameResult}}" class="result-box">
+        <text class="result-label">{{gameMode === 'croc' ? '💥 被咬了！' : '🏴‍☠️ 海盗出来了！'}}</text>
+        <text class="result-name">{{gameResult}}</text>
+        <text class="result-desc">你来买单！</text>
+        <button class="reset-btn" bindtap="resetGame">再来一局</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>

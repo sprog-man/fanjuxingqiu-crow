@@ -5,7 +5,9 @@ Page({
     activeTab: 'draw',
     currentGame: null,
     // 抽签
-    inputName: '', players: [], drawResult: null, drawing: false, drawIndex: -1,
+    inputName: '', players: [], drawPhase: 'idle', countdown: 0,
+    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '',
+    ejectStyles: [], ejectLabel: '',
     showDrawBuddy: false, drawBuddySearch: '', drawBuddies: [],
     showGameBuddy: false, gameBuddySearch: '', gameBuddies: [],
     // 鳄鱼
@@ -28,8 +30,18 @@ Page({
   },
 
   onShow() {
+    this.setData({ serverUrl: app.getServerUrl() })
     const userInfo = app.globalData.userInfo
     if (userInfo && userInfo.nickname) this.setData({ currentUser: userInfo.nickname })
+  },
+
+  fullUrl(path) {
+    if (!path) return ''
+    return path.indexOf('http') === 0 ? path : this.data.serverUrl + path
+  },
+  onUnload() {
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
   },
 
   switchTab(e) {
@@ -48,19 +60,23 @@ Page({
   /* ========== 通用饭搭子导入 ========== */
 
   markBuddiesAdded(buddies, list) {
-    return buddies.map(b => ({ ...b, added: list.includes(b.name) }))
+    return buddies.map(b => ({
+      ...b,
+      added: list.includes(b.name),
+      _avatarUrl: b.avatar ? this.fullUrl(b.avatar) : '',
+    }))
   },
 
   openDrawBuddy() {
     this.setData({
       showDrawBuddy: true, drawBuddySearch: '',
-      drawBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.players),
+      drawBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.players),
     })
   },
   closeDrawBuddy() { this.setData({ showDrawBuddy: false }) },
   onDrawBuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.data.players)
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.players)
     this.setData({ drawBuddySearch: q, drawBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickDrawBuddy(e) {
@@ -82,13 +98,13 @@ Page({
   openGameBuddy() {
     this.setData({
       showGameBuddy: true, gameBuddySearch: '',
-      gameBuddies: this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList()),
+      gameBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.getGamePlayerList()),
     })
   },
   closeGameBuddy() { this.setData({ showGameBuddy: false }) },
   onGameBuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList())
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.getGamePlayerList())
     this.setData({ gameBuddySearch: q, gameBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickGameBuddy(e) {
@@ -107,13 +123,13 @@ Page({
   openAABuddy() {
     this.setData({
       showAABuddy: true, aaBuddySearch: '',
-      aaBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants),
+      aaBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.aaParticipants),
     })
   },
   closeAABuddy() { this.setData({ showAABuddy: false }) },
   onAABuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants)
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.aaParticipants)
     this.setData({ aaBuddySearch: q, aaBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickAABuddy(e) {
@@ -127,7 +143,7 @@ Page({
   },
 
   goMultiplayer() {
-    wx.navigateTo({ url: '/pages/room/index' });
+    wx.navigateTo({ url: '/subpackages/room/index' });
   },
 
   /* ========== 抽签 ========== */
@@ -141,27 +157,92 @@ Page({
   removePlayer(e) {
     const { index } = e.currentTarget.dataset
     const players = [...this.data.players]; players.splice(index, 1)
-    this.setData({ players, drawResult: null })
+    this.setData({ players, drawPhase: 'idle', drawWinner: '' })
   },
+  /* ========== 抽签动画 — 多人在线复刻版 ========== */
   startDraw() {
-    if (this.data.drawing) return
+    if (this.data.drawPhase !== 'idle' && this.data.drawPhase !== 'reveal' && this.data.drawPhase !== '') return
     if (this.data.players.length < 2) { wx.showToast({ title: '至少需要2人', icon: 'none' }); return }
-    this.setData({ drawing: true, drawResult: null })
-    const players = this.data.players, total = 6 + players.length
-    let cycle = 0
-    const self = this
-    function run() {
-      if (cycle >= total) {
-        const w = Math.floor(Math.random() * players.length)
-        self.setData({ drawResult: players[w], drawing: false, drawIndex: -1 }); return
-      }
-      self.setData({ drawIndex: cycle % players.length })
-      cycle++
-      setTimeout(run, 60 + (cycle / total) ** 2 * 240)
-    }
-    run()
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ drawPhase: 'countdown', countdown: 3, spinAngle: 0, drawWinner: '', humorLine: '', ejectStyles: [], ejectLabel: '' });
+    let count = 3;
+    const tick = () => {
+      count--;
+      if (count > 0) { this.setData({ countdown: count }); this._spinTimer = setTimeout(tick, 800); }
+      else { this.setData({ drawPhase: 'spinning' }); this._runSpinAnim(); }
+    };
+    this._spinTimer = setTimeout(tick, 800);
   },
-  resetDraw() { this.setData({ drawResult: null, drawing: false, drawIndex: -1 }) },
+  resetDraw() {
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ drawPhase: 'idle', countdown: 0, spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '', ejectStyles: [], ejectLabel: '' });
+  },
+  _runSpinAnim() {
+    const players = this.data.players;
+    if (!players.length) return;
+    if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
+    if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    this.setData({ spinAngle: 0, spinPhase: 'accelerate', spinRadius: 150 });
+    const startTime = Date.now();
+    let angle = 0;
+    const tick = () => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      let speed, radius, phase;
+      if (elapsed < 0.5) {
+        speed = (elapsed / 0.5) * 360; radius = 150; phase = 'accelerate';
+      } else if (elapsed < 2.0) {
+        speed = 540; radius = 150; phase = 'cruise';
+      } else if (elapsed < 4.0) {
+        const t = (elapsed - 2.0) / 2.0;
+        speed = Math.round(540 * (1 - t * 0.6));
+        radius = Math.round(150 - 120 * t);
+        phase = 'shrink';
+      } else {
+        this.setData({ spinPhase: 'clustered', spinAngle: angle % 360, spinRadius: 30 });
+        this._spinTimer = null;
+        this._ejectWinner();
+        return;
+      }
+      angle += speed * 0.016;
+      this.setData({ spinAngle: angle, spinPhase: phase, spinRadius: radius });
+      this._spinTimer = setTimeout(tick, 16);
+    };
+    tick();
+  },
+  _ejectWinner() {
+    const players = this.data.players;
+    const winner = players.length ? players[Math.floor(Math.random() * players.length)] : '';
+    if (!players.length || !winner) return;
+    this.setData({
+      drawPhase: 'eject',
+      ejectStyles: players.map(() => 'transform:translate(0,0);'),
+      ejectLabel: '🎯 幸运儿弹出！',
+    });
+    this._ejectTimer = setTimeout(() => {
+      this._ejectTimer = null;
+      const flyX = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
+      const flyY = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
+      const flyRotate = (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 360);
+      const finalStyles = players.map(p =>
+        p === winner
+          ? `transform:translate(${flyX}px,${flyY}px) rotate(${flyRotate}deg) scale(1.4);opacity:0;`
+          : 'transform:translate(0,0) scale(0.6);opacity:0.7;'
+      );
+      const humorLines = ['恭喜成为本局幸运鹅 🦆','今晚这顿安排上了 🍷','这顿饭你请，大家记住你了 😎','运气也是实力的一部分 👏','恭喜中奖！下次继续努力 💪','恭喜成为今晚的「财务大臣」💰','这一顿，值得！🍽️'];
+      this.setData({
+        ejectStyles: finalStyles,
+        ejectLabel: `💥 ${winner} 被撞飞！他就是幸运儿！`,
+        drawWinner: winner,
+        humorLine: humorLines[Math.floor(Math.random() * humorLines.length)],
+      });
+      this._ejectTimer = setTimeout(() => {
+        this._ejectTimer = null;
+        this.setData({ drawPhase: 'reveal' });
+      }, 700);
+    }, 50);
+  },
 
   /* ========== 鳄鱼 ========== */
 
@@ -287,18 +368,23 @@ Page({
     this.setData({ selectedGathering: null, aaParticipants: [], aaAmount: '' })
   },
 
-  request(url, method, data) {
+  request(path, method, data) {
     return new Promise((resolve, reject) => {
+      const serverUrl = app.globalData.serverUrl || 'http://localhost:2001'
       wx.request({
-        url, method: method || 'GET', data: data || {},
-        timeout: 5000, success: resolve, fail: reject,
+        url: serverUrl + path,
+        method: method || 'GET',
+        data: data || {},
+        timeout: 5000,
+        success: resolve,
+        fail: reject,
       })
     })
   },
 
   async fetchAA() {
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/next/' + this.data.groupId)
+      const res = await this.request('/api/game/aa/next/' + this.data.groupId)
       const body = res.data
       if (!body || !body.data) return
       const d = body.data
@@ -320,7 +406,7 @@ Page({
       amount: Number(this.data.aaAmount),
     }
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/record', 'POST', payload)
+      const res = await this.request('/api/game/aa/record', 'POST', payload)
       if (res.statusCode !== 200) throw new Error('submit failed')
     } catch (e) {
       wx.showToast({ title: '保存失败', icon: 'none' }); return
@@ -343,7 +429,7 @@ Page({
     const current = paidStatus[participant]
     const newStatus = !current
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/update-status', 'POST', {
+      const res = await this.request('/api/game/aa/update-status', 'POST', {
         recordId: recordid, participant, paid: newStatus,
       })
       if (res.statusCode !== 200) throw new Error('update failed')

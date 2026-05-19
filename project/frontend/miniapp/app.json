@@ -3,15 +3,36 @@
     "pages/eat/index",
     "pages/pay/index",
     "pages/record/index",
-    "pages/record/create",
-    "pages/record/detail",
-    "pages/mine/relation",
-    "pages/mine/album",
-    "pages/mine/buddies",
     "pages/map/index",
-    "pages/mine/index",
-    "pages/room/index"
+    "pages/mine/index"
   ],
+  "subpackages": [
+    {
+      "root": "subpackages/record",
+      "name": "record",
+      "pages": ["create", "detail"]
+    },
+    {
+      "root": "subpackages/mine",
+      "name": "mine",
+      "pages": ["relation", "album", "buddies"]
+    },
+    {
+      "root": "subpackages/room",
+      "name": "room",
+      "pages": ["index"]
+    }
+  ],
+  "preloadRule": {
+    "pages/record/index": {
+      "network": "all",
+      "packages": ["record"]
+    },
+    "pages/mine/index": {
+      "network": "all",
+      "packages": ["mine"]
+    }
+  },
   "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "饭局星球",
@@ -55,6 +76,12 @@
       }
     ]
   },
+  "plugins": {
+    "citySelector": {
+      "version": "1.0.3",
+      "provider": "wx63ffb7b7894e99ae"
+    }
+  },
   "style": "v2",
   "componentFramework": "glass-easel",
   "permission": {
@@ -63,6 +90,7 @@
     }
   },
   "requiredPrivateInfos": ["getLocation"],
+  "cloud": true,
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
 }

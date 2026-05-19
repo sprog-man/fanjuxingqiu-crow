@@ -1,0 +1,1236 @@
+[
+  {
+    "_id": "6a092e2f000782a028672dc1",
+    "name": "麻婆豆腐",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "麻辣",
+      "下饭"
+    ],
+    "description": "经典川菜，麻辣鲜香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc2",
+    "name": "水煮鱼",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "麻辣",
+      "鲜香"
+    ],
+    "description": "鱼片嫩滑，红油飘香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc3",
+    "name": "宫保鸡丁",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "甜辣",
+      "花生"
+    ],
+    "description": "鸡丁配花生，甜辣适中",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc4",
+    "name": "回锅肉",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "咸香",
+      "家常"
+    ],
+    "description": "蒜苗回锅肉，家常美味",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc5",
+    "name": "夫妻肺片",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "麻辣",
+      "凉拌"
+    ],
+    "description": "牛肉牛杂凉拌，麻辣开胃",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc6",
+    "name": "辣子鸡",
+    "cuisineId": "chuan",
+    "image": "",
+    "tags": [
+      "麻辣",
+      "干香"
+    ],
+    "description": "干辣椒炒鸡，外酥里嫩",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc7",
+    "name": "白切鸡",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "清淡",
+      "原味"
+    ],
+    "description": "广东名菜，皮爽肉滑",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.369Z",
+    "updatedAt": "2026-05-17T02:55:43.369Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc8",
+    "name": "烧鹅",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "香脆",
+      "蜜汁"
+    ],
+    "description": "皮脆肉嫩，蜜汁飘香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dc9",
+    "name": "虾饺",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "鲜美",
+      "点心"
+    ],
+    "description": "透明外皮，鲜虾饱满",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dca",
+    "name": "肠粉",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "嫩滑",
+      "早餐"
+    ],
+    "description": "米浆蒸制，嫩滑爽口",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dcb",
+    "name": "叉烧",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "蜜汁",
+      "香甜"
+    ],
+    "description": "蜜汁叉烧，肥瘦相间",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dcc",
+    "name": "煲仔饭",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [
+      "锅巴",
+      "香浓"
+    ],
+    "description": "腊味煲仔饭，锅巴焦香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dcd",
+    "name": "三文鱼刺身",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "生鲜",
+      "清淡"
+    ],
+    "description": "新鲜三文鱼，入口即化",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dce",
+    "name": "拉面",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "浓郁",
+      "面食"
+    ],
+    "description": "豚骨汤底，面条劲道",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dcf",
+    "name": "天妇罗",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "酥脆",
+      "油炸"
+    ],
+    "description": "蔬菜海鲜裹面糊炸制",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd0",
+    "name": "寿司拼盘",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "精致",
+      "生鲜"
+    ],
+    "description": "多种寿司组合",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd1",
+    "name": "烤鳗鱼",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "甜咸",
+      "炭烤"
+    ],
+    "description": "蒲烧鳗鱼，甜咸适口",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd2",
+    "name": "章鱼小丸子",
+    "cuisineId": "ri",
+    "image": "",
+    "tags": [
+      "街头",
+      "小吃"
+    ],
+    "description": "外酥内软，配木鱼花",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd3",
+    "name": "韩式烤肉",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "烤肉",
+      "辣酱"
+    ],
+    "description": "五花肉配辣酱生菜",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd4",
+    "name": "石锅拌饭",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "拌饭",
+      "辣酱"
+    ],
+    "description": "热石锅拌饭，锅巴香脆",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd5",
+    "name": "泡菜汤",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "酸辣",
+      "暖胃"
+    ],
+    "description": "泡菜豆腐汤，酸辣开胃",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd6",
+    "name": "炸鸡",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "酥脆",
+      "甜辣"
+    ],
+    "description": "韩式甜辣炸鸡",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd7",
+    "name": "冷面",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "清凉",
+      "酸甜"
+    ],
+    "description": "冰镇冷面，夏日必备",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd8",
+    "name": "部队锅",
+    "cuisineId": "han",
+    "image": "",
+    "tags": [
+      "丰富",
+      "辣味"
+    ],
+    "description": "午餐肉年糕火锅",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dd9",
+    "name": "牛排",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "牛排",
+      "精致"
+    ],
+    "description": "澳洲牛排，五分熟最佳",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dda",
+    "name": "意面",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "番茄",
+      "面食"
+    ],
+    "description": "经典番茄肉酱意面",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672ddb",
+    "name": "凯撒沙拉",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "清爽",
+      "健康"
+    ],
+    "description": "罗马生菜配凯撒酱",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672ddc",
+    "name": "奶油蘑菇汤",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "浓郁",
+      "暖胃"
+    ],
+    "description": "奶油蘑菇浓汤",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672ddd",
+    "name": "披萨",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "芝士",
+      "分享"
+    ],
+    "description": "玛格丽特披萨",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dde",
+    "name": "焗蜗牛",
+    "cuisineId": "xi",
+    "image": "",
+    "tags": [
+      "法式",
+      "蒜香"
+    ],
+    "description": "黄油蒜香焗蜗牛",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672ddf",
+    "name": "罗汉斋",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "清淡",
+      "养生"
+    ],
+    "description": "多种素菜烩制",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de0",
+    "name": "素炒时蔬",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "清淡",
+      "健康"
+    ],
+    "description": "当季蔬菜清炒",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de1",
+    "name": "豆腐煲",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "鲜美",
+      "暖胃"
+    ],
+    "description": "砂锅豆腐煲",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de2",
+    "name": "素饺子",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "家常",
+      "面食"
+    ],
+    "description": "三鲜素馅饺子",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de3",
+    "name": "凉拌木耳",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "爽脆",
+      "开胃"
+    ],
+    "description": "木耳凉拌，酸辣爽口",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de4",
+    "name": "素汉堡",
+    "cuisineId": "su",
+    "image": "",
+    "tags": [
+      "轻食",
+      "新潮"
+    ],
+    "description": "植物肉汉堡",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de5",
+    "name": "糖醋鲤鱼",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "酸甜",
+      "经典"
+    ],
+    "description": "外酥里嫩，糖醋汁浓",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de6",
+    "name": "九转大肠",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "醇厚",
+      "经典"
+    ],
+    "description": "鲁菜名菜，肥而不腻",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de7",
+    "name": "葱烧海参",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "高档",
+      "鲜美"
+    ],
+    "description": "大葱烧海参，鲜香浓郁",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de8",
+    "name": "锅塌豆腐",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "家常",
+      "嫩滑"
+    ],
+    "description": "豆腐煎塌，外焦里嫩",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672de9",
+    "name": "爆炒腰花",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "快炒",
+      "鲜嫩"
+    ],
+    "description": "腰花快炒，鲜嫩爽口",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dea",
+    "name": "德州扒鸡",
+    "cuisineId": "lu",
+    "image": "",
+    "tags": [
+      "酥烂",
+      "香浓"
+    ],
+    "description": "德州名菜，骨肉分离",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672deb",
+    "name": "剁椒鱼头",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "辣",
+      "鲜香"
+    ],
+    "description": "大鱼头配剁椒，鲜辣过瘾",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dec",
+    "name": "小炒黄牛肉",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "辣",
+      "下饭"
+    ],
+    "description": "牛肉小炒，香辣入味",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672ded",
+    "name": "农家小炒肉",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "辣",
+      "家常"
+    ],
+    "description": "五花肉配辣椒，下饭神器",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dee",
+    "name": "毛氏红烧肉",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "甜咸",
+      "软糯"
+    ],
+    "description": "毛氏红烧肉，肥而不腻",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672def",
+    "name": "腊味合蒸",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "咸香",
+      "腊味"
+    ],
+    "description": "多种腊味蒸制",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df0",
+    "name": "口味虾",
+    "cuisineId": "xiang",
+    "image": "",
+    "tags": [
+      "辣",
+      "夜宵"
+    ],
+    "description": "麻辣小龙虾，夜宵首选",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df1",
+    "name": "狮子头",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "醇厚",
+      "经典"
+    ],
+    "description": "大肉丸炖制，入口即化",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df2",
+    "name": "大煮干丝",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "清淡",
+      "刀工"
+    ],
+    "description": "豆腐干切丝，高汤煮制",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df3",
+    "name": "松鼠鳜鱼",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "酸甜",
+      "造型"
+    ],
+    "description": "鳜鱼炸制，形似松鼠",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df4",
+    "name": "扬州炒饭",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "经典",
+      "家常"
+    ],
+    "description": "虾仁蛋炒饭，粒粒分明",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df5",
+    "name": "水晶肴肉",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "冷盘",
+      "精致"
+    ],
+    "description": "镇江名菜，晶莹剔透",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df6",
+    "name": "文思豆腐",
+    "cuisineId": "huaiyang",
+    "image": "",
+    "tags": [
+      "刀工",
+      "清淡"
+    ],
+    "description": "豆腐切丝如发，高汤清炖",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df7",
+    "name": "锅包肉",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "酸甜",
+      "酥脆"
+    ],
+    "description": "里脊肉裹粉炸，酸甜汁浇",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df8",
+    "name": "地三鲜",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "家常",
+      "下饭"
+    ],
+    "description": "土豆茄子青椒炒制",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672df9",
+    "name": "铁锅炖",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "炖菜",
+      "豪放"
+    ],
+    "description": "铁锅炖大鹅，东北特色",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dfa",
+    "name": "酸菜白肉",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "酸菜",
+      "暖胃"
+    ],
+    "description": "酸菜炖白肉，冬日必备",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dfb",
+    "name": "烤冷面",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "街头",
+      "小吃"
+    ],
+    "description": "东北烤冷面，配鸡蛋香肠",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dfc",
+    "name": "酱骨架",
+    "cuisineId": "dongbei",
+    "image": "",
+    "tags": [
+      "酱香",
+      "大骨"
+    ],
+    "description": "大骨酱炖，啃骨过瘾",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dfd",
+    "name": "羊肉泡馍",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "面食",
+      "羊肉"
+    ],
+    "description": "西安名吃，汤浓馍软",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dfe",
+    "name": "肉夹馍",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "面食",
+      "肉香"
+    ],
+    "description": "腊汁肉夹馍，外酥里嫩",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672dff",
+    "name": "兰州拉面",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "面食",
+      "牛肉"
+    ],
+    "description": "一清二白三红四绿",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.370Z",
+    "updatedAt": "2026-05-17T02:55:43.370Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e00",
+    "name": "手抓羊肉",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "羊肉",
+      "原味"
+    ],
+    "description": "手抓羊肉，原汁原味",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e01",
+    "name": "凉皮",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "清凉",
+      "酸辣"
+    ],
+    "description": "米皮配辣椒醋汁",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e02",
+    "name": "大盘鸡",
+    "cuisineId": "xibei",
+    "image": "",
+    "tags": [
+      "辣",
+      "大盘"
+    ],
+    "description": "新疆大盘鸡，配皮带面",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e03",
+    "name": "臭豆腐",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "街头",
+      "特色"
+    ],
+    "description": "外酥内嫩，闻着臭吃着香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e04",
+    "name": "煎饼果子",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "早餐",
+      "面食"
+    ],
+    "description": "天津煎饼果子，配薄脆",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e05",
+    "name": "麻辣烫",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "辣",
+      "自选"
+    ],
+    "description": "自选食材麻辣汤底",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e06",
+    "name": "烤串",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "烧烤",
+      "夜宵"
+    ],
+    "description": "羊肉串牛肉串，炭烤飘香",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e07",
+    "name": "糖葫芦",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "甜食",
+      "传统"
+    ],
+    "description": "山楂糖葫芦，酸甜可口",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a092e2f000782a028672e08",
+    "name": "生煎包",
+    "cuisineId": "xiaochi",
+    "image": "",
+    "tags": [
+      "面食",
+      "鲜美"
+    ],
+    "description": "底部焦脆，汤汁丰富",
+    "popularity": 0,
+    "enabled": true,
+    "__v": 0,
+    "createdAt": "2026-05-17T02:55:43.371Z",
+    "updatedAt": "2026-05-17T02:55:43.371Z"
+  },
+  {
+    "_id": "6a094111df813849ee8c9542",
+    "name": "干炒牛河",
+    "cuisineId": "yue",
+    "image": "",
+    "tags": [],
+    "description": "111",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T04:16:17.357Z",
+    "updatedAt": "2026-05-17T04:16:17.357Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a09441e5f90e4d0fd693f92",
+    "name": "干炒牛河",
+    "cuisineId": "yue",
+    "image": "/uploads/dishes/b5786e20-6002-4e55-943d-7ac2dda25799.png",
+    "tags": [
+      "重口"
+    ],
+    "description": "夯爆了",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T04:29:18.284Z",
+    "updatedAt": "2026-05-17T04:29:18.284Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a094d7bb3e306fac4d33496",
+    "name": "心情饭",
+    "cuisineId": "yue",
+    "image": "/uploads/dishes/975311cc-2d27-4719-b425-02d5ba0e235f.png",
+    "tags": [],
+    "description": "全看心情",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T05:09:15.631Z",
+    "updatedAt": "2026-05-17T05:09:15.631Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a095a37e25c929d8646d524",
+    "name": "菜花",
+    "cuisineId": "yue",
+    "image": "/uploads/dishes/50078d81-007a-4020-808d-b4505e5ed214.png",
+    "tags": [],
+    "description": "健康",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T06:03:35.690Z",
+    "updatedAt": "2026-05-17T06:14:40.356Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a095de1f0955defc3251468",
+    "name": "测试",
+    "cuisineId": "yue",
+    "image": "/uploads/dishes/6ba43c31-7088-4d1f-aee8-1103afa4cf89.png",
+    "tags": [],
+    "description": "111",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T06:19:13.917Z",
+    "updatedAt": "2026-05-17T06:19:13.917Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a096ae8646d43ddca9d76b6",
+    "name": "美女",
+    "cuisineId": "yue",
+    "image": "/uploads/dishes/4d8e81ab-b069-46b4-8e4e-d923b843359d.png",
+    "tags": [
+      "清淡"
+    ],
+    "description": "",
+    "popularity": 0,
+    "enabled": true,
+    "createdAt": "2026-05-17T07:14:48.937Z",
+    "updatedAt": "2026-05-17T07:14:48.937Z",
+    "__v": 0
+  }
+]

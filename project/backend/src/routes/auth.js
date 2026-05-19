@@ -5,10 +5,20 @@ const router = express.Router();
 const config = require('../config');
 const User = require('../models/user');
 
+// 生成唯一饭搭子ID
+function generateBuddyId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 // 微信登录（支持开发环境 mock）
 router.post('/login', async (req, res) => {
   try {
-    const { code, nickName, avatarUrl } = req.body;
+    const { code, nickName, avatarUrl, savedOpenid } = req.body;
 
     let openid;
     if (config.wechat.appid && config.wechat.secret && code !== 'dev_mode') {
@@ -26,22 +36,36 @@ router.post('/login', async (req, res) => {
       }
       openid = wxRes.openid;
     } else {
-      // 开发模式 mock
-      openid = 'dev_' + (code || 'mock') + '_' + Date.now();
+      // 开发模式 mock — 优先使用已保存的 openid，确保同一用户登录稳定
+      openid = savedOpenid || ('dev_' + (code || 'mock') + '_' + Date.now());
     }
 
     // 查找或创建用户
     let user = await User.findOne({ openid });
     if (!user) {
+      // 生成唯一饭搭子ID
+      let buddyId = generateBuddyId();
+      while (await User.findOne({ buddy_id: buddyId })) {
+        buddyId = generateBuddyId();
+      }
       user = await User.create({
         openid,
         nickname: nickName || '微信用户',
         avatar_url: avatarUrl || '',
+        buddy_id: buddyId,
       });
-    } else if (nickName) {
-      // 更新头像昵称
-      user.nickname = nickName;
-      user.avatar_url = avatarUrl || user.avatar_url;
+    } else {
+      // 每次登录都更新头像昵称（如果有新值）
+      if (nickName) user.nickname = nickName;
+      if (avatarUrl) user.avatar_url = avatarUrl;
+      // 如果没有饭搭子ID，生成一个
+      if (!user.buddy_id) {
+        let buddyId = generateBuddyId();
+        while (await User.findOne({ buddy_id: buddyId })) {
+          buddyId = generateBuddyId();
+        }
+        user.buddy_id = buddyId;
+      }
       await user.save();
     }
 
@@ -59,6 +83,7 @@ router.post('/login', async (req, res) => {
           openid: user.openid,
           nickname: user.nickname,
           avatar_url: user.avatar_url,
+          buddy_id: user.buddy_id,
           preference_tags: user.preference_tags,
         }
       }

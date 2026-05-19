@@ -1,0 +1,144 @@
+<scroll-view class="page" scroll-y>
+  <view class="page-inner">
+    <view class="header-note">添加数据库中的用户作为饭搭子，需对方确认后才能互为饭搭子</view>
+
+    <button class="add-buddy-btn" bindtap="showAdd">+ 添加饭搭子</button>
+
+    <!-- Tabs -->
+    <view class="tabs">
+      <view class="tab {{activeTab === 'all' ? 'active' : ''}}" data-tab="all" bindtap="switchTab">全部</view>
+      <view class="tab {{activeTab === 'pending' ? 'active' : ''}}" data-tab="pending" bindtap="switchTab">
+        待处理
+        <text wx:if="{{pendingCount > 0}}" class="tab-badge">{{pendingCount > 99 ? '99+' : pendingCount}}</text>
+      </view>
+      <view class="tab {{activeTab === 'accepted' ? 'active' : ''}}" data-tab="accepted" bindtap="switchTab">已互为</view>
+    </view>
+
+    <!-- 饭搭子列表 -->
+    <view wx:for="{{filteredBuddies}}" wx:key="id" class="buddy-card {{item.rejectedReason === '对方已解除饭搭子关系' ? 'buddy-card-abandoned' : ''}}">
+      <view class="buddy-avatar-wrap">
+        <image wx:if="{{item.avatar}}" class="buddy-avatar-img {{item.rejectedReason === '对方已解除饭搭子关系' ? 'gray' : ''}}" src="{{item.avatar}}" mode="aspectFill"></image>
+        <view wx:else class="buddy-avatar-letter {{item.rejectedReason === '对方已解除饭搭子关系' ? 'gray' : ''}}" style="background:{{item.color || '#D85A30'}}">
+          <text>{{item.initial}}</text>
+        </view>
+      </view>
+      <view class="buddy-info">
+        <text class="buddy-name {{item.rejectedReason === '对方已解除饭搭子关系' ? 'gray' : ''}}">{{item.remark || item.name}}</text>
+        <text class="buddy-id-label {{item.rejectedReason === '对方已解除饭搭子关系' ? 'gray' : ''}}" wx:if="{{item.buddy_id}}">{{'饭搭子ID: ' + item.buddy_id}}</text>
+        <view class="buddy-meta">
+          <text wx:if="{{item.statusLabel}}" class="buddy-status {{item.statusLabel === '您已被对方抛弃' ? 'status-abandoned' : item.status === 'pending' ? 'status-pending' : item.status === 'accepted' ? 'status-accepted' : 'status-rejected'}}">{{item.statusLabel}}</text>
+          <text wx:if="{{item.requestMessage && item.direction === 'received'}}" class="buddy-request-msg">💬 {{item.requestMessage}}</text>
+          <text wx:if="{{item.rejectedReason && item.direction === 'sent'}}" class="buddy-reject-reason">❌ {{item.rejectedReason || '对方拒绝了你的申请'}}</text>
+        </view>
+      </view>
+      <view class="buddy-actions">
+        <!-- 收到的待处理申请 -->
+        <block wx:if="{{item.direction === 'received' && item.status === 'pending'}}">
+          <text class="buddy-accept-btn" data-id="{{item._id}}" bindtap="acceptBuddy">✓</text>
+          <text class="buddy-reject-btn" data-id="{{item._id}}" bindtap="showRejectModal">✕</text>
+        </block>
+        <!-- 已接受的饭搭子 -->
+        <block wx:elif="{{item.status === 'accepted' && item.rejectedReason !== '对方已解除饭搭子关系'}}">
+          <text class="buddy-remark-btn" data-id="{{item._id || item.id}}" bindtap="setRemark">✎</text>
+          <text class="buddy-del" data-id="{{item._id || item.id}}" bindtap="deleteBuddy">×</text>
+        </block>
+        <!-- 您已被对方抛弃 → 只显示删除按钮 -->
+        <block wx:elif="{{item.rejectedReason === '对方已解除饭搭子关系'}}">
+          <text class="buddy-del" data-id="{{item._id || item.id}}" bindtap="deleteBuddy">×</text>
+        </block>
+        <!-- 其他状态（等待确认、被拒绝） -->
+        <block wx:else>
+          <text class="buddy-del" data-id="{{item._id || item.id}}" bindtap="deleteBuddy">×</text>
+        </block>
+      </view>
+    </view>
+
+    <view wx:if="{{filteredBuddies.length === 0}}" class="empty-state">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">{{activeTab === 'all' ? '还没有饭搭子' : activeTab === 'pending' ? '没有待处理的申请' : '还没有互为饭搭子的用户'}}</text>
+      <text class="empty-hint">{{activeTab === 'all' ? '添加你的聚餐伙伴吧' : ''}}</text>
+    </view>
+  </view>
+
+  <!-- Add/Edit Modal -->
+  <view wx:if="{{showModal}}" class="modal-overlay" bindtap="closeModal">
+    <view class="modal-card" catchtap="preventClose">
+      <text class="modal-title">{{editingId ? '设置备注' : (selectMode === 'search' ? '添加饭搭子' : '确认添加')}}</text>
+
+      <!-- Step 1: Search -->
+      <block wx:if="{{selectMode === 'search'}}">
+        <input class="search-input" placeholder="搜索用户昵称或饭搭子ID..." value="{{searchQuery}}" bindinput="onSearchInput" maxlength="20" focus="true" />
+        <view class="search-hint" wx:if="{{!searchQuery}}">请输入用户昵称或饭搭子ID搜索</view>
+
+        <!-- 搜索结果 -->
+        <scroll-view class="search-results" scroll-y wx:if="{{searchResults.length > 0}}">
+          <view wx:for="{{searchResults}}" wx:key="_id" class="search-item" data-index="{{index}}" bindtap="selectUser">
+            <image wx:if="{{item.avatar}}" class="search-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+            <view wx:else class="search-avatar search-avatar-letter" style="background:{{item.name ? '#D85A30' : '#ccc'}}">
+              <text>{{item._initial || '?'}}</text>
+            </view>
+            <view class="search-info">
+              <text class="search-name">{{item.name}}</text>
+              <text class="search-buddy-id">饭搭子ID: {{item.buddy_id || '无'}}</text>
+              <text wx:if="{{item.phone}}" class="search-phone">{{item.phone}}</text>
+            </view>
+            <text class="search-select {{item.request_status === 'pending' ? 'search-select-disabled' : ''}}">
+              {{item.request_status === 'pending' ? '已申请' : item.request_status === 'accepted' ? '已是饭搭子' : '选择'}}
+            </text>
+          </view>
+        </scroll-view>
+
+        <view wx:elif="{{searchQuery && searchResults.length === 0}}" class="search-empty">
+          <text>未找到匹配的用户</text>
+        </view>
+      </block>
+
+      <!-- Step 2: Confirm + Remark + Request Message -->
+      <block wx:if="{{selectMode === 'confirm' && selectedUser}}">
+        <view class="selected-user">
+          <image wx:if="{{selectedUser.avatar}}" class="selected-avatar" src="{{selectedUser.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="selected-avatar selected-avatar-letter" style="background:#D85A30">
+            <text>{{selectedUser._initial}}</text>
+          </view>
+          <view class="selected-info">
+            <text class="selected-name">{{selectedUser.name}}</text>
+            <text class="selected-buddy-id">饭搭子ID: {{selectedUser.buddy_id || '无'}}</text>
+            <text wx:if="{{selectedUser.phone}}" class="selected-phone">{{selectedUser.phone}}</text>
+          </view>
+        </view>
+
+        <view class="remark-section">
+          <text class="remark-label">备注（可选）</text>
+          <input class="remark-input" placeholder="设置一个备注名" value="{{editRemark}}" bindinput="onRemarkInput" maxlength="20" />
+        </view>
+
+        <view class="remark-section" wx:if="{{!editingId}}">
+          <text class="remark-label">申请留言（可选）</text>
+          <textarea class="request-message-input" placeholder="写一句申请留言，让对方知道你是谁" value="{{requestMessage}}" bindinput="onRequestMessageInput" maxlength="100" />
+        </view>
+
+        <view class="modal-actions">
+          <button class="modal-cancel" bindtap="closeModal">取消</button>
+          <button class="modal-confirm" bindtap="{{editingId ? 'saveRemark' : 'sendRequest'}}" disabled="{{selectedUser.request_status === 'pending' || selectedUser.request_status === 'accepted'}}">
+            {{editingId ? '保存备注' : (selectedUser.request_status === 'pending' ? '已申请，等待确认' : selectedUser.request_status === 'accepted' ? '已是饭搭子' : '发送申请')}}
+          </button>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- Reject Modal -->
+  <view wx:if="{{showRejectModal}}" class="modal-overlay" bindtap="closeRejectModal">
+    <view class="modal-card modal-card-small" catchtap="preventClose">
+      <text class="modal-title">拒绝申请</text>
+      <view class="remark-section">
+        <text class="remark-label">拒绝原因（可选）</text>
+        <textarea class="reject-reason-input" placeholder="告诉对方为什么拒绝（对方会看到此消息）" value="{{rejectReason}}" bindinput="onRejectReasonInput" maxlength="100" />
+      </view>
+      <view class="modal-actions">
+        <button class="modal-cancel" bindtap="closeRejectModal">取消</button>
+        <button class="modal-confirm modal-confirm-reject" bindtap="rejectBuddy">确认拒绝</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>
