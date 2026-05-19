@@ -192,4 +192,12 @@ router.post('/dishes/init', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// === 一键清除公共菜品 ===
+router.delete('/dishes/clear', async (req, res) => {
+  try {
+    const r = await Dish.deleteMany({ type: 'system' });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

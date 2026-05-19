@@ -344,6 +344,18 @@ async function initDishes() {
   }
 }
 
+async function clearDishes() {
+  if (!confirm('确定要清除所有公共菜品吗？（菜系不受影响）')) return;
+  if (!confirm('此操作不可撤销，再次确认？')) return;
+  try {
+    const d = await api('/api/admin/dishes/clear', { method: 'DELETE' });
+    alert(`已清除 ${d.data.deleted} 道公共菜品`);
+    await loadDishes();
+  } catch (e) {
+    alert('清除失败: ' + e.message);
+  }
+}
+
 async function deleteDish(id) {
   if (!confirm('确定要删除这个公共菜品吗？')) return;
   try {
