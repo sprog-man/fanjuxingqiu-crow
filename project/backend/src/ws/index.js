@@ -15,6 +15,8 @@ module.exports = function attachWS(server) {
     ws.roomCode = null;
     ws.nickname = null;
     ws.openid = null;
+    ws._alive = true;
+    ws.on('pong', () => { ws._alive = true; });
 
     const send = (event, data) => {
       if (ws.readyState === 1) ws.send(JSON.stringify({ event, data }));
@@ -141,4 +143,16 @@ module.exports = function attachWS(server) {
       }
     });
   }
+
+  // 心跳保活：每 30s ping，40s（两次检测）无响应则 terminate
+  const heartbeat = setInterval(() => {
+    wss.clients.forEach(ws => {
+      if (!ws._alive) {
+        console.log('[ws] 心跳超时，断开连接:', ws.nickname || ws.id);
+        return ws.terminate();
+      }
+      ws._alive = false;
+      ws.ping();
+    });
+  }, 30000);
 };
