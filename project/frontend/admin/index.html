@@ -103,6 +103,15 @@
               <input id="dishEditName" class="form-input" placeholder="菜品名称">
               <input id="dishEditTags" class="form-input" placeholder="标签（逗号分隔）">
               <textarea id="dishEditDesc" class="form-input" placeholder="描述" rows="2" style="resize:vertical"></textarea>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="dishEditImage" class="form-input" placeholder="图片URL（可选）" style="flex:1">
+                <button class="btn btn-sm" onclick="document.getElementById('dishEditImageFile').click()">上传</button>
+                <input id="dishEditImageFile" type="file" accept="image/*" style="display:none" onchange="uploadDishImage(event)">
+              </div>
+              <div id="dishEditImagePreview" style="display:none;margin-top:4px">
+                <img id="dishEditImagePreviewImg" style="max-width:120px;max-height:80px;border-radius:6px">
+                <span style="font-size:11px;color:#999;cursor:pointer;margin-left:6px" onclick="document.getElementById('dishEditImage').value='';document.getElementById('dishEditImagePreview').style.display='none'">✕</span>
+              </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
               <button class="btn" onclick="closeDishModal()">取消</button>

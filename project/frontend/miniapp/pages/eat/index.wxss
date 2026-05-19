@@ -793,6 +793,14 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.manage-item-system {
+  opacity: 0.55;
+}
+
+.gray {
+  opacity: 0.5;
+}
+
 .manage-item-left {
   display: flex;
   align-items: center;

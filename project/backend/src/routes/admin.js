@@ -142,6 +142,28 @@ router.delete('/dishes/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// === 菜品图片上传 ===
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+const adminUpload = multer({
+  storage: multer.diskStorage({
+    destination: path.join(__dirname, '../../../uploads/dishes/'),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+      cb(null, crypto.randomUUID() + ext);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype));
+  },
+});
+router.post('/dishes/upload', adminUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请选择图片' });
+  res.json({ data: { url: '/uploads/dishes/' + req.file.filename } });
+});
+
 // === 一键初始化菜系与菜品 ===
 const sampleCuisines = [
   { id: 'chuan', name: '川菜', icon: '🌶️', color: '#D85A30', tags: ['辣', '麻辣', '重口'] },

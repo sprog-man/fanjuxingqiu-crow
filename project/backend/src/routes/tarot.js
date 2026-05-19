@@ -229,6 +229,15 @@ router.post('/dishes', async (req, res) => {
   }
 });
 
+router.delete('/dishes/clear', async (req, res) => {
+  try {
+    const { cuisineId, openid } = req.query;
+    if (!cuisineId || !openid) return res.status(400).json({ error: '参数不全' });
+    const r = await Dish.deleteMany({ cuisineId, openid, type: 'user' });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 router.delete('/dishes/:id', async (req, res) => {
   try {
     const { openid } = req.query;
@@ -264,15 +273,6 @@ router.put('/dishes/:id', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: '修改失败' });
   }
-});
-
-router.delete('/dishes/clear', async (req, res) => {
-  try {
-    const { cuisineId, openid } = req.query;
-    if (!cuisineId || !openid) return res.status(400).json({ error: '参数不全' });
-    const r = await Dish.deleteMany({ cuisineId, openid, type: 'user' });
-    res.json({ data: { deleted: r.deletedCount } });
-  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.post('/seed', async (req, res) => {

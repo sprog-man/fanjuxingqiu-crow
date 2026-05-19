@@ -225,7 +225,9 @@ let dishCuisines = [];
 
 async function loadDishes() {
   try {
-    const d = await api('/api/admin/dishes');
+    const cuisineFilter = document.getElementById('dishCuisineFilter').value;
+    const url = cuisineFilter ? '/api/admin/dishes?cuisineId=' + cuisineFilter : '/api/admin/dishes';
+    const d = await api(url);
     dishCuisines = d.cuisines || [];
     const items = d.items || [];
 
@@ -265,6 +267,8 @@ function showAddDish() {
   document.getElementById('dishEditTags').value = '';
   document.getElementById('dishEditDesc').value = '';
   document.getElementById('dishEditCuisine').value = '';
+  document.getElementById('dishEditImage').value = '';
+  document.getElementById('dishEditImagePreview').style.display = 'none';
   document.getElementById('dishModal').style.display = 'flex';
 }
 
@@ -301,6 +305,7 @@ async function saveDish() {
   const cuisineId = document.getElementById('dishEditCuisine').value;
   const tagsStr = document.getElementById('dishEditTags').value.trim();
   const description = document.getElementById('dishEditDesc').value.trim();
+  const image = document.getElementById('dishEditImage').value.trim();
 
   if (!name || !cuisineId) {
     alert('请填写菜品名称并选择菜系');
@@ -313,12 +318,12 @@ async function saveDish() {
     if (dishEditId) {
       await api('/api/admin/dishes/' + dishEditId, {
         method: 'PUT',
-        body: JSON.stringify({ name, cuisineId, tags, description }),
+        body: JSON.stringify({ name, cuisineId, tags, description, image }),
       });
     } else {
       await api('/api/admin/dishes', {
         method: 'POST',
-        body: JSON.stringify({ name, cuisineId, tags, description }),
+        body: JSON.stringify({ name, cuisineId, tags, description, image }),
       });
     }
     document.getElementById('dishModal').style.display = 'none';
@@ -326,6 +331,23 @@ async function saveDish() {
   } catch (e) {
     alert('保存失败: ' + e.message);
   }
+}
+
+function uploadDishImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  fetch('/api/admin/dishes/upload', { method: 'POST', body: formData }).then(r => r.json()).then(d => {
+    if (d.data && d.data.url) {
+      document.getElementById('dishEditImage').value = d.data.url;
+      const preview = document.getElementById('dishEditImagePreview');
+      document.getElementById('dishEditImagePreviewImg').src = d.data.url;
+      preview.style.display = 'block';
+    } else {
+      alert('上传失败');
+    }
+  }).catch(() => alert('上传失败'));
 }
 
 async function initDishes() {
