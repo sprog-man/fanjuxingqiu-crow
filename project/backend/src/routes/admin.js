@@ -116,7 +116,10 @@ router.put('/dishes/:id', async (req, res) => {
 
 router.delete('/dishes/clear', async (req, res) => {
   try {
-    const r = await Dish.deleteMany({ type: 'system' });
+    // 兼容旧数据：type 字段缺失也算公共菜品
+    const r = await Dish.deleteMany({
+      $or: [{ type: 'system' }, { type: { $exists: false } }]
+    });
     res.json({ data: { deleted: r.deletedCount } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
