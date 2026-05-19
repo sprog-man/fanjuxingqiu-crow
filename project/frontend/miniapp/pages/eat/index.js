@@ -415,11 +415,11 @@ Page({
   },
 
   applyManageFilter() {
-    const text = this.data.filterText.trim().toLowerCase()
-    const tags = this.data.filterTags
-    let filtered = this.data.allDishes
+    const text = (this.data.filterText || '').trim().toLowerCase()
+    const tags = this.data.filterTags || []
+    let filtered = this.data.allDishes || []
     if (text) {
-      filtered = filtered.filter(d => d.name.toLowerCase().includes(text))
+      filtered = filtered.filter(d => d.name && d.name.toLowerCase().includes(text))
     }
     if (tags.length > 0) {
       filtered = filtered.filter(d => d.tags && d.tags.some(t => tags.includes(t)))
@@ -612,6 +612,7 @@ Page({
           const r = await request('/api/tarot/dishes/clear?cuisineId=' + cat.id + '&openid=' + encodeURIComponent(openid), 'DELETE')
           wx.hideLoading()
           wx.showToast({ title: `已清空 ${r.data.deleted} 道菜品`, icon: 'success' })
+          this.setData({ filterText: '', filterTags: [] })
           await this.fetchCategoryDishes(cat.id)
           this.applyManageFilter()
         } catch (e) {

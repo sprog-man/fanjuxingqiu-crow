@@ -121,6 +121,7 @@ router.delete('/dishes/clear', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 注意：此路由必须在 /dishes/:id 之前注册，避免被 :id 捕获
 router.delete('/dishes/clear-user', async (req, res) => {
   try {
     const r = await Dish.deleteMany({ type: 'user' });
