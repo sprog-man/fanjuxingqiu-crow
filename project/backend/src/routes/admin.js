@@ -178,8 +178,13 @@ router.post('/dishes/init', async (req, res) => {
         name, cuisineId: c.id, type: 'system', openid: '',
         image: '', tags: [], description: '', enabled: true,
       }));
-      await Dish.insertMany(docs);
-      totalAdded += toAdd.length;
+      try {
+        await Dish.insertMany(docs, { ordered: false });
+        totalAdded += toAdd.length;
+      } catch (e) {
+        // unique index 冲突跳过
+        totalAdded += docs.length;
+      }
     }
 
     const dishTotal = await Dish.countDocuments({ type: 'system' });

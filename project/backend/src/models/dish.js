@@ -13,5 +13,6 @@ const dishSchema = new mongoose.Schema({
 
 dishSchema.index({ cuisineId: 1, enabled: 1 });
 dishSchema.index({ cuisineId: 1, openid: 1 });
+dishSchema.index({ cuisineId: 1, name: 1, type: 1 }, { unique: true });
 
 module.exports = mongoose.model('Dish', dishSchema);
