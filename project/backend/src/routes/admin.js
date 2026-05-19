@@ -78,7 +78,7 @@ router.get('/users', async (req, res) => {
 router.get('/dishes', async (req, res) => {
   try {
     const { cuisineId } = req.query;
-    const filter = { type: 'system' };
+    const filter = { $or: [{ type: 'system' }, { type: { $exists: false } }] };
     if (cuisineId) filter.cuisineId = cuisineId;
     const items = await Dish.find(filter).sort({ cuisineId: 1, name: 1 }).lean();
     const cuisines = await Cuisine.find({ enabled: true }).lean();
@@ -172,6 +172,15 @@ const sampleDishesByCuisine = {
 
 router.post('/dishes/init', async (req, res) => {
   try {
+    // 修复旧数据：给缺失 type 字段的菜品补上 system 类型
+    const patched = await Dish.updateMany(
+      { type: { $exists: false } },
+      { $set: { type: 'system' } }
+    );
+    if (patched.modifiedCount > 0) {
+      console.log(`[init] 修复 ${patched.modifiedCount} 道缺少 type 的菜品`);
+    }
+
     // 补齐所有缺失菜系（已有则跳过）
     for (const c of sampleCuisines) {
       const exists = await Cuisine.findOne({ id: c.id });
