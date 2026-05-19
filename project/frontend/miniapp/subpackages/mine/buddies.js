@@ -19,11 +19,14 @@ Page({
     showRejectModal: false,
     rejectBuddyId: '',
     rejectReason: '',
+    // 房间邀请
+    roomInvitations: [],
   },
 
   onShow() {
     this.setData({ serverUrl: app.getServerUrl() })
     this.loadBuddies()
+    this.loadRoomInvitations()
   },
 
   loadBuddies() {
@@ -245,6 +248,68 @@ Page({
           })
         }
       }
+    })
+  },
+
+  /* ===== 待处理房间邀请 ===== */
+
+  loadRoomInvitations() {
+    const openid = app.getOpenid ? app.getOpenid() : ''
+    if (!openid) return
+    wx.request({
+      url: this.data.serverUrl + '/api/room/invitations?openid=' + encodeURIComponent(openid),
+      success: (res) => {
+        if (!res.data || !res.data.data) return
+        const list = res.data.data.filter(inv => inv.status === 'pending').map(inv => ({
+          ...inv,
+          timeAgo: this._timeAgo(inv.createdAt),
+        }))
+        this.setData({ roomInvitations: list })
+      },
+    })
+  },
+
+  _timeAgo(dateStr) {
+    if (!dateStr) return ''
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const min = Math.floor(diff / 60000)
+    if (min < 1) return '刚刚'
+    if (min < 60) return min + '分钟前'
+    return Math.floor(min / 60) + '小时前'
+  },
+
+  acceptRoomInvite(e) {
+    const id = e.currentTarget.dataset.id
+    wx.showLoading({ title: '处理中...' })
+    wx.request({
+      url: this.data.serverUrl + '/api/room/invitations/' + id + '/accept',
+      method: 'POST',
+      success: (res) => {
+        wx.hideLoading()
+        if (res.data && res.data.data) {
+          const code = res.data.data.roomCode
+          this.loadRoomInvitations()
+          wx.showToast({ title: '已接受邀请', icon: 'success' })
+          // 跳转到房间页
+          wx.navigateTo({ url: '/subpackages/room/index?roomCode=' + code })
+        }
+      },
+      fail: () => {
+        wx.hideLoading()
+        wx.showToast({ title: '操作失败', icon: 'none' })
+      },
+    })
+  },
+
+  rejectRoomInvite(e) {
+    const id = e.currentTarget.dataset.id
+    wx.request({
+      url: this.data.serverUrl + '/api/room/invitations/' + id + '/reject',
+      method: 'POST',
+      success: () => {
+        this.loadRoomInvitations()
+        wx.showToast({ title: '已拒绝', icon: 'success' })
+      },
     })
   },
 })

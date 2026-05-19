@@ -121,6 +121,7 @@ router.get('/list', async (req, res) => {
       buddiesMap.set(targetId, {
         _id: b._id,
         targetUserId: targetId,
+        openid: b.targetUserId ? b.targetUserId.openid : '',
         remark: b.remark,
         name: b.targetUserId ? b.targetUserId.nickname : '未知用户',
         avatar: b.targetUserId ? b.targetUserId.avatar_url : '',
@@ -151,6 +152,7 @@ router.get('/list', async (req, res) => {
         buddiesMap.set(senderId, {
           _id: b._id,
           targetUserId: senderId,
+          openid: b.openid,
           remark: b.remark,
           name: sender.nickname,
           avatar: sender.avatar_url,
