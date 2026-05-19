@@ -146,6 +146,9 @@ router.post('/draw', async (req, res) => {
     return res.status(400).json({ error: '请选择分类' });
   }
 
+  // 自动修补旧数据缺失的 type 字段
+  await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } }).catch(() => {});
+
   let dishes;
   if (userId) {
     dishes = await Dish.find({ cuisineId, enabled: true, $or: [{ openid: '' }, { openid: userId }] }).lean();
@@ -198,6 +201,9 @@ router.get('/dishes', async (req, res) => {
   const { cuisineId, openid } = req.query;
   console.log('GET /dishes cuisineId:', cuisineId, 'openid:', openid);
   try {
+    // 自动修补旧数据缺失的 type 字段
+    await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } });
+
     let dishes;
     const filter = { enabled: true };
     if (cuisineId) filter.cuisineId = cuisineId;
