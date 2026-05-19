@@ -70,6 +70,37 @@ module.exports = function attachWS(server) {
           broadcast(roomCode, 'room:members', { members: room.members }, ws.id);
           break;
         }
+        case 'room:rejoin': {
+          const { roomCode: rejoinCode, nickname: rejoinName, avatar: rejoinAvatar } = data || {};
+          console.log(`[ws] room:rejoin -> code=${rejoinCode} nickname=${rejoinName} openid=${ws.openid || ''}`);
+          if (!rejoinCode) { send('room:error', { message: '缺少房间码' }); break; }
+          const rejoinRoom = rooms.getRoom(rejoinCode);
+          if (!rejoinRoom) {
+            console.log(`[ws] room:rejoin FAIL -> room not found, codes=[${Array.from(rooms.rooms.keys()).join(',')}]`);
+            send('room:error', { message: '房间不存在或已过期' });
+            break;
+          }
+          ws.nickname = rejoinName || '匿名';
+          ws.avatar = rejoinAvatar || '';
+          ws.roomCode = rejoinCode;
+
+          // 按 openid 查找已有成员（断线重连场景）
+          const existing = ws.openid ? rejoinRoom.findMemberByOpenid(ws.openid) : null;
+          if (existing) {
+            existing.id = ws.id;
+            existing.nickname = ws.nickname;
+            existing.avatar = ws.avatar;
+            console.log(`[ws] room:rejoin -> 已找到旧成员 openid=${ws.openid}，更新 socket id`);
+          } else {
+            rejoinRoom.addMember(ws.id, ws.nickname, ws.avatar, ws.openid);
+            console.log(`[ws] room:rejoin -> 未找到旧成员，作为新成员添加`);
+          }
+
+          const isHost = rejoinRoom.host && rejoinRoom.host.id === ws.id;
+          send('room:joined', { roomCode: rejoinCode, members: rejoinRoom.members, isHost, mySocketId: ws.id });
+          broadcast(rejoinCode, 'room:members', { members: rejoinRoom.members }, ws.id);
+          break;
+        }
         case 'room:invite': {
           // 邀请好友：data = { toOpenid, roomCode, fromNickname }
           const { toOpenid, roomCode: invRoomCode, fromNickname } = data || {};
