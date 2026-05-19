@@ -40,10 +40,12 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /opt/fanjuxingqiu/backend
-            if command -v pm2 &>/dev/null; then
+            if command -v pm2 &>/dev/null && pm2 list | grep -q fanjuxingqiu; then
               pm2 restart fanjuxingqiu
             else
               pkill -f "node src/app.js" 2>/dev/null || true
+              sleep 1
               nohup node src/app.js > app.log 2>&1 &
+              echo "Backend started with nohup, PID: $!"
             fi
           EOF
