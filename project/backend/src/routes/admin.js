@@ -132,6 +132,12 @@ const sampleCuisines = [
   { id: 'han', name: '韩餐', icon: '🥘', color: '#185FA5', tags: ['辣', '重口', '烤肉'] },
   { id: 'xi', name: '西餐', icon: '🥩', color: '#BA7517', tags: ['精致', '牛排', '浪漫'] },
   { id: 'su', name: '素食', icon: '🥗', color: '#1D9E75', tags: ['清淡', '健康', '轻食'] },
+  { id: 'lu', name: '鲁菜', icon: '🥘', color: '#8B0000', tags: ['咸鲜', '醇厚', '经典'] },
+  { id: 'xiang', name: '湘菜', icon: '🌶️', color: '#CC0000', tags: ['辣', '酸辣', '下饭'] },
+  { id: 'huaiyang', name: '淮扬菜', icon: '🍲', color: '#4A6741', tags: ['清淡', '刀工', '精致'] },
+  { id: 'dongbei', name: '东北菜', icon: '🍳', color: '#B85C3A', tags: ['量大', '炖菜', '豪放'] },
+  { id: 'xibei', name: '西北菜', icon: '🥙', color: '#C0843C', tags: ['面食', '羊肉', '粗犷'] },
+  { id: 'xiaochi', name: '小吃', icon: '🍢', color: '#E67E22', tags: ['街头', '零食', '特色'] },
 ];
 
 const sampleDishesByCuisine = {
@@ -141,39 +147,43 @@ const sampleDishesByCuisine = {
   han: ['石锅拌饭', '韩式烤肉', '泡菜锅', '大酱汤', '辣炒年糕', '韩式炸鸡', '拌冷面', '紫菜包饭', '部队锅', '参鸡汤', '韩式煎饼', '泡菜'],
   xi: ['煎牛排', '番茄意面', '玛格丽特披萨', '凯撒沙拉', '奶油蘑菇汤', '意式烩饭', '香煎三文鱼', '烤春鸡', '法式焗蜗牛', '牛肉汉堡', '薯条', '提拉米苏'],
   su: ['素炒时蔬', '素麻婆豆腐', '清炒西兰花', '素馅饺子', '凉拌黄瓜', '素汤', '香菇青菜', '素烧茄子', '糖醋素排骨', '素炒面', '罗汉斋', '水果沙拉'],
+  lu: ['糖醋鲤鱼', '九转大肠', '葱烧海参', '锅塌豆腐', '爆炒腰花', '德州扒鸡', '油焖大虾', '拔丝地瓜', '胶东大包', '奶汤蒲菜', '把子肉', '煎饼卷大葱'],
+  xiang: ['剁椒鱼头', '小炒黄牛肉', '农家小炒肉', '毛氏红烧肉', '腊味合蒸', '口味虾', '永州血鸭', '湘西外婆菜', '辣椒炒肉', '臭豆腐', '酸豆角', '干锅手撕包菜'],
+  huaiyang: ['狮子头', '大煮干丝', '松鼠鳜鱼', '扬州炒饭', '水晶肴肉', '文思豆腐', '清炖蟹粉狮子头', '软兜长鱼', '平桥豆腐', '三丁包', '千层油糕', '翡翠烧卖'],
+  dongbei: ['锅包肉', '地三鲜', '铁锅炖', '酸菜白肉', '烤冷面', '酱骨架', '小鸡炖蘑菇', '东北大拉皮', '杀猪菜', '猪肉炖粉条', '蘸酱菜', '雪绵豆沙'],
+  xibei: ['羊肉泡馍', '肉夹馍', '兰州拉面', '手抓羊肉', '凉皮', '大盘鸡', '臊子面', '油泼面', '酿皮', '烤全羊', '羊杂汤', '馕'],
+  xiaochi: ['臭豆腐', '煎饼果子', '麻辣烫', '烤串', '糖葫芦', '生煎包', '小笼包', '螺蛳粉', '酸辣粉', '鸡蛋仔', '炸串', '章鱼小丸子'],
 };
 
 router.post('/dishes/init', async (req, res) => {
   try {
-    const existingCuisines = await Cuisine.countDocuments();
-    if (existingCuisines === 0) {
-      await Cuisine.insertMany(sampleCuisines.map(c => ({ ...c, enabled: true, tarotCover: '' })));
+    // 补齐所有缺失菜系（已有则跳过）
+    for (const c of sampleCuisines) {
+      const exists = await Cuisine.findOne({ id: c.id });
+      if (!exists) {
+        await Cuisine.create({ ...c, enabled: true, tarotCover: '' });
+      }
     }
     const cuisines = await Cuisine.find({ enabled: true }).lean();
 
-    const existingDishes = await Dish.countDocuments({ type: 'system' });
-    if (existingDishes > 0) {
-      return res.json({ data: { cuisines: cuisines.length, dishes: existingDishes, message: '菜品数据已存在，无需重复导入' } });
-    }
-
-    const dishes = [];
+    // 补齐每个菜系缺失菜品（已有不重复创建）
+    let totalAdded = 0;
     for (const c of cuisines) {
       const names = sampleDishesByCuisine[c.id] || [];
-      for (const name of names) {
-        dishes.push({
-          name,
-          cuisineId: c.id,
-          type: 'system',
-          openid: '',
-          image: '',
-          tags: [],
-          description: '',
-          enabled: true,
-        });
-      }
+      const existingNames = await Dish.find({ cuisineId: c.id, type: 'system' }).lean();
+      const existingSet = new Set(existingNames.map(d => d.name));
+      const toAdd = names.filter(n => !existingSet.has(n));
+      if (toAdd.length === 0) continue;
+      const docs = toAdd.map(name => ({
+        name, cuisineId: c.id, type: 'system', openid: '',
+        image: '', tags: [], description: '', enabled: true,
+      }));
+      await Dish.insertMany(docs);
+      totalAdded += toAdd.length;
     }
-    await Dish.insertMany(dishes);
-    res.json({ data: { cuisines: cuisines.length, dishes: dishes.length, message: '初始化完成' } });
+
+    const dishTotal = await Dish.countDocuments({ type: 'system' });
+    res.json({ data: { cuisines: cuisines.length, dishes: dishTotal, added: totalAdded } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

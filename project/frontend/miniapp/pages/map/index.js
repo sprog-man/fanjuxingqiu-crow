@@ -119,16 +119,31 @@ Page({
   tryAutoLocate() {
     const cached = wx.getStorageSync('lastLocation')
     if (cached) {
-      this.setData({
-        latitude: cached.lat, longitude: cached.lng,
-        locationAuthorized: true,
-      })
+      this.setData({ latitude: cached.lat, longitude: cached.lng, locationAuthorized: true })
     }
+    wx.getSetting({
+      success: (res) => {
+        if (res.authSetting['scope.userLocation']) {
+          this._doGetLocate(cached)
+        } else if (res.authSetting['scope.userLocation'] === undefined) {
+          wx.authorize({
+            scope: 'scope.userLocation',
+            success: () => this._doGetLocate(cached),
+            fail: () => this._locFailFallback(cached),
+          })
+        } else {
+          this._locFailFallback(cached)
+        }
+      },
+      fail: () => this._locFailFallback(cached),
+    })
+  },
+
+  _doGetLocate(cached) {
     wx.getLocation({
       type: 'wgs84',
       success: (res) => {
         wx.setStorageSync('lastLocation', { lat: res.latitude, lng: res.longitude })
-        wx.setStorageSync('lastLocationTime', Date.now())
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
@@ -136,12 +151,12 @@ Page({
           locationAuthorized: true,
         })
       },
-      fail: () => {
-        if (!cached) {
-          this.centerOnChina()
-        }
-      }
+      fail: () => this._locFailFallback(cached),
     })
+  },
+
+  _locFailFallback(cached) {
+    if (!cached) this.centerOnChina()
   },
 
   centerOnChina() {

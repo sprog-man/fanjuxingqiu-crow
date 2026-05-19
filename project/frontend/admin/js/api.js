@@ -329,13 +329,13 @@ async function saveDish() {
 }
 
 async function initDishes() {
-  if (!confirm('将初始化6个菜系并为每个菜系创建12个示例菜品，继续吗？')) return;
+  if (!confirm('将补齐全部12个菜系并为每个菜系创建12个示例菜品，继续吗？')) return;
   const btn = document.querySelector('button[onclick="initDishes()"]');
   const orig = btn.textContent;
   btn.disabled = true; btn.textContent = '初始化中...';
   try {
     const d = await api('/api/admin/dishes/init', { method: 'POST' });
-    alert(d.data.message);
+    alert(`菜系 ${d.data.cuisines} 个，菜品 ${d.data.dishes} 道（新增 ${d.data.added} 道）`);
     await loadDishes();
   } catch (e) {
     alert('初始化失败: ' + e.message);
