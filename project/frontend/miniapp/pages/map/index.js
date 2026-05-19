@@ -417,13 +417,22 @@ Page({
           const addr = res.data.result.address_component
           const city = addr.city || addr.district || ''
           const province = addr.province || ''
-          this._showFormWithCity(city, province, lat, lng)
+          if (city) {
+            this._showFormWithCity(city, province, lat, lng)
+          } else {
+            this._geocodeFailOpenPicker()
+          }
         } else {
-          this._showFormWithCity('', '', lat, lng)
+          this._geocodeFailOpenPicker()
         }
       },
-      fail: () => this._showFormWithCity('', '', lat, lng),
+      fail: () => this._geocodeFailOpenPicker(),
     })
+  },
+
+  _geocodeFailOpenPicker() {
+    wx.showToast({ title: '无法获取城市名，请手动选择', icon: 'none' })
+    setTimeout(() => this.openCityPicker(), 500)
   },
 
   _showFormWithCity(city, province, lat, lng) {

@@ -356,6 +356,17 @@ async function clearDishes() {
   }
 }
 
+async function clearUserDishes() {
+  if (!confirm('确定要清除所有用户添加的菜品吗？此操作不可撤销！')) return;
+  if (!confirm('用户菜品将被全部删除，确认？')) return;
+  try {
+    const d = await api('/api/admin/dishes/clear-user', { method: 'DELETE' });
+    alert(`已清除 ${d.data.deleted} 道用户菜品`);
+  } catch (e) {
+    alert('清除失败: ' + e.message);
+  }
+}
+
 async function deleteDish(id) {
   if (!confirm('确定要删除这个公共菜品吗？')) return;
   try {

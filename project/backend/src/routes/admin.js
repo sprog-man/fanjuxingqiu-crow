@@ -121,6 +121,13 @@ router.delete('/dishes/clear', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+router.delete('/dishes/clear-user', async (req, res) => {
+  try {
+    const r = await Dish.deleteMany({ type: 'user' });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 router.delete('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
