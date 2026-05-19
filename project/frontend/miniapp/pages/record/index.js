@@ -15,8 +15,10 @@ Page({
   },
 
   loadRecords() {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/gathering/list',
+      url: serverUrl + '/api/gathering/list',
+      method: 'GET',
       timeout: 3000,
       success: (res) => {
         const items = this._normalize(res.data.data.items)
@@ -58,8 +60,10 @@ Page({
   },
 
   loadStats() {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/gathering/stats',
+      url: serverUrl + '/api/gathering/stats',
+      method: 'GET',
       timeout: 3000,
       success: (res) => {
         const stats = res.data.data

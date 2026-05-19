@@ -167,6 +167,49 @@ router.get('/city-records', async (req, res) => {
   }
 });
 
+router.put('/checkin/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { restaurant, food, lat, lng, city, province, photos, note, dateTime } = req.body;
+    
+    const gathering = await Gathering.findById(id);
+    if (!gathering) {
+      return res.status(404).json({ error: '打卡记录不存在' });
+    }
+
+    gathering.title = restaurant || (city ? `${city}打卡` : '美食打卡');
+    if (dateTime) gathering.dateTime = dateTime;
+    if (lat !== undefined) gathering.location.lat = lat;
+    if (lng !== undefined) gathering.location.lng = lng;
+    if (city) gathering.location.city = city;
+    if (restaurant) gathering.location.name = restaurant;
+    if (photos !== undefined) gathering.photos = photos;
+    if (note !== undefined) gathering.note = note;
+    if (food !== undefined) gathering.foodTags = [food];
+
+    await gathering.save();
+    
+    res.json({ data: { ...gathering.toObject(), _id: gathering._id, id: gathering._id } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete('/checkin/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const gathering = await Gathering.findByIdAndDelete(id);
+    if (!gathering) {
+      return res.status(404).json({ error: '打卡记录不存在' });
+    }
+
+    res.json({ data: { success: true } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.post('/upload', upload.array('photos', 9), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {

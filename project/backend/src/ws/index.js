@@ -24,16 +24,20 @@ module.exports = function attachWS(server) {
       switch (event) {
         case 'room:create': {
           const nickname = (data && data.nickname) || '匿名';
+          const avatar = (data && data.avatar) || '';
+          console.log(`[ws] room:create -> nickname=${nickname}, avatar=${avatar}`);
           ws.nickname = nickname;
-          const room = rooms.createRoom(ws.id, nickname);
+          ws.avatar = avatar;
+          const room = rooms.createRoom(ws.id, nickname, avatar);
           ws.roomCode = room.code;
           console.log(`[ws] room:create -> code=${room.code} host=${nickname} totalRooms=${rooms.rooms.size}`);
+          console.log(`[ws] room:create -> members=${JSON.stringify(room.members)}`);
           send('room:joined', { roomCode: room.code, members: room.members, isHost: true, mySocketId: ws.id });
           break;
         }
         case 'room:join': {
-          const { roomCode, nickname: joinName } = data || {};
-          console.log(`[ws] room:join -> code=${roomCode} nickname=${joinName}`);
+          const { roomCode, nickname: joinName, avatar: joinAvatar } = data || {};
+          console.log(`[ws] room:join -> code=${roomCode} nickname=${joinName}, avatar=${joinAvatar}`);
           if (!roomCode) { send('room:error', { message: '缺少房间码' }); break; }
           const room = rooms.getRoom(roomCode);
           if (!room) {
@@ -42,9 +46,11 @@ module.exports = function attachWS(server) {
             break;
           }
           ws.nickname = joinName || '匿名';
+          ws.avatar = joinAvatar || '';
           ws.roomCode = roomCode;
-          room.addMember(ws.id, ws.nickname);
+          room.addMember(ws.id, ws.nickname, ws.avatar);
           console.log(`[ws] room:join OK -> code=${roomCode} joiner=${ws.nickname} members=${room.members.length}`);
+          console.log(`[ws] room:join -> members=${JSON.stringify(room.members)}`);
           send('room:joined', { roomCode, members: room.members, isHost: false, mySocketId: ws.id });
           broadcast(roomCode, 'room:members', { members: room.members }, ws.id);
           break;

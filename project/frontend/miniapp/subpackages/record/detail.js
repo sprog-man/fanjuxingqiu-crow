@@ -19,8 +19,10 @@ Page({
   },
 
   fetchDetail(id) {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/gathering/detail/' + id,
+      url: serverUrl + '/api/gathering/detail/' + id,
+      method: 'GET',
       timeout: 5000,
       success: (res) => {
         if (res.data && res.data.data) this.setGathering(res.data.data)

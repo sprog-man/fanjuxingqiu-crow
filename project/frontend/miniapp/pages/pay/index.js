@@ -70,13 +70,13 @@ Page({
   openDrawBuddy() {
     this.setData({
       showDrawBuddy: true, drawBuddySearch: '',
-      drawBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.players),
+      drawBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.players),
     })
   },
   closeDrawBuddy() { this.setData({ showDrawBuddy: false }) },
   onDrawBuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.data.players)
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.players)
     this.setData({ drawBuddySearch: q, drawBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickDrawBuddy(e) {
@@ -98,13 +98,13 @@ Page({
   openGameBuddy() {
     this.setData({
       showGameBuddy: true, gameBuddySearch: '',
-      gameBuddies: this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList()),
+      gameBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.getGamePlayerList()),
     })
   },
   closeGameBuddy() { this.setData({ showGameBuddy: false }) },
   onGameBuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.getGamePlayerList())
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.getGamePlayerList())
     this.setData({ gameBuddySearch: q, gameBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickGameBuddy(e) {
@@ -123,13 +123,13 @@ Page({
   openAABuddy() {
     this.setData({
       showAABuddy: true, aaBuddySearch: '',
-      aaBuddies: this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants),
+      aaBuddies: this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.aaParticipants),
     })
   },
   closeAABuddy() { this.setData({ showAABuddy: false }) },
   onAABuddySearch(e) {
     const q = e.detail.value
-    const all = this.markBuddiesAdded(app.getBuddies(), this.data.aaParticipants)
+    const all = this.markBuddiesAdded(app.getAcceptedBuddies(), this.data.aaParticipants)
     this.setData({ aaBuddySearch: q, aaBuddies: all.filter(b => b.name.includes(q)) })
   },
   pickAABuddy(e) {
@@ -368,18 +368,23 @@ Page({
     this.setData({ selectedGathering: null, aaParticipants: [], aaAmount: '' })
   },
 
-  request(url, method, data) {
+  request(path, method, data) {
     return new Promise((resolve, reject) => {
+      const serverUrl = app.globalData.serverUrl || 'http://localhost:2001'
       wx.request({
-        url, method: method || 'GET', data: data || {},
-        timeout: 5000, success: resolve, fail: reject,
+        url: serverUrl + path,
+        method: method || 'GET',
+        data: data || {},
+        timeout: 5000,
+        success: resolve,
+        fail: reject,
       })
     })
   },
 
   async fetchAA() {
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/next/' + this.data.groupId)
+      const res = await this.request('/api/game/aa/next/' + this.data.groupId)
       const body = res.data
       if (!body || !body.data) return
       const d = body.data
@@ -401,7 +406,7 @@ Page({
       amount: Number(this.data.aaAmount),
     }
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/record', 'POST', payload)
+      const res = await this.request('/api/game/aa/record', 'POST', payload)
       if (res.statusCode !== 200) throw new Error('submit failed')
     } catch (e) {
       wx.showToast({ title: '保存失败', icon: 'none' }); return
@@ -424,7 +429,7 @@ Page({
     const current = paidStatus[participant]
     const newStatus = !current
     try {
-      const res = await this.request(this.data.serverUrl + '/api/game/aa/update-status', 'POST', {
+      const res = await this.request('/api/game/aa/update-status', 'POST', {
         recordId: recordid, participant, paid: newStatus,
       })
       if (res.statusCode !== 200) throw new Error('update failed')

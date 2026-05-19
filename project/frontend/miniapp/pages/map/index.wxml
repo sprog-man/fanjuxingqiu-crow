@@ -81,14 +81,24 @@
           <text class="ce-empty-text">暂无打卡记录</text>
         </view>
         <view wx:for="{{cityRecords}}" wx:key="_id" class="ce-card">
-          <view class="ce-card-date">
-            <text class="ce-card-year">{{item.cardYear}}</text>
-            <view class="ce-card-date-row">
-              <text class="ce-card-day">{{item.cardDate}}</text>
-              <text class="ce-card-month">{{item.cardMonth}}月</text>
-              <text class="ce-card-weekday">周{{item.cardWeekday}}</text>
+          <view class="ce-card-header">
+            <view class="ce-card-date">
+              <text class="ce-card-year">{{item.cardYear}}</text>
+              <view class="ce-card-date-row">
+                <text class="ce-card-day">{{item.cardDate}}</text>
+                <text class="ce-card-month">{{item.cardMonth}}月</text>
+                <text class="ce-card-weekday">周{{item.cardWeekday}}</text>
+              </view>
+              <text class="ce-card-time">{{item.cardTime}}</text>
             </view>
-            <text class="ce-card-time">{{item.cardTime}}</text>
+            <view class="ce-card-actions">
+              <view class="ce-action-btn" data-id="{{item._id}}" bindtap="editCheckin">
+                <text class="ce-action-icon">✏️</text>
+              </view>
+              <view class="ce-action-btn ce-action-delete" data-id="{{item._id}}" bindtap="deleteCheckin">
+                <text class="ce-action-icon">🗑️</text>
+              </view>
+            </view>
           </view>
           <view class="ce-card-body">
             <text class="ce-card-title">{{item.title}}</text>
@@ -112,7 +122,7 @@
   <view wx:if="{{showForm}}" class="form-overlay" bindtap="closeForm">
     <view class="form-card" catchtap>
       <view class="form-header">
-        <text class="form-title">📍 美食打卡</text>
+        <text class="form-title">{{isEditMode ? '✏️ 编辑打卡' : '📍 美食打卡'}}</text>
         <text class="form-close" bindtap="closeForm">✕</text>
       </view>
 

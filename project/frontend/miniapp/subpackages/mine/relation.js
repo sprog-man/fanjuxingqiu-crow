@@ -96,8 +96,10 @@ Page({
   },
 
   loadData() {
+    const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
     wx.request({
-      url: this.data.serverUrl + '/api/relation/graph',
+      url: serverUrl + '/api/relation/graph',
+      method: 'GET',
       timeout: 3000,
       success: (res) => {
         const data = res.data.data

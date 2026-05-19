@@ -18,7 +18,7 @@
           bindtap="selectCategory"
           hover-class="category-hover"
         >
-          <image class="category-cover" src="{{item.tarotCover}}" mode="aspectFill" lazy-load />
+          <image class="category-cover" src="{{item.tarotCover}}" mode="aspectFill" lazy-load binderror="onCoverError" data-index="{{index}}" />
           <view class="category-mask"></view>
           <text class="category-name">{{item.name}}</text>
         </view>
@@ -256,12 +256,9 @@
               </view>
             </view>
           </view>
-          <view class="manage-item-actions" wx:if="{{item._id}}">
-            <view class="manage-action edit" data-id="{{item._id}}" bindtap="editDish">编辑</view>
-            <view class="manage-action del" data-id="{{item._id}}" bindtap="deleteDish">删除</view>
-          </view>
-          <view class="manage-item-actions" wx:else>
-            <text class="manage-badge">系统预设</text>
+          <view class="manage-item-actions">
+            <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
+            <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
           </view>
         </view>
       </scroll-view>

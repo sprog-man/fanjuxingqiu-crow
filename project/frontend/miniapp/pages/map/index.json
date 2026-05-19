@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "打卡地图"
+  "navigationBarTitleText": "打卡地图",
+  "usingComponents": {
+    "selector-component": "plugin://citySelector/selector-component"
+  }
 }

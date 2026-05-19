@@ -76,6 +76,12 @@
       }
     ]
   },
+  "plugins": {
+    "citySelector": {
+      "version": "1.0.3",
+      "provider": "wx63ffb7b7894e99ae"
+    }
+  },
   "style": "v2",
   "componentFramework": "glass-easel",
   "permission": {
@@ -84,6 +90,7 @@
     }
   },
   "requiredPrivateInfos": ["getLocation"],
+  "cloud": true,
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
 }

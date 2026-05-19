@@ -29,7 +29,9 @@ Page({
 
   _setupListeners() {
     ws.on('room:joined', (data) => {
+      console.log('[Room] room:joined 数据:', JSON.stringify(data));
       const members = (data.members || []).map((m, i) => ({ ...m, color: MEMBER_COLORS[i % MEMBER_COLORS.length] }));
+      console.log('[Room] 处理后的 members:', JSON.stringify(members));
       this.setData({
         pageState: 'inroom', connecting: false,
         roomCode: data.roomCode, members, isHost: data.isHost,
@@ -38,7 +40,9 @@ Page({
     });
 
     ws.on('room:members', (data) => {
+      console.log('[Room] room:members 数据:', JSON.stringify(data));
       const members = (data.members || []).map((m, i) => ({ ...m, color: MEMBER_COLORS[i % MEMBER_COLORS.length] }));
+      console.log('[Room] 处理后的 members:', JSON.stringify(members));
       this.setData({ members });
     });
 
@@ -85,8 +89,12 @@ Page({
   _createRoom() {
     if (this.data.connecting) return;
     this.setData({ connecting: true });
-    const nickname = getApp().globalData.userInfo?.nickname || '我';
-    ws.connect('', nickname);
+    const userInfo = getApp().globalData.userInfo || {};
+    const nickname = userInfo.nickname || '我';
+    const avatar = userInfo.avatar_url || '';
+    console.log('[Room] 创建房间 - 用户信息:', JSON.stringify(userInfo));
+    console.log('[Room] 创建房间 - 头像URL:', avatar);
+    ws.connect('', nickname, avatar);
   },
 
   _joinRoom() {
@@ -97,8 +105,12 @@ Page({
       return;
     }
     this.setData({ connecting: true });
-    const nickname = getApp().globalData.userInfo?.nickname || '我';
-    ws.connect(code, nickname);
+    const userInfo = getApp().globalData.userInfo || {};
+    const nickname = userInfo.nickname || '我';
+    const avatar = userInfo.avatar_url || '';
+    console.log('[Room] 加入房间 - 用户信息:', JSON.stringify(userInfo));
+    console.log('[Room] 加入房间 - 头像URL:', avatar);
+    ws.connect(code, nickname, avatar);
   },
 
   /* ====== 分享 ====== */
