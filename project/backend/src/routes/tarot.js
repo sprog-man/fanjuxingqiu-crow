@@ -146,9 +146,6 @@ router.post('/draw', async (req, res) => {
     return res.status(400).json({ error: '请选择分类' });
   }
 
-  // 自动修补旧数据缺失的 type 字段
-  await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } }).catch(() => {});
-
   let dishes;
   if (userId) {
     dishes = await Dish.find({ cuisineId, enabled: true, $or: [{ openid: '' }, { openid: userId }] }).lean();
@@ -201,16 +198,14 @@ router.get('/dishes', async (req, res) => {
   const { cuisineId, openid } = req.query;
   console.log('GET /dishes cuisineId:', cuisineId, 'openid:', openid);
   try {
-    // 自动修补旧数据缺失的 type 字段
-    await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } });
-
-    let dishes;
     const filter = { enabled: true };
     if (cuisineId) filter.cuisineId = cuisineId;
     if (openid) {
       filter.$or = [{ openid: '' }, { openid }];
     }
-    dishes = await Dish.find(filter).lean();
+    let dishes = await Dish.find(filter).lean();
+    // 确保 type 字段存在（Mongoose lean() 有时不返回 type）
+    dishes = dishes.map(d => ({ ...d, type: d.type || 'system' }));
     console.log('Dishes found:', dishes.length);
     res.json({ data: dishes });
   } catch (e) {
