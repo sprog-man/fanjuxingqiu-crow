@@ -268,7 +268,6 @@
 
       <view class="form-actions">
         <view class="form-btn cancel" bindtap="closeManageDish">关闭</view>
-        <view class="form-btn danger" bindtap="clearCategoryDishes">🗑️ 清空本菜系</view>
         <view class="form-btn primary" bindtap="openAddDish">+ 添加菜品</view>
       </view>
     </view>
