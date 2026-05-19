@@ -77,6 +77,9 @@ router.get('/users', async (req, res) => {
 
 router.get('/dishes', async (req, res) => {
   try {
+    // 自动修补旧数据缺失的 type 字段
+    await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } });
+
     const { cuisineId } = req.query;
     const filter = { $or: [{ type: 'system' }, { type: { $exists: false } }] };
     if (cuisineId) filter.cuisineId = cuisineId;
@@ -102,7 +105,7 @@ router.put('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
     if (!dish) return res.status(404).json({ error: '菜品不存在' });
-    if (dish.type !== 'system') return res.status(403).json({ error: '仅可管理公共菜品' });
+    if (dish.type && dish.type !== 'system') return res.status(403).json({ error: '仅可管理公共菜品' });
     const { name, cuisineId, image, tags, description } = req.body;
     if (name) dish.name = name;
     if (cuisineId) dish.cuisineId = cuisineId;
@@ -136,7 +139,7 @@ router.delete('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
     if (!dish) return res.status(404).json({ error: '菜品不存在' });
-    if (dish.type !== 'system') return res.status(403).json({ error: '仅可删除公共菜品' });
+    if (dish.type && dish.type !== 'system') return res.status(403).json({ error: '仅可删除公共菜品' });
     await Dish.findByIdAndDelete(req.params.id);
     res.json({ data: { ok: true } });
   } catch (e) { res.status(500).json({ error: e.message }); }
