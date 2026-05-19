@@ -7,6 +7,7 @@ const Gathering = require('../models/gathering');
 const User = require('../models/user');
 const Dish = require('../models/dish');
 const Cuisine = require('../models/cuisine');
+const oss = require('../utils/oss');
 
 // 登录
 router.post('/login', (req, res) => {
