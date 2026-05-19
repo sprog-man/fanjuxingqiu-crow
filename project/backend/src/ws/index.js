@@ -94,6 +94,12 @@ module.exports = function attachWS(server) {
           } else {
             rejoinRoom.addMember(ws.id, ws.nickname, ws.avatar, ws.openid);
             console.log(`[ws] room:rejoin -> 未找到旧成员，作为新成员添加`);
+            // 检查是否是原始房主（close 时被移除后重连）
+            if (ws.openid && ws.openid === rejoinRoom.hostOpenid && rejoinRoom.members.length > 0) {
+              const last = rejoinRoom.members[rejoinRoom.members.length - 1];
+              last.isHost = true;
+              console.log(`[ws] room:rejoin -> 恢复 openid=${ws.openid} 的房主身份`);
+            }
           }
 
           const isHost = rejoinRoom.host && rejoinRoom.host.id === ws.id;

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 class Room {
   constructor(hostId, hostNickname, hostAvatar, hostOpenid) {
     this.code = crypto.randomBytes(3).toString('hex').toUpperCase().slice(0, 6);
+    this.hostOpenid = hostOpenid || '';
     this.members = [{
       id: hostId, nickname: hostNickname, avatar: hostAvatar || '',
       openid: hostOpenid || '', isHost: true
