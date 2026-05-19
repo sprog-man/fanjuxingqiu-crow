@@ -1,4 +1,6 @@
 const app = getApp()
+let citySelector = null
+try { citySelector = requirePlugin('citySelector') } catch (e) {}
 
 Page({
   data: {
@@ -66,9 +68,35 @@ Page({
     this.fetchAchievements()
     this.fetchCheckins()
     this._useCachedLoc()
+
+    if (citySelector) {
+      const selectedCity = citySelector.getCity()
+      if (selectedCity && selectedCity.location) {
+        this.handleCitySelected(selectedCity)
+        citySelector.clearCity()
+      } else if (selectedCity && selectedCity.errMsg === 'cancel') {
+        citySelector.clearCity()
+      }
+    }
   },
 
   onUnload() {
+    if (citySelector) citySelector.clearCity()
+  },
+
+  handleCitySelected(cityInfo) {
+    if (!cityInfo || !cityInfo.location) return
+    this.setData({
+      'checkin.city': cityInfo.name || '',
+      'checkin.province': cityInfo.fullname || '',
+      'checkin.lat': cityInfo.location.latitude,
+      'checkin.lng': cityInfo.location.longitude,
+      locInfo: cityInfo.fullname || cityInfo.name || '',
+      noPhotos: true, hasPhotos: false, firstPhoto: '',
+      submitBtnText: '✅ 打卡', submitBtnClass: '',
+      formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
+    })
+    wx.setStorageSync('lastLocation', { lat: cityInfo.location.latitude, lng: cityInfo.location.longitude })
   },
 
   /* ===== Location ===== */
@@ -309,28 +337,30 @@ Page({
     })
   },
 
-  // 原生城市选择列表，不依赖腾讯地图插件
   openCityPicker() {
+    if (citySelector) {
+      wx.navigateTo({
+        url: `plugin://citySelector/index?key=7JTBZ-P2N6W-QNURK-3QKJY-VYAXE-WOFBJ&referer=饭局星球&accurate=1`,
+        fail: () => this._showNativeCityPicker(),
+      })
+    } else {
+      this._showNativeCityPicker()
+    }
+  },
+
+  _showNativeCityPicker() {
     const cities = ['北京','上海','广州','深圳','成都','杭州','重庆','武汉','西安','南京','长沙','天津','苏州','昆明','青岛','厦门','大连','宁波','无锡','合肥']
     wx.showActionSheet({
       itemList: cities,
-      fail: () => {
-        // 取消 → 手动输入
-        this.openManualCityInput()
-        return
-      },
+      fail: () => { this.openManualCityInput() },
       success: (res) => {
         const city = cities[res.tapIndex]
         this.setData({
-          'checkin.city': city,
-          'checkin.province': city,
-          locInfo: city,
+          'checkin.city': city, 'checkin.province': city, locInfo: city,
           noPhotos: true, hasPhotos: false, firstPhoto: '',
-          formBodyH: this.calcFormBodyH(),
-          formLoading: false,
-          showForm: true,
+          formBodyH: this.calcFormBodyH(), formLoading: false, showForm: true,
         })
-      }
+      },
     })
   },
 

@@ -230,4 +230,44 @@ router.post('/upload', upload.array('photos', 9), async (req, res) => {
   }
 });
 
+const TENCENT_MAP_KEY = '7JTBZ-P2N6W-QNURK-3QKJY-VYAXE-WOFBJ'
+
+router.get('/geocode', (req, res) => {
+  const { lat, lng } = req.query
+  if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' })
+
+  const url = `https://apis.map.qq.com/ws/geocoder/v1/?location=${lat},${lng}&key=${TENCENT_MAP_KEY}&get_poi=0&output=json`
+
+  https.get(url, (proxyRes) => {
+    let body = ''
+    proxyRes.on('data', (chunk) => { body += chunk })
+    proxyRes.on('end', () => {
+      try {
+        const data = JSON.parse(body)
+        if (data.status === 0) {
+          const addr = data.result.address_component
+          res.json({
+            data: {
+              city: addr.city || addr.district || '',
+              province: addr.province || '',
+              district: addr.district || '',
+              lat: parseFloat(lat),
+              lng: parseFloat(lng),
+            }
+          })
+        } else {
+          res.status(502).json({ error: `腾讯地图 API 错误: ${data.message}`, code: data.status })
+        }
+      } catch (e) {
+        res.status(502).json({ error: '解析腾讯地图响应失败' })
+      }
+    })
+    proxyRes.on('error', () => {
+      res.status(502).json({ error: '腾讯地图代理请求失败' })
+    })
+  }).on('error', (e) => {
+    res.status(502).json({ error: '腾讯地图代理请求失败: ' + e.message })
+  })
+})
+
 module.exports = router;
