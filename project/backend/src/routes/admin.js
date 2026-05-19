@@ -114,6 +114,13 @@ router.put('/dishes/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+router.delete('/dishes/clear', async (req, res) => {
+  try {
+    const r = await Dish.deleteMany({ type: 'system' });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 router.delete('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
@@ -189,14 +196,6 @@ router.post('/dishes/init', async (req, res) => {
 
     const dishTotal = await Dish.countDocuments({ type: 'system' });
     res.json({ data: { cuisines: cuisines.length, dishes: dishTotal, added: totalAdded } });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// === 一键清除公共菜品 ===
-router.delete('/dishes/clear', async (req, res) => {
-  try {
-    const r = await Dish.deleteMany({ type: 'system' });
-    res.json({ data: { deleted: r.deletedCount } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
