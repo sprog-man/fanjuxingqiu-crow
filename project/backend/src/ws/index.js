@@ -165,6 +165,7 @@ module.exports = function attachWS(server) {
         const member = leaveRoom.findMember(ws.id);
         if (member) {
           member.online = false;
+          leaveRoom.touch();
           console.log(`[ws] disconnect -> code=${leaveCode} member=${member.nickname} 标记离线`);
           broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
         }
