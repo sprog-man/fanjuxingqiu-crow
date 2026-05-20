@@ -84,6 +84,8 @@ Page({
     myNickname: '我',
     myAvatar: '',
     serverUrl: 'http://localhost:2001',
+    manualUnlocked: [],
+    unlockableTitles: [],
     unlockModalData: null,
     animStarTimer: null,
   },
@@ -198,28 +200,33 @@ Page({
 
   computeWithFriends(friends) {
     let totalGatherCount = 0
-    const unlockedSet = new Set()
+    const conditionMetSet = new Set()
     let highestIdx = TITLE_DEFS.length
     friends.forEach(f => {
       totalGatherCount += f.gatherCount
-      if (f.titleId) unlockedSet.add(f.titleId)
+      if (f.titleId) conditionMetSet.add(f.titleId)
       const idx = TITLE_DEFS.findIndex(t => t.id === f.titleId)
       if (idx >= 0 && idx < highestIdx) highestIdx = idx
     })
     const highest = highestIdx < TITLE_DEFS.length ? TITLE_DEFS[highestIdx] : TITLE_DEFS[TITLE_DEFS.length - 1]
 
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+
     const atlas = TITLE_DEFS.map(def => ({
       ...def,
-      unlocked: unlockedSet.has(def.id),
+      unlocked: manuallyUnlocked.includes(def.id),
+      conditionMet: conditionMetSet.has(def.id),
+      canUnlock: conditionMetSet.has(def.id) && !manuallyUnlocked.includes(def.id),
     }))
 
     this.setData({
       friends,
       titleAtlas: atlas,
+      unlockableTitles: atlas.filter(t => t.canUnlock).map(t => t.id),
       userTitleInfo: {
         totalFriends: friends.length,
         totalGatherCount,
-        unlockedTitles: unlockedSet.size,
+        unlockedTitles: manuallyUnlocked.length,
         highestTitle: highest.name,
         highestLevel: highest.level,
         highestIcon: highest.icon,
@@ -281,49 +288,32 @@ Page({
 
   preventClose() {},
 
-  showUnlockModal(e) {
+  startUnlock(e) {
     const titleId = e.currentTarget.dataset.titleId
     const def = TITLE_DEFS.find(t => t.id === titleId)
     if (!def) return
     this.setData({
-      unlockModalData: {
-        ...def,
-        friendName: '小明',
-        animStars: '',
-      }
+      unlockModalData: { ...def, friendName: '饭搭子', animReady: false, animPhase: 0 },
     })
     setTimeout(() => {
-      let i = 0
-      const timer = setInterval(() => {
-        i++
-        const stars = '★'.repeat(i)
-        this.setData({ 'unlockModalData.animStars': stars })
-        if (i >= 5) clearInterval(timer)
-      }, 150)
-    }, 600)
+      this.setData({ 'unlockModalData.animReady': true })
+    }, 300)
+  },
+
+  _confirmUnlock() {
+    const titleId = this.data.unlockModalData.id
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+    if (!manuallyUnlocked.includes(titleId)) {
+      manuallyUnlocked.push(titleId)
+      wx.setStorageSync('manuallyUnlockedTitles', manuallyUnlocked)
+    }
+    this.computeWithFriends(this.data.friends)
+    this.setData({ unlockModalData: null })
   },
 
   hideUnlockModal() {
     if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
     this.setData({ unlockModalData: null })
-  },
-
-  demoUnlock() {
-    this.setData({
-      unlockModalData: {
-        ...TITLE_DEFS[0],
-        friendName: '小明',
-        animStars: '',
-      }
-    })
-    setTimeout(() => {
-      let i = 0
-      const timer = setInterval(() => {
-        i++
-        this.setData({ 'unlockModalData.animStars': '★'.repeat(i) })
-        if (i >= 5) clearInterval(timer)
-      }, 150)
-    }, 600)
   },
 
   formatDate(dateStr) {

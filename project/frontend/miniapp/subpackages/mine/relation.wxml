@@ -182,6 +182,9 @@
             </view>
           </view>
         </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
+        </view>
       </view>
     </view>
 
@@ -206,6 +209,9 @@
               <text class="atlas-lock-text">{{item.condition}}</text>
             </view>
           </view>
+        </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
         </view>
       </view>
     </view>
@@ -232,11 +238,12 @@
             </view>
           </view>
         </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
+        </view>
       </view>
     </view>
 
-    <!-- 演示解锁弹窗 -->
-    <button class="demo-btn" bindtap="demoUnlock">演示称号解锁动画</button>
   </view>
 
   <!-- ════ 解锁弹窗 ════ -->
@@ -250,7 +257,7 @@
       <text class="modal-stars">{{unlockModalData.animStars || unlockModalData.level}}</text>
       <text class="modal-sub">与{{unlockModalData.friendName}}的羁绊升级了！</text>
       <text class="modal-desc">{{unlockModalData.desc}}</text>
-      <button class="modal-btn" bindtap="hideUnlockModal">知道了</button>
+      <button class="modal-btn" bindtap="_confirmUnlock">知道了</button>
     </view>
   </view>
 </scroll-view>
