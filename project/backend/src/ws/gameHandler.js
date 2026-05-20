@@ -73,17 +73,20 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (tooth.isDanger) {
         tooth.state = 'danger';
         gs.phase = 'result';
+        const loser = room.findMember(currentPlayerId);
         gh.broadcast(roomCode, 'croc:result', {
-          loser: room.members[gs.turnIndex].nickname,
+          loser: loser ? loser.nickname : '未知',
           board: gs.board,
         });
       } else {
         tooth.state = 'safe';
         gs.turnIndex = (gs.turnIndex + 1) % gs.playerOrder.length;
+        const nextPlayerId = gs.playerOrder[gs.turnIndex];
+        const nextPlayer = room.findMember(nextPlayerId);
         gh.broadcast(roomCode, 'croc:state', {
           board: gs.board,
-          currentTurnName: room.members[gs.turnIndex].nickname,
-          currentTurnId: room.members[gs.turnIndex].id,
+          currentTurnName: nextPlayer ? nextPlayer.nickname : '未知',
+          currentTurnId: nextPlayerId,
           phase: 'playing',
         });
       }
@@ -128,17 +131,20 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (slot.isBoom) {
         slot.state = 'boom';
         gs.phase = 'result';
+        const loser = room.findMember(currentPlayerId);
         gh.broadcast(roomCode, 'pirate:result', {
-          loser: room.members[gs.turnIndex].nickname,
+          loser: loser ? loser.nickname : '未知',
           board: gs.board,
         });
       } else {
         slot.state = 'stabbed';
         gs.turnIndex = (gs.turnIndex + 1) % gs.playerOrder.length;
+        const nextPlayerId = gs.playerOrder[gs.turnIndex];
+        const nextPlayer = room.findMember(nextPlayerId);
         gh.broadcast(roomCode, 'pirate:state', {
           board: gs.board,
-          currentTurnName: room.members[gs.turnIndex].nickname,
-          currentTurnId: room.members[gs.turnIndex].id,
+          currentTurnName: nextPlayer ? nextPlayer.nickname : '未知',
+          currentTurnId: nextPlayerId,
           phase: 'playing',
         });
       }
