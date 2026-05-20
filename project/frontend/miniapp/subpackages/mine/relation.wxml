@@ -13,7 +13,7 @@
       <view class="my-card">
         <view class="my-avatar">
           <image wx:if="{{myAvatar}}" class="my-avatar-img" src="{{myAvatar}}" mode="aspectFill" />
-          <text wx:else class="my-avatar-text">{{myNickname.slice(0,1)}}</text>
+          <text wx:else class="my-avatar-text">{{myNickname ? myNickname.slice(0,1) : '?'}}</text>
         </view>
         <view class="my-info">
           <text class="my-name">{{myNickname}}</text>
