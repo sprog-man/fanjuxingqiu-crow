@@ -33,6 +33,11 @@ Page({
     this.setData({ serverUrl: app.getServerUrl() })
     const userInfo = app.globalData.userInfo
     if (userInfo && userInfo.nickname) this.setData({ currentUser: userInfo.nickname })
+    // 兼容旧数据：字符串格式 players → 对象格式
+    const players = this.data.players.map(p => typeof p === 'string' ? {name: p, avatar: ''} : p)
+    if (players.some((p, i) => p !== this.data.players[i])) {
+      this.setData({ players })
+    }
   },
 
   fullUrl(path) {

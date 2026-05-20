@@ -40,7 +40,7 @@
       <view class="buddy-shortcut" bindtap="openDrawBuddy"><text>👥 从饭搭子中选择</text></view>
       <view class="player-list">
         <view wx:for="{{players}}" wx:key="index" class="player-tag">
-          <text>{{item.name || item}}</text>
+          <text>{{item.name}}</text>
           <text class="player-remove" data-index="{{index}}" bindtap="removePlayer">×</text>
         </view>
       </view>
@@ -64,8 +64,8 @@
           <view class="spin-stage" style="transform: rotate({{spinAngle}}deg)">
             <view wx:for="{{players}}" wx:key="index" class="spin-item {{spinPhase === 'cruise' ? 'si-blur' : ''}}" style="transform: rotate({{index * 360 / players.length}}deg) translateY(-{{spinRadius}}px)">
               <image wx:if="{{item.avatar}}" class="si-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
-              <view wx:else class="si-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{(item.name || item).slice(0,1)}}</view>
-              <text class="si-name">{{item.name || item}}</text>
+              <view wx:else class="si-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{item.name.slice(0,1)}}</view>
+              <text class="si-name">{{item.name}}</text>
             </view>
           </view>
         </view>
@@ -77,7 +77,7 @@
           <view wx:for="{{players}}" wx:key="index" class="eject-item"
                 style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}};{{ejectStyles[index]}}">
             <image wx:if="{{item.avatar}}" class="eject-item-img" src="{{item.avatar}}" mode="aspectFill" />
-            <text wx:else>{{(item.name || item).slice(0,1)}}</text>
+            <text wx:else>{{item.name.slice(0,1)}}</text>
           </view>
         </view>
         <text class="eject-label">{{ejectLabel}}</text>
@@ -109,8 +109,8 @@
       <view class="draw-idle-circle">
         <view wx:for="{{players}}" wx:key="index" class="dic-item" style="transform:rotate({{index * 360 / (players.length || 1)}}deg) translateY(-70px)">
           <image wx:if="{{item.avatar}}" class="dic-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
-          <view wx:else class="dic-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{(item.name || item).slice(0,1)}}</view>
-          <text class="dic-name">{{item.name || item}}</text>
+          <view wx:else class="dic-avatar" style="background:{{['#D85A30','#1D9E75','#534AB7','#FF8C00','#E91E63','#00BCD4','#8BC34A','#FF5722'][index % 8]}}">{{item.name.slice(0,1)}}</view>
+          <text class="dic-name">{{item.name}}</text>
         </view>
         <view wx:if="{{players.length < 2}}" class="dic-placeholder">
           <text class="dic-placeholder-icon">👥</text>
