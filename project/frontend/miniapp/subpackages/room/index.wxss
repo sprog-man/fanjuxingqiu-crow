@@ -143,7 +143,7 @@
 .tooth.danger { background: linear-gradient(180deg,#ff4444,#D85A30); animation: explode 0.6s ease-out; }
 .croc-jaw-lower { width: 70%; height: 22px; background: linear-gradient(180deg,#238b65,#1D9E75); border-radius: 0 0 16px 16px; margin: -1px auto 0; }
 
-.barrel-section { background: rgba(255,255,255,0.06); border-radius: 20px; padding: 24px 14px; }
+.barrel-section { position: relative; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 24px 14px; }
 .barrel.shake { animation: barrelShake 0.6s ease-in-out; }
 .barrel-body { background: linear-gradient(180deg, #d4a050, #a06828); border-radius: 12px; padding: 16px; border: 3px solid #8a5a20; }
 .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -153,6 +153,12 @@
 .slot.boom { background: radial-gradient(circle, #ff4444, #cc0000); animation: slotExplode 0.5s ease-out; }
 .knife { width: 6px; height: 24px; background: #888; border-radius: 1px 1px 3px 3px; }
 .boom-effect { font-size: 18px; }
+
+/* 多人在线海盗弹出（适配深色主题） */
+.pirate { position: absolute; top: -80px; left: 50%; transform: translateX(-50%) translateY(100%); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); opacity: 0; z-index: 10; }
+.pirate.pop { transform: translateX(-50%) translateY(0); opacity: 1; }
+.pirate-icon { display: block; width: 52px; height: 52px; line-height: 52px; text-align: center; background: linear-gradient(135deg, #f5d6a8, #e8c090); border-radius: 50%; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: pirateBounce 0.5s ease-in-out; }
+@keyframes pirateBounce { 0% { transform: scale(0.3) translateY(20px); } 50% { transform: scale(1.15) translateY(-5px); } 70% { transform: scale(0.95); } 100% { transform: scale(1) translateY(0); } }
 
 .waiting-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .wo-text { font-size: 16px; color: rgba(255,255,255,0.7); }

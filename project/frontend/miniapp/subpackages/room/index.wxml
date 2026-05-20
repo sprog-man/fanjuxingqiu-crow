@@ -191,7 +191,7 @@
         </view>
       </view>
 
-      <view wx:if="{{gameMode === 'pirate'}}" class="barrel-section">
+      <view wx:if="{{gameMode === 'pirate'}}" class="barrel-section {{gameResult ? 'boomed' : ''}}">
         <view class="barrel {{gameResult ? 'shake' : ''}}">
           <view class="barrel-body">
             <view class="slot-grid">
@@ -200,6 +200,10 @@
                 <view wx:if="{{item.state === 'boom'}}" class="boom-effect">💥</view>
               </view>
             </view>
+          </view>
+          <!-- 海盗弹出 -->
+          <view class="pirate {{gameResult ? 'pop' : ''}}">
+            <text class="pirate-icon">🏴‍☠️</text>
           </view>
         </view>
       </view>
