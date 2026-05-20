@@ -10,6 +10,9 @@ const config = require('./config');
 
 const app = express();
 
+// 信任反向代理（nginx）的 X-Forwarded-For 头
+app.set('trust proxy', 1);
+
 // === 安全中间件 ===
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
