@@ -18,7 +18,7 @@
         <view class="my-info">
           <text class="my-name">{{myNickname}}</text>
           <text class="my-sub">饭搭子宇宙</text>
-          <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}">
+          <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}" bindtap="openTitlePicker">
             <text class="title-badge-icon">✦</text>
             <text class="title-badge-text">{{userTitleInfo.highestTitle}}</text>
           </view>
@@ -269,6 +269,22 @@
       <text class="modal-desc" style="opacity:{{unlockModalData.animPhase >= 3 ? 1 : 0}};transition:opacity 0.4s">{{unlockModalData.desc}}</text>
 
       <button wx:if="{{unlockModalData.animPhase >= 4}}" class="modal-btn" bindtap="_confirmUnlock">领取称号</button>
+    </view>
+  </view>
+
+  <!-- ════ 称号选择弹窗 ════ -->
+  <view wx:if="{{showTitlePicker}}" class="modal-overlay" bindtap="closeTitlePicker">
+    <view class="title-picker-card" catchtap="preventClose">
+      <text class="title-picker-title">选择展示称号</text>
+      <view wx:for="{{titlePickerList}}" wx:key="id" class="title-picker-item {{item.active ? 'active' : ''}}" data-title-id="{{item.id}}" bindtap="selectTitle">
+        <view class="tp-icon" style="background:{{item.bg}};color:{{item.color}}">✦</view>
+        <view class="tp-info">
+          <text class="tp-name">{{item.name}}</text>
+          <text class="tp-level">{{item.level}}</text>
+        </view>
+        <text wx:if="{{item.active}}" class="tp-check">✓</text>
+      </view>
+      <button class="title-picker-close" bindtap="closeTitlePicker">取消</button>
     </view>
   </view>
 </scroll-view>

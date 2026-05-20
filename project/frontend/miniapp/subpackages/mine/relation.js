@@ -88,14 +88,17 @@ Page({
     unlockableTitles: [],
     unlockModalData: null,
     animStarTimer: null,
+    showTitlePicker: false,
+    titlePickerList: [],
   },
 
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
     const userInfo = app.globalData.userInfo || {}
+    const localAvatar = (userInfo.avatar_url && userInfo.avatar_url.indexOf('http') === 0) ? userInfo.avatar_url : ''
     this.setData({
       myNickname: userInfo.nickname || '我',
-      myAvatar: userInfo.avatar_url || '',
+      myAvatar: localAvatar,
     })
     this.loadData()
   },
@@ -129,10 +132,19 @@ Page({
       myNickname: user.nickname || this.data.myNickname,
       myAvatar: user.avatar || this.data.myAvatar,
     })
-    const friends = (data.friends || []).map((f, idx) => {
+    let friends = (data.friends || []).map((f, idx) => {
       const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
       return { ...f, initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
     })
+    // API 空数据时从本地饭搭子补
+    if (friends.length === 0) {
+      const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
+      friends = localBuddies.map((b, idx) => {
+        const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
+        const name = b.remark || b.name
+        return { name, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
+      })
+    }
     this.computeWithFriends(friends)
   },
 
@@ -202,16 +214,34 @@ Page({
   computeWithFriends(friends) {
     let totalGatherCount = 0
     const conditionMetSet = new Set()
-    let highestIdx = TITLE_DEFS.length
     friends.forEach(f => {
       totalGatherCount += f.gatherCount
       if (f.titleId) conditionMetSet.add(f.titleId)
-      const idx = TITLE_DEFS.findIndex(t => t.id === f.titleId)
-      if (idx >= 0 && idx < highestIdx) highestIdx = idx
     })
-    const highest = highestIdx < TITLE_DEFS.length ? TITLE_DEFS[highestIdx] : TITLE_DEFS[TITLE_DEFS.length - 1]
 
     const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+
+    // 最高称号只从已手动解锁的取
+    let highestTitle = ''
+    let highestLevel = ''
+    if (manuallyUnlocked.length > 0) {
+      // 优先用上次选中的称号
+      const savedTitleId = wx.getStorageSync('selectedDisplayTitle') || ''
+      if (savedTitleId && manuallyUnlocked.includes(savedTitleId)) {
+        const savedDef = TITLE_DEFS.find(d => d.id === savedTitleId)
+        if (savedDef) { highestTitle = savedDef.name; highestLevel = savedDef.level }
+      }
+      // 无保存记录则取最高稀有度的已解锁称号
+      if (!highestTitle) {
+        for (const def of TITLE_DEFS) {
+          if (manuallyUnlocked.includes(def.id)) {
+            highestTitle = def.name
+            highestLevel = def.level
+            break
+          }
+        }
+      }
+    }
 
     const atlas = TITLE_DEFS.map(def => ({
       ...def,
@@ -228,9 +258,9 @@ Page({
         totalFriends: friends.length,
         totalGatherCount,
         unlockedTitles: manuallyUnlocked.length,
-        highestTitle: highest.name,
-        highestLevel: highest.level,
-        highestIcon: highest.icon,
+        highestTitle,
+        highestLevel,
+        highestIcon: '',
       }
     })
   },
@@ -332,6 +362,27 @@ Page({
     this.setData({ unlockModalData: null })
   },
 
+  openTitlePicker() {
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+    if (manuallyUnlocked.length === 0) return
+    const currentTitle = this.data.userTitleInfo.highestTitle
+    const list = TITLE_DEFS.filter(d => manuallyUnlocked.includes(d.id)).map(d => ({ ...d, active: d.name === currentTitle }))
+    this.setData({ titlePickerList: list, showTitlePicker: true })
+  },
+  selectTitle(e) {
+    const titleId = e.currentTarget.dataset.titleId
+    const def = TITLE_DEFS.find(d => d.id === titleId)
+    if (!def) return
+    wx.setStorageSync('selectedDisplayTitle', titleId)
+    this.setData({
+      showTitlePicker: false,
+      'userTitleInfo.highestTitle': def.name,
+      'userTitleInfo.highestLevel': def.level,
+    })
+  },
+  closeTitlePicker() {
+    this.setData({ showTitlePicker: false })
+  },
   hideUnlockModal() {
     if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
     this.setData({ unlockModalData: null })
