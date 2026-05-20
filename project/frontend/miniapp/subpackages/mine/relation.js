@@ -110,6 +110,7 @@ Page({
   },
 
   onUnload() {
+    if (this._avatarTimer) clearTimeout(this._avatarTimer)
     if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
   },
 
@@ -136,10 +137,14 @@ Page({
     const user = data.user || {}
     const localUserInfo = app.globalData.userInfo || {}
     const bestAvatar = user.avatar || localUserInfo.avatar_url || this.data.myAvatar
-    this.setData({
-      myNickname: user.nickname || this.data.myNickname,
-      myAvatar: bestAvatar,
-    })
+    if (bestAvatar) this.setData({ myAvatar: bestAvatar })
+    this.setData({ myNickname: user.nickname || this.data.myNickname })
+    // 终极兜底：从 storage 直接读头像
+    if (!bestAvatar) {
+      const storageInfo = wx.getStorageSync('userInfo') || {}
+      const storageAvatar = storageInfo.avatar_url || ''
+      if (storageAvatar) this.setData({ myAvatar: storageAvatar })
+    }
     // 从本地饭搭子数据中查找头像
     const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
     const buddyAvatarMap = {}
