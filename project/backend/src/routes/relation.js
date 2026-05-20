@@ -122,23 +122,23 @@ router.get('/graph', async (req, res) => {
 
     // 6. 计算称号
     const titleRules = [
-      { id: 'soulmate', name: '灵魂饭搭', level: '⭐⭐⭐⭐⭐', desc: '形影不离，吃遍人间的默契伙伴', check: (r) => r.gatherCount >= 8 },
-      { id: 'food-conspirator', name: '美食同谋', level: '⭐⭐⭐⭐', desc: '跨越菜系国界的猎奇探险搭档', check: (r) => r.cuisineCount >= 6 },
-      { id: 'wanderer', name: '流浪美食家', level: '⭐⭐⭐⭐', desc: '走遍山河，用胃丈量世界的同行者', check: (r) => r.cityCount >= 3 },
-      { id: 'feast-king', name: '饭局天王', level: '⭐⭐⭐', desc: '财大气粗、豪气干云的聚餐主理人', check: (r) => r.payRank === 1 },
-      { id: 'happy-partner', name: '快乐搭档', level: '⭐⭐⭐', desc: '每次相聚都欢声笑语的开心果', check: (r) => r.happyCount >= 3 },
-      { id: 'core', name: '聚会核心', level: '⭐⭐⭐', desc: '永远准时出现，缺了你就不热闹', check: (r) => r.attendRate >= 0.9 },
-      { id: 'explorer', name: '探店达人', level: '⭐⭐', desc: '总能发现隐藏小馆子的行走攻略', check: (r) => r.newPlaceCount >= 3 },
-      { id: 'atmosphere', name: '气氛组长', level: '⭐⭐', desc: '点菜必点对，聊天必起哄的妙人', check: (r) => r.moodAvg >= 4 },
-      { id: 'traveler', name: '偶遇旅人', level: '⭐', desc: '命运让我们共桌，期待下一次相逢', check: (r) => r.gatherCount >= 1 },
-      { id: 'new-friend', name: '新晋饭友', level: '⭐', desc: '才刚开始的缘分，未来可期', check: () => true },
+      { id: 'soul_partner', name: '灵魂饭搭', level: '⭐⭐⭐⭐⭐', desc: '形影不离，吃遍人间的默契伙伴', check: (r) => r.gatherCount >= 8 },
+      { id: 'food_accomplice', name: '美食同谋', level: '⭐⭐⭐⭐', desc: '跨越菜系国界的猎奇探险搭档', check: (r) => r.totalSpent >= 500 },
+      { id: 'food_wanderer', name: '流浪美食家', level: '⭐⭐⭐⭐', desc: '走遍山河，用胃丈量世界的同行者', check: (r) => r.gatherCount >= 5 },
+      { id: 'feast_king', name: '饭局天王', level: '⭐⭐⭐', desc: '财大气粗、豪气干云的聚餐主理人', check: (r) => r.totalSpent >= 300 },
+      { id: 'happy_partner', name: '快乐搭档', level: '⭐⭐⭐', desc: '每次相聚都欢声笑语的开心果', check: (r) => r.gatherCount >= 5 && r.moodAvg >= 4 },
+      { id: 'party_core', name: '聚会核心', level: '⭐⭐⭐', desc: '永远准时出现，缺了你就不热闹', check: (r) => r.gatherCount >= 5 },
+      { id: 'explorer', name: '探店达人', level: '⭐⭐', desc: '总能发现隐藏小馆子的行走攻略', check: (r) => r.gatherCount >= 3 },
+      { id: 'vibe_leader', name: '气氛组长', level: '⭐⭐', desc: '点菜必点对，聊天必起哄的妙人', check: (r) => r.moodAvg >= 3.5 },
+      { id: 'passing_traveler', name: '偶遇旅人', level: '⭐', desc: '命运让我们共桌，期待下一次相逢', check: (r) => r.gatherCount >= 1 },
+      { id: 'new_friend', name: '新晋饭友', level: '⭐', desc: '才刚开始的缘分，未来可期', check: () => true },
     ];
 
     function computeTitle(rd) {
       for (const rule of titleRules) {
         if (rule.check(rd)) return { title: rule.name, level: rule.level, desc: rule.desc, titleId: rule.id };
       }
-      return { title: '新晋饭友', level: '⭐', desc: '才刚开始的缘分，未来可期', titleId: 'new-friend' };
+      return { title: '新晋饭友', level: '⭐', desc: '才刚开始的缘分，未来可期', titleId: 'new_friend' };
     }
 
     const payCounts = {};

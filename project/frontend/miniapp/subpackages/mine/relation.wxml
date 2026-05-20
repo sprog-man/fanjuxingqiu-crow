@@ -44,11 +44,6 @@
       <!-- 好友卡片网格 -->
       <view class="friend-grid">
         <view wx:for="{{friends}}" wx:key="name" class="friend-card" data-name="{{item.name}}" bindtap="showDetail">
-          <!-- 锁定遮罩 -->
-          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay">
-            <text class="lock-icon">🔒</text>
-            <text class="lock-text">{{getLockHint(item.gatherCount)}}</text>
-          </view>
           <view class="card-top">
             <view class="card-avatar" style="background:{{item.avatarBg}};color:{{item.avatarColor}}">
               <text>{{item.initial}}</text>
@@ -64,7 +59,6 @@
           <view class="badge-sm" style="background:{{item.titleBg}};color:{{item.titleColor}}">
             <text>{{item.level}} {{item.title}}</text>
           </view>
-          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay-bottom"></view>
         </view>
       </view>
       <view wx:if="{{friends.length === 0}}" class="empty-state">

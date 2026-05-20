@@ -8,39 +8,39 @@ const TITLE_DEFS = [
     check: (r) => r.gatherCount >= 8 },
   { id: 'food_accomplice', name: '美食同谋', rarity: '史诗', icon: 'ufo',
     level: '⭐⭐⭐⭐', bg: '#EEEDFE', color: '#534AB7',
-    condition: '探索菜系种类 ≥ 6种',
+    condition: '共同消费 ≥ 500元',
     desc: '跨越菜系国界的猎奇搭档，没有你不敢吃的、没有你不敢点的。',
-    check: (r) => r.cuisineCount >= 6 },
+    check: (r) => r.totalSpent >= 500 },
   { id: 'food_wanderer', name: '流浪美食家', rarity: '史诗', icon: 'plane',
     level: '⭐⭐⭐⭐', bg: '#EEEDFE', color: '#534AB7',
-    condition: '同游城市 ≥ 3座',
+    condition: '共同聚餐 ≥ 5次',
     desc: '走遍山河，用胃丈量世界的同行人。足迹在地图上连成诗。',
-    check: (r) => r.cityCount >= 3 },
+    check: (r) => r.gatherCount >= 5 },
   { id: 'feast_king', name: '饭局天王', rarity: '稀有', icon: 'pig-money',
     level: '⭐⭐⭐', bg: '#FAEEDA', color: '#854F0B',
-    condition: '主动买单次数最多',
+    condition: '共同消费 ≥ 300元',
     desc: '财大气粗、豪气干云。每次都是最后一个放下筷子、第一个掏钱包的人。',
-    check: (r) => r.payRank === 1 },
+    check: (r) => r.totalSpent >= 300 },
   { id: 'happy_partner', name: '快乐搭档', rarity: '稀有', icon: 'confetti',
     level: '⭐⭐⭐', bg: '#FCEBEB', color: '#A32D2D',
-    condition: '聚餐心情均分 ≥ 4.5',
+    condition: '共餐 ≥ 5次且心情均分 ≥ 4',
     desc: '每次相聚都欢声笑语，吃什么不重要，重要的是和你一起。',
-    check: (r) => r.moodAvg >= 4.5 },
+    check: (r) => r.gatherCount >= 5 && r.moodAvg >= 4 },
   { id: 'party_core', name: '聚会核心', rarity: '稀有', icon: 'users',
     level: '⭐⭐⭐', bg: '#E6F1FB', color: '#185FA5',
-    condition: '出席率 ≥ 90%',
+    condition: '共同聚餐 ≥ 5次',
     desc: '永远准时到场，缺了你就不热闹，你就是气氛的锚点。',
-    check: (r) => r.attendRate >= 0.9 },
+    check: (r) => r.gatherCount >= 5 },
   { id: 'explorer', name: '探店达人', rarity: '进阶', icon: 'map-search',
     level: '⭐⭐', bg: '#EAF3DE', color: '#3B6D11',
-    condition: '探索新餐厅 ≥ 5家',
+    condition: '共同聚餐 ≥ 3次',
     desc: '总能发现隐藏在小巷里的神仙馆子，是行走的美食攻略本。',
-    check: (r) => r.newPlaceCount >= 5 },
+    check: (r) => r.gatherCount >= 3 },
   { id: 'vibe_leader', name: '气氛组长', rarity: '进阶', icon: 'sparkles',
     level: '⭐⭐', bg: '#EAF3DE', color: '#3B6D11',
-    condition: '共餐 ≥ 5次且均分高',
+    condition: '心情均分 ≥ 3.5',
     desc: '点菜必点对，聊天必起哄，有你在的饭桌永远不冷场。',
-    check: (r) => r.gatherCount >= 5 && r.moodAvg >= 4 },
+    check: (r) => r.moodAvg >= 3.5 },
   { id: 'passing_traveler', name: '偶遇旅人', rarity: '普通', icon: 'user',
     level: '⭐', bg: '#F1EFE8', color: '#5F5E5A',
     condition: '共同聚餐 1次',
@@ -103,6 +103,15 @@ Page({
     this.loadData()
   },
 
+  onShow() {
+    const userInfo = app.globalData.userInfo || {}
+    const localAvatar = (userInfo.avatar_url && userInfo.avatar_url.indexOf('http') === 0) ? userInfo.avatar_url : ''
+    this.setData({
+      myNickname: userInfo.nickname || this.data.myNickname,
+      myAvatar: localAvatar || this.data.myAvatar,
+    })
+  },
+
   onUnload() {
     if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
   },
@@ -142,7 +151,9 @@ Page({
       friends = localBuddies.map((b, idx) => {
         const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
         const name = b.remark || b.name
-        return { name, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
+        const friendData = { name, gatherCount: 0 }
+        const titleInfo = this.computeTitle(friendData)
+        return { name, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color, ...titleInfo }
       })
     }
     this.computeWithFriends(friends)
@@ -218,6 +229,9 @@ Page({
       totalGatherCount += f.gatherCount
       if (f.titleId) conditionMetSet.add(f.titleId)
     })
+
+    // 新晋饭友：有饭搭子即解锁
+    if (friends.length >= 1) conditionMetSet.add('new_friend')
 
     const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
 
