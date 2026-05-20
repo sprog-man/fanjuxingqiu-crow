@@ -38,7 +38,25 @@ function getNodeSize(count) {
 
 router.get('/graph', async (req, res) => {
   try {
-    const userId = req.query.user_id || '我';
+    const rawId = req.query.user_id || '';
+    const openid = req.query.openid || '';
+
+    // 优先用 nickname 查 gatherings，用 openid 查 buddies
+    let userId = rawId || openid;
+    let userNickname = rawId;
+
+    // 如果有 openid 没 nickname，查 User 表获取 nickname
+    if (!userNickname && openid) {
+      const userDoc = await User.findOne({ openid }).lean();
+      if (userDoc && userDoc.nickname) {
+        userNickname = userDoc.nickname;
+        userId = userNickname;
+      }
+    }
+
+    // 兜底
+    if (!userNickname) userNickname = '我';
+    if (!userId) userId = userNickname;
 
     // 1. 查聚餐记录
     const gatherings = await Gathering.find({
@@ -48,16 +66,19 @@ router.get('/graph', async (req, res) => {
       ]
     }).lean();
 
-    // 2. 查已接受饭搭子
-    const buddyList = await Buddy.find({
+    // 2. 查已接受饭搭子（用 openid，而非 nickname）
+    const effectiveOpenid = openid || rawId;
+    const buddyQuery = effectiveOpenid ? {
       $or: [
-        { fromOpenid: userId, status: 'accepted' },
-        { toOpenid: userId, status: 'accepted' }
+        { fromOpenid: effectiveOpenid, status: 'accepted' },
+        { toOpenid: effectiveOpenid, status: 'accepted' }
       ]
-    }).lean();
+    } : { _id: null };
+
+    const buddyList = await Buddy.find(buddyQuery).lean();
 
     const buddyNames = buddyList.map(b => {
-      if (b.fromOpenid === userId) return b.toRemark || b.toNickname || b.toOpenid;
+      if (b.fromOpenid === effectiveOpenid) return b.toRemark || b.toNickname || b.toOpenid;
       return b.fromRemark || b.fromNickname || b.fromOpenid;
     }).filter(Boolean);
 

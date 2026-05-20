@@ -106,8 +106,9 @@ Page({
 
   loadData() {
     const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
+    const openid = (app.getOpenid && app.getOpenid()) || ''
     wx.request({
-      url: serverUrl + '/api/relation/graph',
+      url: serverUrl + '/api/relation/graph?openid=' + encodeURIComponent(openid),
       method: 'GET',
       timeout: 3000,
       success: (res) => {

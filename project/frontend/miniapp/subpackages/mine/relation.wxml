@@ -19,7 +19,7 @@
           <text class="my-name">{{myNickname}}</text>
           <text class="my-sub">饭搭子宇宙</text>
           <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}">
-            <text class="title-badge-icon">{{userTitleInfo.highestIcon || '✦'}}</text>
+            <text class="title-badge-icon">✦</text>
             <text class="title-badge-text">{{userTitleInfo.highestTitle}}</text>
           </view>
         </view>
