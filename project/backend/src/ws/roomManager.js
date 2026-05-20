@@ -6,7 +6,7 @@ class Room {
     this.hostOpenid = hostOpenid || '';
     this.members = [{
       id: hostId, nickname: hostNickname, avatar: hostAvatar || '',
-      openid: hostOpenid || '', isHost: true
+      openid: hostOpenid || '', isHost: true, online: true
     }];
     this.gameState = null;
     this.createdAt = Date.now();
@@ -14,7 +14,7 @@ class Room {
   }
   findMember(socketId) { return this.members.find(m => m.id === socketId); }
   findMemberByOpenid(openid) { return this.members.find(m => m.openid === openid); }
-  addMember(id, nickname, avatar, openid) { this.members.push({ id, nickname, avatar: avatar || '', openid: openid || '', isHost: false }); this.touch(); }
+  addMember(id, nickname, avatar, openid) { this.members.push({ id, nickname, avatar: avatar || '', openid: openid || '', isHost: false, online: true }); this.touch(); }
   removeMember(id) { this.members = this.members.filter(m => m.id !== id); this.touch(); }
   get host() { return this.members.find(m => m.isHost); }
   touch() { this.lastActivity = Date.now(); }
