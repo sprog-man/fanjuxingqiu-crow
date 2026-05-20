@@ -23,7 +23,7 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (!room.host || room.host.id !== ws.id) {
         send('room:error', { message: '只有房主可以开始' }); break;
       }
-      const players = room.members.map(m => m.nickname);
+      const players = room.members.filter(m => m.online !== false).map(m => m.nickname);
       const winner = players[Math.floor(Math.random() * players.length)];
 
       const gh = createGameHandler(wss, rooms);
@@ -44,15 +44,16 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       for (let i = 0; i < totalTeeth; i++) {
         board.push({ index: i, isDanger: i === dangerIdx, state: 'active' });
       }
+      const onlineMembers = room.members.filter(m => m.online !== false);
       room.gameState = {
         mode: 'croc', phase: 'playing', board,
-        turnIndex: 0, playerOrder: room.members.map(m => m.id),
+        turnIndex: 0, playerOrder: onlineMembers.map(m => m.id),
       };
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'croc:start', {
         board,
-        currentTurnName: room.members[0].nickname,
-        currentTurnId: room.members[0].id,
+        currentTurnName: onlineMembers[0].nickname,
+        currentTurnId: onlineMembers[0].id,
       });
       break;
     }
@@ -98,15 +99,16 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       for (let i = 0; i < totalSlots; i++) {
         board.push({ index: i, isBoom: i === boomIdx, state: 'empty' });
       }
+      const onlineMembers = room.members.filter(m => m.online !== false);
       room.gameState = {
         mode: 'pirate', phase: 'playing', board,
-        turnIndex: 0, playerOrder: room.members.map(m => m.id),
+        turnIndex: 0, playerOrder: onlineMembers.map(m => m.id),
       };
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'pirate:start', {
         board,
-        currentTurnName: room.members[0].nickname,
-        currentTurnId: room.members[0].id,
+        currentTurnName: onlineMembers[0].nickname,
+        currentTurnId: onlineMembers[0].id,
       });
       break;
     }
