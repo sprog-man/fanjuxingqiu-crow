@@ -95,6 +95,7 @@ Page({
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
     const userInfo = app.globalData.userInfo || {}
+    console.log('[relation] onLoad avatar_url:', userInfo.avatar_url)
     this.setData({
       myNickname: userInfo.nickname || '我',
       myAvatar: userInfo.avatar_url || '',
@@ -104,9 +105,12 @@ Page({
 
   onShow() {
     const userInfo = app.globalData.userInfo || {}
-    if (userInfo.avatar_url) {
-      this.setData({ myNickname: userInfo.nickname || this.data.myNickname, myAvatar: userInfo.avatar_url })
-    }
+    const avatar = userInfo.avatar_url || ''
+    console.log('[relation] onShow avatar:', avatar)
+    this.setData({
+      myNickname: userInfo.nickname || this.data.myNickname,
+      myAvatar: avatar || this.data.myAvatar,
+    })
   },
 
   onUnload() {
