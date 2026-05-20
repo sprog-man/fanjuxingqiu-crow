@@ -56,7 +56,7 @@
 
     <!-- 在线成员 -->
     <view class="members-section">
-      <text class="section-title">在线成员（{{members.length}}人）</text>
+      <text class="section-title">成员（{{members.length}}人）</text>
       <view class="members-row">
         <view wx:for="{{members}}" wx:key="id" class="member-avatar {{item.online === false ? 'member-offline' : ''}}">
           <image wx:if="{{item.avatar}}" class="ma-circle-img {{item.online === false ? 'ma-offline-img' : ''}}" src="{{item.avatar}}" mode="aspectFill" />

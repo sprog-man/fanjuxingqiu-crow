@@ -171,6 +171,7 @@ module.exports = function attachWS(server) {
           broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
         }
       }
+      ws.roomCode = null;
     });
   });
 
