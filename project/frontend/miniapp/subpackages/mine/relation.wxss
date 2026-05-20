@@ -439,3 +439,9 @@
   font-weight: 500;
 }
 .modal-btn:active { opacity: 0.8; }
+
+.my-avatar-img { width: 54px; height: 54px; border-radius: 50%; }
+.empty-state { text-align: center; padding: 40px 24px; }
+.empty-icon { display: block; font-size: 36px; margin-bottom: 8px; }
+.empty-text { display: block; font-size: 15px; color: #2C2C2A; font-weight: 500; }
+.empty-hint { display: block; font-size: 12px; color: #888; margin-top: 4px; }

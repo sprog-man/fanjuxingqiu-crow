@@ -81,6 +81,8 @@ Page({
     userTitleInfo: { totalFriends: 0, totalGatherCount: 0, unlockedTitles: 0, highestTitle: '', highestLevel: '', highestIcon: '' },
     titleAtlas: [],
     recentMeals: [],
+    myNickname: '我',
+    myAvatar: '',
     serverUrl: 'http://localhost:2001',
     unlockModalData: null,
     animStarTimer: null,
@@ -88,6 +90,11 @@ Page({
 
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
+    const userInfo = app.globalData.userInfo || {}
+    this.setData({
+      myNickname: userInfo.nickname || '我',
+      myAvatar: userInfo.avatar_url || '',
+    })
     this.loadData()
   },
 
@@ -107,12 +114,18 @@ Page({
       },
       fail: () => {
         const local = wx.getStorageSync('gatherings') || []
-        this.processLocal(local)
+        const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
+        this.processLocal(local, localBuddies)
       }
     })
   },
 
   processData(data) {
+    const user = data.user || {}
+    this.setData({
+      myNickname: user.nickname || this.data.myNickname,
+      myAvatar: user.avatar || this.data.myAvatar,
+    })
     const friends = (data.friends || []).map((f, idx) => {
       const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
       return { ...f, initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
@@ -120,7 +133,7 @@ Page({
     this.computeWithFriends(friends)
   },
 
-  processLocal(gatherings) {
+  processLocal(gatherings, localBuddies) {
     const userId = app.globalData.userInfo ? (app.globalData.userInfo.nickname || '我') : '我'
     const friendMap = {}
     const allGathers = gatherings.filter(g => {
@@ -138,6 +151,13 @@ Page({
         if (g.totalCost) fr.totalSpent += g.totalCost / Math.max(g.participants.length - 1, 1)
         if (g.location && g.location.name) fr.newPlaces.add(g.location.name)
       })
+    })
+    // 合并本地饭搭子
+    ;(localBuddies || []).forEach(b => {
+      const name = b.remark || b.name
+      if (name && !friendMap[name]) {
+        friendMap[name] = { name, gatherCount: 0 }
+      }
     })
     const payCounts = {}
     allGathers.forEach(g => { if (g.payer && g.payer !== userId) payCounts[g.payer] = (payCounts[g.payer] || 0) + 1 })

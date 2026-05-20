@@ -12,13 +12,14 @@
       <!-- 我的信息卡 -->
       <view class="my-card">
         <view class="my-avatar">
-          <text class="my-avatar-text">{{userTitleInfo.highestIcon ? '✦' : '😊'}}</text>
+          <image wx:if="{{myAvatar}}" class="my-avatar-img" src="{{myAvatar}}" mode="aspectFill" />
+          <text wx:else class="my-avatar-text">{{myNickname.slice(0,1)}}</text>
         </view>
         <view class="my-info">
-          <text class="my-name">我的</text>
+          <text class="my-name">{{myNickname}}</text>
           <text class="my-sub">饭搭子宇宙</text>
           <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}">
-            <text class="title-badge-icon">✦</text>
+            <text class="title-badge-icon">{{userTitleInfo.highestIcon || '✦'}}</text>
             <text class="title-badge-text">{{userTitleInfo.highestTitle}}</text>
           </view>
         </view>
@@ -65,6 +66,11 @@
           </view>
           <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay-bottom"></view>
         </view>
+      </view>
+      <view wx:if="{{friends.length === 0}}" class="empty-state">
+        <text class="empty-icon">👥</text>
+        <text class="empty-text">还没有饭搭子关系</text>
+        <text class="empty-hint">去添加饭搭子或创建聚餐记录吧</text>
       </view>
     </view>
 
