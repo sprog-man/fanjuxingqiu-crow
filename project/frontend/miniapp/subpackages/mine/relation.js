@@ -134,11 +134,11 @@ Page({
 
   processData(data) {
     const user = data.user || {}
-    // 优先本地 userInfo 头像（API 可能返回空）
     const localUserInfo = app.globalData.userInfo || {}
+    const bestAvatar = user.avatar || localUserInfo.avatar_url || this.data.myAvatar
     this.setData({
       myNickname: user.nickname || this.data.myNickname,
-      myAvatar: user.avatar || localUserInfo.avatar_url || this.data.myAvatar,
+      myAvatar: bestAvatar,
     })
     // 从本地饭搭子数据中查找头像
     const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []

@@ -204,7 +204,9 @@
   margin: 0 auto 10px;
   border: 2.5px solid #D85A30;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
 }
+.hero-avatar-img { width: 68px; height: 68px; border-radius: 50%; display: block; }
 .hero-name { display: block; font-size: 18px; font-weight: 600; color: #2C2C2A; }
 .hero-sub { display: block; font-size: 13px; color: #888; margin-top: 3px; }
 .hero-stars { letter-spacing: 2px; font-size: 15px; margin-top: 5px; color: #D85A30; }

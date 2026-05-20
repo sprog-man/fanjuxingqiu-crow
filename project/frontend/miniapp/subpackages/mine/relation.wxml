@@ -79,7 +79,8 @@
       <!-- Hero Card -->
       <view class="hero-card">
         <view class="hero-avatar" style="background:{{detailFriend.avatarBg}};color:{{detailFriend.avatarColor}}">
-          <text>{{detailFriend.initial}}</text>
+          <image wx:if="{{detailFriend.avatar}}" class="hero-avatar-img" src="{{detailFriend.avatar}}" mode="aspectFill" />
+          <text wx:else>{{detailFriend.initial}}</text>
         </view>
         <text class="hero-name">{{detailFriend.name}}</text>
         <text class="hero-sub">好友 · {{detailFriend.gatherCount}}次聚餐</text>
