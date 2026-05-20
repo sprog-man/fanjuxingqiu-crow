@@ -209,3 +209,10 @@
 @keyframes explode { 0% { transform: scale(1); } 20% { transform: scale(1.4); background: #ff2222; } 100% { transform: scale(1); } }
 @keyframes barrelShake { 0%,100% { transform: translateY(0); } 20% { transform: translateY(-8px) rotate(-3deg); } 40% { transform: translateY(4px) rotate(3deg); } 60% { transform: translateY(-4px) rotate(-2deg); } 80% { transform: translateY(2px) rotate(1deg); } }
 @keyframes slotExplode { 0% { transform: scale(1); } 50% { transform: scale(1.4); box-shadow: 0 0 20px rgba(255,0,0,0.6); } 100% { transform: scale(1); } }
+
+/* 离线状态 */
+.member-offline { opacity: 0.55; }
+.ma-offline-img { filter: grayscale(1); }
+.ma-offline-circle { filter: grayscale(1); }
+.ma-offline-text { color: rgba(255,255,255,0.35); }
+.ma-offline-badge { font-size: 9px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 6px; margin-top: 1px; }

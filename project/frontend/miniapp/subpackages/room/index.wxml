@@ -58,11 +58,12 @@
     <view class="members-section">
       <text class="section-title">在线成员（{{members.length}}人）</text>
       <view class="members-row">
-        <view wx:for="{{members}}" wx:key="id" class="member-avatar">
-          <image wx:if="{{item.avatar}}" class="ma-circle-img" src="{{item.avatar}}" mode="aspectFill" />
-          <view wx:else class="ma-circle" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
-          <text class="ma-name">{{item.nickname}}</text>
+        <view wx:for="{{members}}" wx:key="id" class="member-avatar {{item.online === false ? 'member-offline' : ''}}">
+          <image wx:if="{{item.avatar}}" class="ma-circle-img {{item.online === false ? 'ma-offline-img' : ''}}" src="{{item.avatar}}" mode="aspectFill" />
+          <view wx:else class="ma-circle {{item.online === false ? 'ma-offline-circle' : ''}}" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+          <text class="ma-name {{item.online === false ? 'ma-offline-text' : ''}}">{{item.nickname}}</text>
           <text wx:if="{{item.isHost}}" class="ma-host">房主</text>
+          <text wx:if="{{item.online === false}}" class="ma-offline-badge">离线</text>
         </view>
       </view>
     </view>
