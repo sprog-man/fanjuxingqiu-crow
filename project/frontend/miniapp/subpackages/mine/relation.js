@@ -136,15 +136,8 @@ Page({
   processData(data) {
     const user = data.user || {}
     const localUserInfo = app.globalData.userInfo || {}
-    const bestAvatar = user.avatar || localUserInfo.avatar_url || this.data.myAvatar
-    if (bestAvatar) this.setData({ myAvatar: bestAvatar })
+    // 注意：不要在此处设置 myAvatar — 由 onLoad/onShow 负责
     this.setData({ myNickname: user.nickname || this.data.myNickname })
-    // 终极兜底：从 storage 直接读头像
-    if (!bestAvatar) {
-      const storageInfo = wx.getStorageSync('userInfo') || {}
-      const storageAvatar = storageInfo.avatar_url || ''
-      if (storageAvatar) this.setData({ myAvatar: storageAvatar })
-    }
     // 从本地饭搭子数据中查找头像
     const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
     const buddyAvatarMap = {}
