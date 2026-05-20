@@ -46,7 +46,8 @@
         <view wx:for="{{friends}}" wx:key="name" class="friend-card" data-name="{{item.name}}" bindtap="showDetail">
           <view class="card-top">
             <view class="card-avatar" style="background:{{item.avatarBg}};color:{{item.avatarColor}}">
-              <text>{{item.initial}}</text>
+              <image wx:if="{{item.avatar}}" class="card-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <text wx:else>{{item.initial}}</text>
             </view>
             <view class="card-info">
               <text class="card-name">{{item.name}}</text>

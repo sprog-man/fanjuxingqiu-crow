@@ -95,21 +95,19 @@ Page({
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
     const userInfo = app.globalData.userInfo || {}
-    const localAvatar = (userInfo.avatar_url && userInfo.avatar_url.indexOf('http') === 0) ? userInfo.avatar_url : ''
+    const userInfo = app.globalData.userInfo || {}
     this.setData({
       myNickname: userInfo.nickname || '我',
-      myAvatar: localAvatar,
+      myAvatar: userInfo.avatar_url || '',
     })
     this.loadData()
   },
 
   onShow() {
     const userInfo = app.globalData.userInfo || {}
-    const localAvatar = (userInfo.avatar_url && userInfo.avatar_url.indexOf('http') === 0) ? userInfo.avatar_url : ''
-    this.setData({
-      myNickname: userInfo.nickname || this.data.myNickname,
-      myAvatar: localAvatar || this.data.myAvatar,
-    })
+    if (userInfo.avatar_url) {
+      this.setData({ myNickname: userInfo.nickname || this.data.myNickname, myAvatar: userInfo.avatar_url })
+    }
   },
 
   onUnload() {
@@ -153,7 +151,8 @@ Page({
         const name = b.remark || b.name
         const friendData = { name, gatherCount: 0 }
         const titleInfo = this.computeTitle(friendData)
-        return { name, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color, ...titleInfo }
+        const avatar = b._avatarUrl || b.avatar || b.avatar_url || ''
+        return { name, avatar, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color, ...titleInfo }
       })
     }
     this.computeWithFriends(friends)
