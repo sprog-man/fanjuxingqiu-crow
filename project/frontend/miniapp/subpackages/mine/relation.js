@@ -288,6 +288,24 @@ Page({
 
   preventClose() {},
 
+  _runUnlockAnim(rarity) {
+    const durations = { '传说': 2500, '史诗': 2000, '稀有': 1500, '进阶': 1000, '普通': 600 }
+    const duration = durations[rarity] || 1000
+    this.setData({ 'unlockModalData.animPhase': 1 })
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 2 })
+    }, duration * 0.4)
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 3 })
+    }, duration * 0.7)
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 4 })
+    }, duration)
+  },
+
   startUnlock(e) {
     const titleId = e.currentTarget.dataset.titleId
     const def = TITLE_DEFS.find(t => t.id === titleId)
@@ -297,6 +315,7 @@ Page({
     })
     setTimeout(() => {
       this.setData({ 'unlockModalData.animReady': true })
+      this._runUnlockAnim(def.rarity)
     }, 300)
   },
 

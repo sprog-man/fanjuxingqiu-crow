@@ -249,15 +249,33 @@
   <!-- ════ 解锁弹窗 ════ -->
   <view wx:if="{{unlockModalData}}" class="modal-overlay" bindtap="hideUnlockModal">
     <view class="modal-card {{unlockModalData?'modal-show':''}}" catchtap="preventClose">
+      <!-- 传说专属粒子装饰 -->
+      <view wx:if="{{unlockModalData.rarity === '传说' && unlockModalData.animPhase >= 1}}" class="particle-container">
+        <view class="particle p1"></view><view class="particle p2"></view>
+        <view class="particle p3"></view><view class="particle p4"></view>
+        <view class="particle p5"></view><view class="particle p6"></view>
+      </view>
+
       <text class="modal-kicker">✦ 称号解锁 ✦</text>
-      <view class="modal-icon-wrap" style="background:{{unlockModalData.bg}}">
+
+      <view class="modal-icon-wrap
+        {{unlockModalData.animPhase >= 1 ? (
+          unlockModalData.rarity === '传说' ? 'anim-godray' :
+          unlockModalData.rarity === '史诗' ? 'anim-epicpop' :
+          unlockModalData.rarity === '稀有' ? 'anim-bounce' :
+          unlockModalData.rarity === '进阶' ? 'anim-scaleup' :
+          'anim-fadein'
+        ) : ''}}"
+        style="background:{{unlockModalData.bg}}">
         <text class="modal-icon-text" style="color:{{unlockModalData.color}}">✦</text>
       </view>
-      <text class="modal-title">{{unlockModalData.name}}</text>
-      <text class="modal-stars">{{unlockModalData.animStars || unlockModalData.level}}</text>
+
+      <text class="modal-title" style="opacity:{{unlockModalData.animPhase >= 2 ? 1 : 0}};transition:opacity 0.4s">{{unlockModalData.name}}</text>
+      <text class="modal-stars">{{unlockModalData.level}}</text>
       <text class="modal-sub">与{{unlockModalData.friendName}}的羁绊升级了！</text>
-      <text class="modal-desc">{{unlockModalData.desc}}</text>
-      <button class="modal-btn" bindtap="_confirmUnlock">知道了</button>
+      <text class="modal-desc" style="opacity:{{unlockModalData.animPhase >= 3 ? 1 : 0}};transition:opacity 0.4s">{{unlockModalData.desc}}</text>
+
+      <button wx:if="{{unlockModalData.animPhase >= 4}}" class="modal-btn" bindtap="_confirmUnlock">领取称号</button>
     </view>
   </view>
 </scroll-view>
