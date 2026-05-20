@@ -95,7 +95,6 @@ Page({
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
     const userInfo = app.globalData.userInfo || {}
-    const userInfo = app.globalData.userInfo || {}
     this.setData({
       myNickname: userInfo.nickname || '我',
       myAvatar: userInfo.avatar_url || '',
