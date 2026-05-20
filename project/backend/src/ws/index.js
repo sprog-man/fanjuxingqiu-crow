@@ -149,6 +149,13 @@ module.exports = function attachWS(server) {
           ws.roomCode = null;
           break;
         }
+        case 'room:check': {
+          const { roomCode: checkCode } = data || {};
+          if (!checkCode) { send('room:check:result', { exists: false }); break; }
+          const exists = !!rooms.getRoom(checkCode);
+          send('room:check:result', { exists, roomCode: checkCode });
+          break;
+        }
         default: {
           handleGameEvent(ws, msg, rooms, wss, send, broadcast);
         }

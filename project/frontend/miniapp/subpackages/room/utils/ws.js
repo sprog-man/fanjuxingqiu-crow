@@ -62,6 +62,7 @@ function connect(roomCode, nickname, avatar, openid) {
         connectedRoomCode = data.roomCode;
         amIHost = !!data.isHost;
         reconnectAttempt = 0;
+        wx.setStorageSync('lastRoomCode', data.roomCode);
       }
         if (EVENTS[event]) EVENTS[event].forEach(fn => fn(data));
       } catch (e) {}
@@ -113,4 +114,20 @@ function close() {
   reconnectAttempt = 0;
 }
 
-module.exports = { connect, send, on, off, close };
+function checkRoom(roomCode) {
+  return new Promise((resolve) => {
+    const handler = (data) => {
+      off('room:check:result', handler);
+      clearTimeout(timer);
+      resolve(data.exists);
+    };
+    on('room:check:result', handler);
+    send('room:check', { roomCode });
+    const timer = setTimeout(() => {
+      off('room:check:result', handler);
+      resolve(false);
+    }, 3000);
+  });
+}
+
+module.exports = { connect, send, on, off, close, checkRoom };

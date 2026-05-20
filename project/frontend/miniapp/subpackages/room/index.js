@@ -27,6 +27,10 @@ Page({
     invitationFrom: '',
     invitationRoomCode: '',
     invitationId: '',
+
+    // 离线返回房间
+    lastRoomCode: '',
+    lastRoomValid: false,
   },
 
   onLoad(opts) {
@@ -36,6 +40,16 @@ Page({
       this.data.inputRoomCode = code;
       this.setData({ inputRoomCode: code, canJoin: true });
       this._joinRoom();
+    }
+  },
+
+  onShow() {
+    const saved = wx.getStorageSync('lastRoomCode') || '';
+    if (saved && this.data.pageState === 'entry') {
+      this.setData({ lastRoomCode: saved });
+      ws.checkRoom(saved).then(valid => {
+        this.setData({ lastRoomValid: valid });
+      });
     }
   },
 
@@ -147,6 +161,19 @@ Page({
     ws.connect(code, nickname, avatar, openid);
   },
 
+  /* ====== 返回房间 ====== */
+  _rejoinRoom() {
+    if (!this.data.lastRoomValid) return;
+    if (this.data.connecting) return;
+    this.setData({ connecting: true });
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || {};
+    const nickname = userInfo.nickname || '我';
+    const avatar = userInfo.avatar_url || '';
+    const openid = (app.getOpenid && app.getOpenid()) || '';
+    ws.connect(this.data.lastRoomCode, nickname, avatar, openid);
+  },
+
   /* ====== 邀请好友 ====== */
 
   showInvitePicker() {
@@ -226,11 +253,13 @@ Page({
   leaveRoom() {
     if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
     if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    wx.removeStorageSync('lastRoomCode');
     ws.close();
     this.setData({
       pageState: 'entry', connecting: false,
       roomCode: '', members: [], isHost: false, mySocketId: '',
       gameMode: '', drawPhase: 'idle', gameResult: '',
+      lastRoomCode: '', lastRoomValid: false,
     });
   },
 

@@ -8,6 +8,12 @@
     </view>
 
     <view class="entry-body">
+      <view wx:if="{{lastRoomCode}}" class="rejoin-section">
+        <button class="rejoin-btn {{lastRoomValid ? '' : 'disabled'}}"
+          disabled="{{!lastRoomValid}}" bindtap="_rejoinRoom">
+          {{lastRoomValid ? '↩ 返回房间 ' + lastRoomCode : '⏳ 房间已过期'}}
+        </button>
+      </view>
       <view class="entry-card create-card" bindtap="_createRoom">
         <text class="ec-icon">🎲</text>
         <view class="ec-text">

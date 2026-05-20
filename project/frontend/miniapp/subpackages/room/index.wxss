@@ -223,3 +223,8 @@
 .ma-offline-circle { filter: grayscale(1); }
 .ma-offline-text { color: rgba(255,255,255,0.35); }
 .ma-offline-badge { font-size: 9px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 6px; margin-top: 1px; }
+
+/* 返回房间按钮 */
+.rejoin-section { text-align: center; padding: 4px 0 12px; }
+.rejoin-btn { height: 44px; line-height: 44px; padding: 0 24px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 22px; font-size: 15px; font-weight: 600; color: #1a1a2e; border: none; width: 100%; }
+.rejoin-btn.disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
