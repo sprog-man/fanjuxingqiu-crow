@@ -6,7 +6,7 @@ Page({
     currentGame: null,
     // 抽签
     inputName: '', players: [], drawPhase: 'idle', countdown: 0,
-    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '',
+    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '', winnerAvatar: '',
     ejectStyles: [], ejectLabel: '',
     showDrawBuddy: false, drawBuddySearch: '', drawBuddies: [],
     showGameBuddy: false, gameBuddySearch: '', gameBuddies: [],
@@ -60,10 +60,11 @@ Page({
   /* ========== 通用饭搭子导入 ========== */
 
   markBuddiesAdded(buddies, list) {
+    const names = list.map(p => p.name || p)
     return buddies.map(b => ({
       ...b,
-      added: list.includes(b.name),
-      _avatarUrl: b.avatar ? this.fullUrl(b.avatar) : '',
+      added: names.includes(b.name),
+      _avatarUrl: b.avatar ? (b.avatar.indexOf('http') === 0 ? b.avatar : this.fullUrl(b.avatar)) : '',
     }))
   },
 
@@ -81,10 +82,16 @@ Page({
   },
   pickDrawBuddy(e) {
     const name = e.currentTarget.dataset.name
-    if (this.data.players.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
+    const buddy = this.data.drawBuddies.find(b => b.name === name)
+    if (!buddy) { wx.showToast({ title: '未找到', icon: 'none' }); return }
+    if (this.data.players.some(p => (p.name || p) === name)) {
+      wx.showToast({ title: '已存在', icon: 'none' }); return
+    }
+    const avatar = buddy._avatarUrl || buddy.avatar || ''
+    const newPlayers = [...this.data.players, {name, avatar}]
     this.setData({
-      players: [...this.data.players, name],
-      drawBuddies: this.markBuddiesAdded(this.data.drawBuddies, [...this.data.players, name]),
+      players: newPlayers,
+      drawBuddies: this.markBuddiesAdded(this.data.drawBuddies, newPlayers.map(p => p.name || p)),
     })
   },
 
@@ -151,8 +158,10 @@ Page({
   addPlayer() {
     const name = this.data.inputName.trim()
     if (!name) return
-    if (this.data.players.includes(name)) { wx.showToast({ title: '已存在', icon: 'none' }); return }
-    this.setData({ players: [...this.data.players, name], inputName: '' })
+    if (this.data.players.some(p => (p.name || p) === name)) {
+      wx.showToast({ title: '已存在', icon: 'none' }); return
+    }
+    this.setData({ players: [...this.data.players, {name, avatar: ''}], inputName: '' })
   },
   removePlayer(e) {
     const { index } = e.currentTarget.dataset
@@ -177,7 +186,7 @@ Page({
   resetDraw() {
     if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
     if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
-    this.setData({ drawPhase: 'idle', countdown: 0, spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '', ejectStyles: [], ejectLabel: '' });
+    this.setData({ drawPhase: 'idle', countdown: 0, spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '', winnerAvatar: '', ejectStyles: [], ejectLabel: '' });
   },
   _runSpinAnim() {
     const players = this.data.players;
@@ -213,7 +222,7 @@ Page({
   },
   _ejectWinner() {
     const players = this.data.players;
-    const winner = players.length ? players[Math.floor(Math.random() * players.length)] : '';
+    const winner = players.length ? players[Math.floor(Math.random() * players.length)].name : '';
     if (!players.length || !winner) return;
     this.setData({
       drawPhase: 'eject',
@@ -226,15 +235,18 @@ Page({
       const flyY = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 100);
       const flyRotate = (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 360);
       const finalStyles = players.map(p =>
-        p === winner
+        p.name === winner
           ? `transform:translate(${flyX}px,${flyY}px) rotate(${flyRotate}deg) scale(1.4);opacity:0;`
           : 'transform:translate(0,0) scale(0.6);opacity:0.7;'
       );
       const humorLines = ['恭喜成为本局幸运鹅 🦆','今晚这顿安排上了 🍷','这顿饭你请，大家记住你了 😎','运气也是实力的一部分 👏','恭喜中奖！下次继续努力 💪','恭喜成为今晚的「财务大臣」💰','这一顿，值得！🍽️'];
+      const winnerPlayer = players.find(p => p.name === winner);
+      const winnerAvatar = winnerPlayer ? (winnerPlayer.avatar || '') : '';
       this.setData({
         ejectStyles: finalStyles,
         ejectLabel: `💥 ${winner} 被撞飞！他就是幸运儿！`,
         drawWinner: winner,
+        winnerAvatar,
         humorLine: humorLines[Math.floor(Math.random() * humorLines.length)],
       });
       this._ejectTimer = setTimeout(() => {

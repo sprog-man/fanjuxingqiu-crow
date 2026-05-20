@@ -318,3 +318,9 @@
 @keyframes burst6 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(25px,-45px) scale(1.5); opacity: 0; } }
 @keyframes burst7 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(-35px,20px) scale(1.5); opacity: 0; } }
 @keyframes burst8 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(30px,35px) scale(1.5); opacity: 0; } }
+
+/* 抽签头像 */
+.dic-avatar-img { width: 32px; height: 32px; border-radius: 50%; }
+.si-avatar-img { width: 36px; height: 36px; border-radius: 50%; }
+.eject-item-img { width: 44px; height: 44px; border-radius: 50%; }
+.rw-avatar-img { width: 100px; height: 100px; border-radius: 50%; }
