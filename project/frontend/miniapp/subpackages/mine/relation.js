@@ -134,17 +134,25 @@ Page({
 
   processData(data) {
     const user = data.user || {}
+    // 优先本地 userInfo 头像（API 可能返回空）
+    const localUserInfo = app.globalData.userInfo || {}
     this.setData({
       myNickname: user.nickname || this.data.myNickname,
-      myAvatar: user.avatar || this.data.myAvatar,
+      myAvatar: user.avatar || localUserInfo.avatar_url || this.data.myAvatar,
+    })
+    // 从本地饭搭子数据中查找头像
+    const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
+    const buddyAvatarMap = {}
+    localBuddies.forEach(b => {
+      const name = b.remark || b.name
+      buddyAvatarMap[name] = b._avatarUrl || b.avatar || b.avatar_url || ''
     })
     let friends = (data.friends || []).map((f, idx) => {
       const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
-      return { ...f, initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
+      return { ...f, avatar: f.avatar || buddyAvatarMap[f.name] || '', initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
     })
     // API 空数据时从本地饭搭子补
     if (friends.length === 0) {
-      const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
       friends = localBuddies.map((b, idx) => {
         const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
         const name = b.remark || b.name
