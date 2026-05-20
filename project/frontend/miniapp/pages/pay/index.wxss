@@ -87,7 +87,7 @@
 .croc-jaw-lower { width: 70%; max-width: 240px; height: 22px; background: linear-gradient(180deg,#238b65,#1D9E75); border-radius: 0 0 16px 16px; margin: -1px auto 0; border-bottom: 3px solid #167a55; }
 
 /* === 海盗插刀 === */
-.barrel-wrap { background: #fff; border-radius: 20px; padding: 30px 16px 24px; margin-bottom: 12px; position: relative; overflow: hidden; min-height: 300px; }
+.barrel-wrap { background: #fff; border-radius: 20px; padding: 30px 16px 24px; margin-bottom: 12px; position: relative; overflow: visible; min-height: 360px; }
 .barrel-wrap.boomed { background: linear-gradient(180deg, #fff, #fff5f0); }
 
 .barrel { position: relative; width: 200px; margin: 0 auto; }
