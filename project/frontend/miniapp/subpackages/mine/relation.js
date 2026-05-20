@@ -216,7 +216,7 @@ Page({
       const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
       return {
         name, gatherCount: friend.gatherCount, cities: friend.cities,
-        totalSpent: friend.totalSpent, initial: name.slice(0, 1),
+        totalSpent: friend.totalSpent, initial: name ? name.slice(0, 1) : '?',
         avatarBg: ac.bg, avatarColor: ac.color,
         ...titleInfo,
       }

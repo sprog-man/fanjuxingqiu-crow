@@ -9,7 +9,7 @@
     <view wx:for="{{albums}}" wx:key="gathering_id" class="album-card" data-index="{{index}}" bindtap="openAlbum">
       <view class="album-cover" style="background:{{coverColors[index % coverColors.length]}}">
         <image wx:if="{{item._coverUrl}}" class="album-cover-img" src="{{item._coverUrl}}" mode="aspectFill" binderror="onCoverError" data-index="{{index}}"></image>
-        <text wx:else class="album-cover-text">{{item.title.slice(0,2)}}</text>
+        <text wx:else class="album-cover-text">{{item.title ? item.title.slice(0,2) : '??'}}</text>
         <view class="album-cost">{{item.totalCost}}元</view>
       </view>
       <view class="album-body">
@@ -17,8 +17,8 @@
         <text class="album-date">{{formatDate(item.dateTime)}}</text>
         <view class="album-meta">
           <view class="album-avatars">
-            <text wx:for="{{item.participants.slice(0,5)}}" wx:key="*this" class="album-avatar">{{item.slice(0,1)}}</text>
-            <text wx:if="{{item.participants.length > 5}}" class="album-avatar-more">+{{item.participants.length - 5}}</text>
+            <text wx:for="{{(item.participants || []).slice(0,5)}}" wx:key="*this" class="album-avatar">{{item ? item.slice(0,1) : '?'}}</text>
+            <text wx:if="{{(item.participants || []).length > 5}}" class="album-avatar-more">+{{(item.participants || []).length - 5}}</text>
           </view>
           <view class="album-tags">
             <text wx:for="{{item.moodTags}}" wx:key="*this" class="album-tag">{{item}}</text>
