@@ -314,7 +314,8 @@ Page({
       unlockModalData: { ...def, friendName: '饭搭子', animReady: false, animPhase: 0 },
     })
     setTimeout(() => {
-      this.setData({ 'unlockModalData.animReady': true })
+      const animClass = def.rarity === '传说' ? 'anim-godray' : def.rarity === '史诗' ? 'anim-epicpop' : def.rarity === '稀有' ? 'anim-bounce' : def.rarity === '进阶' ? 'anim-scaleup' : 'anim-fadein'
+      this.setData({ 'unlockModalData.animReady': true, 'unlockModalData.animClass': animClass })
       this._runUnlockAnim(def.rarity)
     }, 300)
   },

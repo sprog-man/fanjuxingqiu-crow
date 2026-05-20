@@ -258,14 +258,7 @@
 
       <text class="modal-kicker">✦ 称号解锁 ✦</text>
 
-      <view class="modal-icon-wrap
-        {{unlockModalData.animPhase >= 1 ? (
-          unlockModalData.rarity === '传说' ? 'anim-godray' :
-          unlockModalData.rarity === '史诗' ? 'anim-epicpop' :
-          unlockModalData.rarity === '稀有' ? 'anim-bounce' :
-          unlockModalData.rarity === '进阶' ? 'anim-scaleup' :
-          'anim-fadein'
-        ) : ''}}"
+      <view class="modal-icon-wrap {{unlockModalData.animPhase >= 1 ? unlockModalData.animClass : ''}}"
         style="background:{{unlockModalData.bg}}">
         <text class="modal-icon-text" style="color:{{unlockModalData.color}}">✦</text>
       </view>
