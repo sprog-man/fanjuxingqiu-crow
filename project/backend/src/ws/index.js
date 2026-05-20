@@ -90,7 +90,8 @@ module.exports = function attachWS(server) {
             existing.id = ws.id;
             existing.nickname = ws.nickname;
             existing.avatar = ws.avatar;
-            console.log(`[ws] room:rejoin -> 已找到旧成员 openid=${ws.openid}，更新 socket id`);
+            existing.online = true;
+            console.log(`[ws] room:rejoin -> 已找到旧成员 openid=${ws.openid}，更新 socket id，恢复在线`);
           } else {
             rejoinRoom.addMember(ws.id, ws.nickname, ws.avatar, ws.openid);
             console.log(`[ws] room:rejoin -> 未找到旧成员，作为新成员添加`);
