@@ -159,7 +159,8 @@
         </view>
         <!-- 中奖者 -->
         <view class="reveal-winner reveal-bounce-in">
-          <view class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
+          <image wx:if="{{winnerAvatar}}" class="rw-avatar-img golden-flash" src="{{winnerAvatar}}" mode="aspectFill" />
+          <view wx:else class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
           <text class="rw-name draw-name">{{drawWinner}}</text>
         </view>
         <view class="reveal-label-wrap">

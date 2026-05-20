@@ -23,15 +23,18 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (!room.host || room.host.id !== ws.id) {
         send('room:error', { message: '只有房主可以开始' }); break;
       }
-      const players = room.members.filter(m => m.online !== false).map(m => m.nickname);
+      const onlineMembers = room.members.filter(m => m.online !== false);
+      const players = onlineMembers.map(m => m.nickname);
       const winner = players[Math.floor(Math.random() * players.length)];
+      const winnerMember = onlineMembers.find(m => m.nickname === winner);
+      const winnerAvatar = winnerMember ? (winnerMember.avatar || '') : '';
 
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'draw:countdown', { count: 3 });
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 2 }), 1000);
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 1 }), 2000);
       setTimeout(() => gh.broadcast(roomCode, 'draw:spinning', { candidates: players, winner }), 3000);
-      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner }), 8500);
+      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner, winnerAvatar }), 8500);
       break;
     }
     case 'croc:start': {

@@ -11,7 +11,7 @@ Page({
     connecting: false,
     roomCode: '', members: [], isHost: false, mySocketId: '',
     gameMode: '', drawPhase: 'idle', countdown: 0,
-    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '',
+    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', winnerAvatar: '', humorLine: '',
     ejectStyles: [], ejectLabel: '',
     gameBoard: [], gamePhase: 'idle', currentTurnName: '',
     currentTurnId: '', isMyTurn: false, gameResult: '',
@@ -74,6 +74,7 @@ Page({
     ws.on('draw:reveal', (data) => {
       this.setData({
         drawPhase: 'reveal', drawWinner: data.winner,
+        winnerAvatar: data.winnerAvatar || '',
         humorLine: anim.randomHumor(),
       });
     });
@@ -241,7 +242,7 @@ Page({
     if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
     this._serverWinner = '';
     this.setData({
-      gameMode: '', drawPhase: 'idle', drawWinner: '',
+      gameMode: '', drawPhase: 'idle', drawWinner: '', winnerAvatar: '',
       spinAngle: 0, spinPhase: '', spinRadius: 80, humorLine: '',
       ejectStyles: [], ejectLabel: '',
     });
