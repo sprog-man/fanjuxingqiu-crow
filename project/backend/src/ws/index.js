@@ -162,9 +162,10 @@ module.exports = function attachWS(server) {
       if (!leaveCode) return;
       const leaveRoom = rooms.getRoom(leaveCode);
       if (leaveRoom) {
-        leaveRoom.removeMember(ws.id);
-        console.log(`[ws] disconnect cleanup -> code=${leaveCode} remaining=${leaveRoom.members.length}`);
-        if (leaveRoom.members.length > 0) {
+        const member = leaveRoom.findMember(ws.id);
+        if (member) {
+          member.online = false;
+          console.log(`[ws] disconnect -> code=${leaveCode} member=${member.nickname} 标记离线`);
           broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
         }
       }
