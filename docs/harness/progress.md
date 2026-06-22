@@ -9,9 +9,27 @@
 
 ## Current State
 
-**Last Updated:** 2026-06-17
-**Active Feature:** fix-avatar — 头像显示全链路修复
-**Branch:** yunfuwu
+**Last Updated:** 2026-06-22
+**Active Feature:** — (分支合并维护)
+**Branch:** youhua
+
+### What's Done (Latest Session)
+
+- [x] 合并 yunfuwu 约 70 个 commit 到 youhua 分支，功能同步
+- [x] 注释 app.js 环境检测逻辑，强制 localhost:2001 本地开发模式
+
+### What's In Progress
+
+- [ ] 饭搭子模块头像展示仍有边缘 case 需要覆盖
+- [ ] 新用户首次登录头像上传流程可进一步简化
+
+### Decisions Made
+
+- **(2026-06-22)** youhua 分支独立维护本地测试版本，yunfuwu 始终为线上版本
+
+### Notes for Next Session
+
+- youhua 分支不会触发 GitHub Actions 部署，可安全推送
 
 ### What's Done (Latest Session)
 

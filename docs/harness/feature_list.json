@@ -1,8 +1,8 @@
 {
   "meta": {
     "project": "饭局星球 (Fanjuxingqiu)",
-    "branch_policy": "yunfuwu = deployment branch, master = stable",
-    "last_updated": "2026-06-17",
+    "branch_policy": "yunfuwu = online deployment, youhua = local dev",
+    "last_updated": "2026-06-22",
     "description": "Feature state tracker — source of truth for what exists, what's in progress, and what's next"
   },
   "features": [

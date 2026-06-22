@@ -31,18 +31,8 @@ App({
         this.globalData.userInfo = userInfo;
       }
     }
-    // 自动识别环境：开发版走本地，体验版/正式版走美国服务器
-    try {
-      const env = wx.getAccountInfoSync().miniProgram.envVersion;
-      if (env === 'develop') {
-        console.log('[环境] 开发模式 → 本地服务器:', this.globalData.serverUrl);
-      } else if (env === 'trial' || env === 'release') {
-        this.globalData.serverUrl = this.globalData.prodServerUrl;
-        console.log('[环境] 体验/正式模式 → 美国服务器:', this.globalData.prodServerUrl);
-      }
-    } catch (e) {
-      console.error('[环境] 检测版本失败:', e);
-    }
+    // [youhua] 强制本地开发模式，不根据环境切换地址
+    console.log('[youhua] 开发模式 → 本地服务器:', this.globalData.serverUrl);
   },
 
   // 上传头像到服务器
