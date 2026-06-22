@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "project": "饭局星球 (Fanjuxingqiu)",
+    "branch_policy": "yunfuwu = deployment branch, master = stable",
+    "last_updated": "2026-06-17",
+    "description": "Feature state tracker — source of truth for what exists, what's in progress, and what's next"
+  },
+  "features": [
+    {
+      "id": "feat-auth",
+      "name": "微信登录认证",
+      "status": "complete",
+      "dependencies": [],
+      "description": "wx.login() + JWT 签发 + Mock 降级模式",
+      "files": ["project/backend/src/routes/auth.js", "project/frontend/miniapp/app.js"],
+      "done_criteria": [
+        "发送 code 返回 token + user",
+        "无 AppID 时自动降级 Mock 模式",
+        "临时头像路径自动上传后登录"
+      ]
+    },
+    {
+      "id": "feat-wheel",
+      "name": "吃什么 — 随机转盘",
+      "status": "complete",
+      "dependencies": ["feat-auth"],
+      "description": "Canvas 6色扇形转盘 + 口味筛选 + 氛围标签 + 多人投票",
+      "files": ["project/frontend/miniapp/pages/eat/", "project/backend/src/routes/wheel.js"],
+      "done_criteria": [
+        "Canvas 绘制转盘，1.5s 缓出动画",
+        "结果替换式展示（解决 Canvas 层级问题）",
+        "多人投票取交集推荐"
+      ]
+    },
+    {
+      "id": "feat-games",
+      "name": "谁买单 — 游戏套件",
+      "status": "complete",
+      "dependencies": [],
+      "description": "随机抽签 + 鳄鱼牙齿 + 海盗插刀 + AA 记账",
+      "files": ["project/frontend/miniapp/pages/pay/", "project/backend/src/routes/game.js"],
+      "done_criteria": [
+        "抽签动画先快后慢（60ms→300ms）",
+        "鳄鱼 14 齿网格 + 咬合震动",
+        "海盗 12 孔 + 木桶弹出动画",
+        "AA 记录 + 下一位自动提示"
+      ]
+    },
+    {
+      "id": "feat-room",
+      "name": "多人游戏房间（WebSocket）",
+      "status": "complete",
+      "dependencies": ["feat-games"],
+      "description": "6 位房间码 + WebSocket 实时同步 + 心跳保活 + 重连",
+      "files": ["project/backend/src/ws/", "project/frontend/miniapp/subpackages/room/"],
+      "done_criteria": [
+        "创建/加入/重连房间",
+        "跨设备邀请（在线直推 + 离线 DB 存储）",
+        "30s 心跳检测，自动清理过期房间",
+        "断线标记离线而非踢出"
+      ]
+    },
+    {
+      "id": "feat-gathering",
+      "name": "聚餐记录本",
+      "status": "complete",
+      "dependencies": ["feat-auth"],
+      "description": "4 步创建表单 + 列表 + 详情 + 统计面板",
+      "files": [
+        "project/frontend/miniapp/pages/record/",
+        "project/frontend/miniapp/subpackages/record/",
+        "project/backend/src/routes/gathering.js"
+      ],
+      "done_criteria": [
+        "4 步表单（名称/参与人/支付/评价）",
+        "统计面板（总次数/消费/TOP3/月度柱状图）",
+        "详情页 Hero 头图 + 信息卡"
+      ]
+    },
+    {
+      "id": "feat-map",
+      "name": "打卡地图",
+      "status": "complete",
+      "dependencies": ["feat-gathering"],
+      "description": "城市足迹 + 美食气泡 + 排行榜 + 成就系统",
+      "files": ["project/frontend/miniapp/pages/map/", "project/backend/src/routes/map.js"],
+      "done_criteria": [
+        "城市标记大小 = 聚餐频率",
+        "气泡卡片（城市 + 探索食物）",
+        "排行榜降序排列",
+        "成就系统（11 项）"
+      ]
+    },
+    {
+      "id": "feat-relation",
+      "name": "关系图鉴",
+      "status": "complete",
+      "dependencies": ["feat-gathering"],
+      "description": "Canvas 关系网络 + 4 种称号 + 动态头像",
+      "files": [
+        "project/frontend/miniapp/subpackages/mine/relation.*",
+        "project/backend/src/routes/relation.js"
+      ],
+      "done_criteria": [
+        "中心节点（用户）+ 卫星节点（饭搭子）",
+        "连线条数 = 共餐次数",
+        "4 种称号（灵魂饭搭/快乐搭档/偶遇旅人/新晋饭友）",
+        "点击弹详情（共餐/消费/城市）"
+      ]
+    },
+    {
+      "id": "feat-album",
+      "name": "聚餐相册",
+      "status": "complete",
+      "dependencies": ["feat-gathering"],
+      "description": "双列网格 + 色块封面 + AI 回忆文字 + 分享海报",
+      "files": [
+        "project/frontend/miniapp/subpackages/mine/album.*",
+        "project/backend/src/routes/ai.js"
+      ],
+      "done_criteria": [
+        "双列卡片布局，6 色循环封面",
+        "AI 回忆文字（后端 + fallback 模板）",
+        "4 种分享海报样式"
+      ]
+    },
+    {
+      "id": "feat-buddy",
+      "name": "饭搭子管理",
+      "status": "complete",
+      "dependencies": ["feat-auth"],
+      "description": "好友搜索/申请/接受/拒绝 + 头像上传 + 后端+本地双写",
+      "files": [
+        "project/frontend/miniapp/subpackages/mine/buddies.*",
+        "project/backend/src/routes/buddy.js",
+        "project/frontend/miniapp/app.js"
+      ],
+      "done_criteria": [
+        "搜索用户 + 发送申请",
+        "接受/拒绝 + 状态管理",
+        "本地缓存与后端同步"
+      ]
+    },
+    {
+      "id": "feat-admin",
+      "name": "管理后台",
+      "status": "complete",
+      "dependencies": [],
+      "description": "纯 HTML/CSS/JS 管理面板 + JWT 认证 + 数据概览/用户/记录",
+      "files": ["project/frontend/admin/", "project/backend/src/routes/admin.js"],
+      "done_criteria": [
+        "数据概览（聚餐/消费/用户数）",
+        "记录管理列表",
+        "用户管理 + 增长趋势图"
+      ]
+    },
+    {
+      "id": "feat-preference",
+      "name": "偏好记忆",
+      "status": "complete",
+      "dependencies": [],
+      "description": "用户口味偏好追踪 + 加权推荐",
+      "files": ["project/backend/src/routes/preference.js"],
+      "done_criteria": [
+        "记录用户口味标签",
+        "影响转盘推荐权重"
+      ]
+    },
+    {
+      "id": "feat-deploy",
+      "name": "Docker 部署 + CI/CD",
+      "status": "complete",
+      "dependencies": [],
+      "description": "Dockerfile + GitHub Actions 自动部署到云服务器",
+      "files": [
+        "project/backend/Dockerfile",
+        ".github/workflows/deploy.yml"
+      ],
+      "done_criteria": [
+        "Docker 镜像构建",
+        "rsync 推送到云服务器",
+        "pm2/nohup 进程管理"
+      ]
+    },
+    {
+      "id": "fix-null-safety",
+      "name": "Null Safety 加固",
+      "status": "active",
+      "dependencies": ["feat-gathering", "feat-relation", "feat-album", "feat-buddy"],
+      "description": "WXML/JS 中所有 slice 调用加 null 守卫，防止数据未就绪时崩溃",
+      "files": [
+        "project/frontend/miniapp/subpackages/mine/*.wxml",
+        "project/frontend/miniapp/subpackages/mine/*.js",
+        "project/frontend/miniapp/pages/*/*.wxml"
+      ],
+      "done_criteria": [
+        "所有 .wxml 中 .slice() 前有 null 检查",
+        "所有 .js 中 .slice() 前有 null 检查",
+        "子包和主包均覆盖"
+      ],
+      "evidence": "4185a3e (partial)"
+    },
+    {
+      "id": "fix-avatar",
+      "name": "头像显示全链路修复",
+      "status": "active",
+      "dependencies": ["feat-auth", "feat-buddy", "feat-relation"],
+      "description": "修复头像上传、存储、显示全链路问题：临时路径检测、OSS 上传、离线兜底",
+      "files": [
+        "project/frontend/miniapp/app.js",
+        "project/frontend/miniapp/subpackages/mine/relation.js",
+        "project/frontend/miniapp/subpackages/mine/buddies.js",
+        "project/frontend/miniapp/subpackages/room/index.js",
+        "project/backend/src/routes/tarot.js"
+      ],
+      "done_criteria": [
+        "临时路径（wxfile:// / tmp）自动上传 OSS",
+        "onLaunch 清除过期临时头像",
+        "processData 不覆盖本地已有头像",
+        "离线时从 storage 直接读取兜底"
+      ],
+      "evidence": "5e1166a, 28efb10, 40f52bf, 88a7dd3"
+    }
+  ]
+}
