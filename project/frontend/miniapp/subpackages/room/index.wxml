@@ -8,6 +8,12 @@
     </view>
 
     <view class="entry-body">
+      <view wx:if="{{lastRoomCode}}" class="rejoin-section">
+        <button class="rejoin-btn {{lastRoomValid ? '' : 'disabled'}}"
+          disabled="{{!lastRoomValid}}" bindtap="_rejoinRoom">
+          {{lastRoomValid ? '↩ 返回房间 ' + lastRoomCode : '⏳ 房间已过期'}}
+        </button>
+      </view>
       <view class="entry-card create-card" bindtap="_createRoom">
         <text class="ec-icon">🎲</text>
         <view class="ec-text">
@@ -56,13 +62,14 @@
 
     <!-- 在线成员 -->
     <view class="members-section">
-      <text class="section-title">在线成员（{{members.length}}人）</text>
+      <text class="section-title">成员（{{members.length}}人）</text>
       <view class="members-row">
-        <view wx:for="{{members}}" wx:key="id" class="member-avatar">
-          <image wx:if="{{item.avatar}}" class="ma-circle-img" src="{{item.avatar}}" mode="aspectFill" />
-          <view wx:else class="ma-circle" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
-          <text class="ma-name">{{item.nickname}}</text>
+        <view wx:for="{{members}}" wx:key="id" class="member-avatar {{item.online === false ? 'member-offline' : ''}}">
+          <image wx:if="{{item.avatar}}" class="ma-circle-img {{item.online === false ? 'ma-offline-img' : ''}}" src="{{item.avatar}}" mode="aspectFill" />
+          <view wx:else class="ma-circle {{item.online === false ? 'ma-offline-circle' : ''}}" style="background:{{item.color}}">{{item.nickname.slice(0,1)}}</view>
+          <text class="ma-name {{item.online === false ? 'ma-offline-text' : ''}}">{{item.nickname}}</text>
           <text wx:if="{{item.isHost}}" class="ma-host">房主</text>
+          <text wx:if="{{item.online === false}}" class="ma-offline-badge">离线</text>
         </view>
       </view>
     </view>
@@ -158,7 +165,8 @@
         </view>
         <!-- 中奖者 -->
         <view class="reveal-winner reveal-bounce-in">
-          <view class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
+          <image wx:if="{{winnerAvatar}}" class="rw-avatar-img golden-flash" src="{{winnerAvatar}}" mode="aspectFill" />
+          <view wx:else class="rw-avatar golden-flash">{{drawWinner ? drawWinner.slice(0,1) : '?'}}</view>
           <text class="rw-name draw-name">{{drawWinner}}</text>
         </view>
         <view class="reveal-label-wrap">
@@ -189,7 +197,7 @@
         </view>
       </view>
 
-      <view wx:if="{{gameMode === 'pirate'}}" class="barrel-section">
+      <view wx:if="{{gameMode === 'pirate'}}" class="barrel-section {{gameResult ? 'boomed' : ''}}">
         <view class="barrel {{gameResult ? 'shake' : ''}}">
           <view class="barrel-body">
             <view class="slot-grid">
@@ -198,6 +206,10 @@
                 <view wx:if="{{item.state === 'boom'}}" class="boom-effect">💥</view>
               </view>
             </view>
+          </view>
+          <!-- 海盗弹出 -->
+          <view class="pirate {{gameResult ? 'pop' : ''}}">
+            <text class="pirate-icon">🏴‍☠️</text>
           </view>
         </view>
       </view>

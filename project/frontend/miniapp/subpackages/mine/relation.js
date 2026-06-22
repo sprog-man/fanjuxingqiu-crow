@@ -8,39 +8,39 @@ const TITLE_DEFS = [
     check: (r) => r.gatherCount >= 8 },
   { id: 'food_accomplice', name: '美食同谋', rarity: '史诗', icon: 'ufo',
     level: '⭐⭐⭐⭐', bg: '#EEEDFE', color: '#534AB7',
-    condition: '探索菜系种类 ≥ 6种',
+    condition: '共同消费 ≥ 500元',
     desc: '跨越菜系国界的猎奇搭档，没有你不敢吃的、没有你不敢点的。',
-    check: (r) => r.cuisineCount >= 6 },
+    check: (r) => r.totalSpent >= 500 },
   { id: 'food_wanderer', name: '流浪美食家', rarity: '史诗', icon: 'plane',
     level: '⭐⭐⭐⭐', bg: '#EEEDFE', color: '#534AB7',
-    condition: '同游城市 ≥ 3座',
+    condition: '共同聚餐 ≥ 5次',
     desc: '走遍山河，用胃丈量世界的同行人。足迹在地图上连成诗。',
-    check: (r) => r.cityCount >= 3 },
+    check: (r) => r.gatherCount >= 5 },
   { id: 'feast_king', name: '饭局天王', rarity: '稀有', icon: 'pig-money',
     level: '⭐⭐⭐', bg: '#FAEEDA', color: '#854F0B',
-    condition: '主动买单次数最多',
+    condition: '共同消费 ≥ 300元',
     desc: '财大气粗、豪气干云。每次都是最后一个放下筷子、第一个掏钱包的人。',
-    check: (r) => r.payRank === 1 },
+    check: (r) => r.totalSpent >= 300 },
   { id: 'happy_partner', name: '快乐搭档', rarity: '稀有', icon: 'confetti',
     level: '⭐⭐⭐', bg: '#FCEBEB', color: '#A32D2D',
-    condition: '聚餐心情均分 ≥ 4.5',
+    condition: '共餐 ≥ 5次且心情均分 ≥ 4',
     desc: '每次相聚都欢声笑语，吃什么不重要，重要的是和你一起。',
-    check: (r) => r.moodAvg >= 4.5 },
+    check: (r) => r.gatherCount >= 5 && r.moodAvg >= 4 },
   { id: 'party_core', name: '聚会核心', rarity: '稀有', icon: 'users',
     level: '⭐⭐⭐', bg: '#E6F1FB', color: '#185FA5',
-    condition: '出席率 ≥ 90%',
+    condition: '共同聚餐 ≥ 5次',
     desc: '永远准时到场，缺了你就不热闹，你就是气氛的锚点。',
-    check: (r) => r.attendRate >= 0.9 },
+    check: (r) => r.gatherCount >= 5 },
   { id: 'explorer', name: '探店达人', rarity: '进阶', icon: 'map-search',
     level: '⭐⭐', bg: '#EAF3DE', color: '#3B6D11',
-    condition: '探索新餐厅 ≥ 5家',
+    condition: '共同聚餐 ≥ 3次',
     desc: '总能发现隐藏在小巷里的神仙馆子，是行走的美食攻略本。',
-    check: (r) => r.newPlaceCount >= 5 },
+    check: (r) => r.gatherCount >= 3 },
   { id: 'vibe_leader', name: '气氛组长', rarity: '进阶', icon: 'sparkles',
     level: '⭐⭐', bg: '#EAF3DE', color: '#3B6D11',
-    condition: '共餐 ≥ 5次且均分高',
+    condition: '心情均分 ≥ 3.5',
     desc: '点菜必点对，聊天必起哄，有你在的饭桌永远不冷场。',
-    check: (r) => r.gatherCount >= 5 && r.moodAvg >= 4 },
+    check: (r) => r.moodAvg >= 3.5 },
   { id: 'passing_traveler', name: '偶遇旅人', rarity: '普通', icon: 'user',
     level: '⭐', bg: '#F1EFE8', color: '#5F5E5A',
     condition: '共同聚餐 1次',
@@ -81,24 +81,46 @@ Page({
     userTitleInfo: { totalFriends: 0, totalGatherCount: 0, unlockedTitles: 0, highestTitle: '', highestLevel: '', highestIcon: '' },
     titleAtlas: [],
     recentMeals: [],
+    myNickname: '我',
+    myAvatar: '',
     serverUrl: 'http://localhost:2001',
+    manualUnlocked: [],
+    unlockableTitles: [],
     unlockModalData: null,
     animStarTimer: null,
+    showTitlePicker: false,
+    titlePickerList: [],
   },
 
   onLoad() {
     this.setData({ serverUrl: app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001' })
+    const userInfo = app.globalData.userInfo || {}
+    this.setData({
+      myNickname: userInfo.nickname || '我',
+      myAvatar: userInfo.avatar_url || '',
+    })
     this.loadData()
   },
 
+  onShow() {
+    const userInfo = app.globalData.userInfo || {}
+    const avatar = userInfo.avatar_url || ''
+    this.setData({
+      myNickname: userInfo.nickname || this.data.myNickname,
+      myAvatar: avatar || this.data.myAvatar,
+    })
+  },
+
   onUnload() {
+    if (this._avatarTimer) clearTimeout(this._avatarTimer)
     if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
   },
 
   loadData() {
     const serverUrl = app.getServerUrl ? app.getServerUrl() : 'http://localhost:2001'
+    const openid = (app.getOpenid && app.getOpenid()) || ''
     wx.request({
-      url: serverUrl + '/api/relation/graph',
+      url: serverUrl + '/api/relation/graph?openid=' + encodeURIComponent(openid),
       method: 'GET',
       timeout: 3000,
       success: (res) => {
@@ -107,20 +129,43 @@ Page({
       },
       fail: () => {
         const local = wx.getStorageSync('gatherings') || []
-        this.processLocal(local)
+        const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
+        this.processLocal(local, localBuddies)
       }
     })
   },
 
   processData(data) {
-    const friends = (data.friends || []).map((f, idx) => {
-      const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
-      return { ...f, initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
+    const user = data.user || {}
+    const localUserInfo = app.globalData.userInfo || {}
+    // 注意：不要在此处设置 myAvatar — 由 onLoad/onShow 负责
+    this.setData({ myNickname: user.nickname || this.data.myNickname })
+    // 从本地饭搭子数据中查找头像
+    const localBuddies = app.getAcceptedBuddies ? (app.getAcceptedBuddies() || []) : []
+    const buddyAvatarMap = {}
+    localBuddies.forEach(b => {
+      const name = b.remark || b.name
+      buddyAvatarMap[name] = b._avatarUrl || b.avatar || b.avatar_url || ''
     })
+    let friends = (data.friends || []).map((f, idx) => {
+      const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
+      return { ...f, avatar: f.avatar || buddyAvatarMap[f.name] || '', initial: f.name ? f.name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color }
+    })
+    // API 空数据时从本地饭搭子补
+    if (friends.length === 0) {
+      friends = localBuddies.map((b, idx) => {
+        const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
+        const name = b.remark || b.name
+        const friendData = { name, gatherCount: 0 }
+        const titleInfo = this.computeTitle(friendData)
+        const avatar = b._avatarUrl || b.avatar || b.avatar_url || ''
+        return { name, avatar, gatherCount: 0, initial: name ? name.slice(0, 1) : '?', avatarBg: ac.bg, avatarColor: ac.color, ...titleInfo }
+      })
+    }
     this.computeWithFriends(friends)
   },
 
-  processLocal(gatherings) {
+  processLocal(gatherings, localBuddies) {
     const userId = app.globalData.userInfo ? (app.globalData.userInfo.nickname || '我') : '我'
     const friendMap = {}
     const allGathers = gatherings.filter(g => {
@@ -138,6 +183,13 @@ Page({
         if (g.totalCost) fr.totalSpent += g.totalCost / Math.max(g.participants.length - 1, 1)
         if (g.location && g.location.name) fr.newPlaces.add(g.location.name)
       })
+    })
+    // 合并本地饭搭子
+    ;(localBuddies || []).forEach(b => {
+      const name = b.remark || b.name
+      if (name && !friendMap[name]) {
+        friendMap[name] = { name, gatherCount: 0 }
+      }
     })
     const payCounts = {}
     allGathers.forEach(g => { if (g.payer && g.payer !== userId) payCounts[g.payer] = (payCounts[g.payer] || 0) + 1 })
@@ -159,7 +211,7 @@ Page({
       const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
       return {
         name, gatherCount: friend.gatherCount, cities: friend.cities,
-        totalSpent: friend.totalSpent, initial: name.slice(0, 1),
+        totalSpent: friend.totalSpent, initial: name ? name.slice(0, 1) : '?',
         avatarBg: ac.bg, avatarColor: ac.color,
         ...titleInfo,
       }
@@ -178,31 +230,57 @@ Page({
 
   computeWithFriends(friends) {
     let totalGatherCount = 0
-    const unlockedSet = new Set()
-    let highestIdx = TITLE_DEFS.length
+    const conditionMetSet = new Set()
     friends.forEach(f => {
       totalGatherCount += f.gatherCount
-      if (f.titleId) unlockedSet.add(f.titleId)
-      const idx = TITLE_DEFS.findIndex(t => t.id === f.titleId)
-      if (idx >= 0 && idx < highestIdx) highestIdx = idx
+      if (f.titleId) conditionMetSet.add(f.titleId)
     })
-    const highest = highestIdx < TITLE_DEFS.length ? TITLE_DEFS[highestIdx] : TITLE_DEFS[TITLE_DEFS.length - 1]
+
+    // 新晋饭友：有饭搭子即解锁
+    if (friends.length >= 1) conditionMetSet.add('new_friend')
+
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+
+    // 最高称号只从已手动解锁的取
+    let highestTitle = ''
+    let highestLevel = ''
+    if (manuallyUnlocked.length > 0) {
+      // 优先用上次选中的称号
+      const savedTitleId = wx.getStorageSync('selectedDisplayTitle') || ''
+      if (savedTitleId && manuallyUnlocked.includes(savedTitleId)) {
+        const savedDef = TITLE_DEFS.find(d => d.id === savedTitleId)
+        if (savedDef) { highestTitle = savedDef.name; highestLevel = savedDef.level }
+      }
+      // 无保存记录则取最高稀有度的已解锁称号
+      if (!highestTitle) {
+        for (const def of TITLE_DEFS) {
+          if (manuallyUnlocked.includes(def.id)) {
+            highestTitle = def.name
+            highestLevel = def.level
+            break
+          }
+        }
+      }
+    }
 
     const atlas = TITLE_DEFS.map(def => ({
       ...def,
-      unlocked: unlockedSet.has(def.id),
+      unlocked: manuallyUnlocked.includes(def.id),
+      conditionMet: conditionMetSet.has(def.id),
+      canUnlock: conditionMetSet.has(def.id) && !manuallyUnlocked.includes(def.id),
     }))
 
     this.setData({
       friends,
       titleAtlas: atlas,
+      unlockableTitles: atlas.filter(t => t.canUnlock).map(t => t.id),
       userTitleInfo: {
         totalFriends: friends.length,
         totalGatherCount,
-        unlockedTitles: unlockedSet.size,
-        highestTitle: highest.name,
-        highestLevel: highest.level,
-        highestIcon: highest.icon,
+        unlockedTitles: manuallyUnlocked.length,
+        highestTitle,
+        highestLevel,
+        highestIcon: '',
       }
     })
   },
@@ -261,49 +339,73 @@ Page({
 
   preventClose() {},
 
-  showUnlockModal(e) {
+  _runUnlockAnim(rarity) {
+    const durations = { '传说': 2500, '史诗': 2000, '稀有': 1500, '进阶': 1000, '普通': 600 }
+    const duration = durations[rarity] || 1000
+    this.setData({ 'unlockModalData.animPhase': 1 })
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 2 })
+    }, duration * 0.4)
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 3 })
+    }, duration * 0.7)
+
+    setTimeout(() => {
+      this.setData({ 'unlockModalData.animPhase': 4 })
+    }, duration)
+  },
+
+  startUnlock(e) {
     const titleId = e.currentTarget.dataset.titleId
     const def = TITLE_DEFS.find(t => t.id === titleId)
     if (!def) return
     this.setData({
-      unlockModalData: {
-        ...def,
-        friendName: '小明',
-        animStars: '',
-      }
+      unlockModalData: { ...def, friendName: '饭搭子', animReady: false, animPhase: 0 },
     })
     setTimeout(() => {
-      let i = 0
-      const timer = setInterval(() => {
-        i++
-        const stars = '★'.repeat(i)
-        this.setData({ 'unlockModalData.animStars': stars })
-        if (i >= 5) clearInterval(timer)
-      }, 150)
-    }, 600)
+      const animClass = def.rarity === '传说' ? 'anim-godray' : def.rarity === '史诗' ? 'anim-epicpop' : def.rarity === '稀有' ? 'anim-bounce' : def.rarity === '进阶' ? 'anim-scaleup' : 'anim-fadein'
+      this.setData({ 'unlockModalData.animReady': true, 'unlockModalData.animClass': animClass })
+      this._runUnlockAnim(def.rarity)
+    }, 300)
   },
 
-  hideUnlockModal() {
-    if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
+  _confirmUnlock() {
+    const titleId = this.data.unlockModalData.id
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+    if (!manuallyUnlocked.includes(titleId)) {
+      manuallyUnlocked.push(titleId)
+      wx.setStorageSync('manuallyUnlockedTitles', manuallyUnlocked)
+    }
+    this.computeWithFriends(this.data.friends)
     this.setData({ unlockModalData: null })
   },
 
-  demoUnlock() {
+  openTitlePicker() {
+    const manuallyUnlocked = wx.getStorageSync('manuallyUnlockedTitles') || []
+    if (manuallyUnlocked.length === 0) return
+    const currentTitle = this.data.userTitleInfo.highestTitle
+    const list = TITLE_DEFS.filter(d => manuallyUnlocked.includes(d.id)).map(d => ({ ...d, active: d.name === currentTitle }))
+    this.setData({ titlePickerList: list, showTitlePicker: true })
+  },
+  selectTitle(e) {
+    const titleId = e.currentTarget.dataset.titleId
+    const def = TITLE_DEFS.find(d => d.id === titleId)
+    if (!def) return
+    wx.setStorageSync('selectedDisplayTitle', titleId)
     this.setData({
-      unlockModalData: {
-        ...TITLE_DEFS[0],
-        friendName: '小明',
-        animStars: '',
-      }
+      showTitlePicker: false,
+      'userTitleInfo.highestTitle': def.name,
+      'userTitleInfo.highestLevel': def.level,
     })
-    setTimeout(() => {
-      let i = 0
-      const timer = setInterval(() => {
-        i++
-        this.setData({ 'unlockModalData.animStars': '★'.repeat(i) })
-        if (i >= 5) clearInterval(timer)
-      }, 150)
-    }, 600)
+  },
+  closeTitlePicker() {
+    this.setData({ showTitlePicker: false })
+  },
+  hideUnlockModal() {
+    if (this.data.animStarTimer) clearTimeout(this.data.animStarTimer)
+    this.setData({ unlockModalData: null })
   },
 
   formatDate(dateStr) {

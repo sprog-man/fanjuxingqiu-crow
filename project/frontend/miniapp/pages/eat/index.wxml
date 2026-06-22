@@ -242,23 +242,26 @@
       </view>
 
       <scroll-view class="manage-list" scroll-y wx:elif="{{filteredManageDishes.length > 0}}">
-        <view class="manage-item" wx:for="{{filteredManageDishes}}" wx:key="_uid">
+        <view class="manage-item {{item.type === 'system' ? 'manage-item-system' : ''}}" wx:for="{{filteredManageDishes}}" wx:key="_uid">
           <view class="manage-item-left">
-            <image wx:if="{{item.image}}" class="manage-thumb" src="{{item.image}}" mode="aspectFill" />
+            <image wx:if="{{item.image}}" class="manage-thumb {{item.type === 'system' ? 'gray' : ''}}" src="{{item.image}}" mode="aspectFill" />
             <view wx:else class="manage-thumb-placeholder">
               <text class="placeholder-emoji">🍽️</text>
             </view>
             <view class="manage-item-info">
-              <text class="manage-item-name">{{item.name}}</text>
-              <text class="manage-item-desc" wx:if="{{item.description}}">{{item.description}}</text>
+              <text class="manage-item-name {{item.type === 'system' ? 'gray' : ''}}">{{item.name}}</text>
+              <text class="manage-item-desc {{item.type === 'system' ? 'gray' : ''}}" wx:if="{{item.description}}">{{item.description}}</text>
               <view class="manage-item-tags" wx:if="{{item.tags && item.tags.length > 0}}">
                 <text class="manage-tag" wx:for="{{item.tags}}" wx:key="*this" wx:for-item="t">{{t}}</text>
               </view>
             </view>
           </view>
           <view class="manage-item-actions">
-            <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
-            <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
+            <text wx:if="{{item.type === 'system'}}" class="system-badge">系统预设</text>
+            <block wx:else>
+              <view class="manage-action edit" data-id="{{item._uid}}" bindtap="editDish">编辑</view>
+              <view class="manage-action del" data-id="{{item._uid}}" bindtap="deleteDish">删除</view>
+            </block>
           </view>
         </view>
       </scroll-view>

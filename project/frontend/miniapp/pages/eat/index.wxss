@@ -793,6 +793,14 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.manage-item-system {
+  opacity: 0.55;
+}
+
+.gray {
+  opacity: 0.5;
+}
+
 .manage-item-left {
   display: flex;
   align-items: center;
@@ -889,6 +897,15 @@
   background: rgba(216, 90, 48, 0.15);
   color: #d85a30;
   border: 1px solid rgba(216, 90, 48, 0.3);
+}
+
+.system-badge {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .manage-item-left {
@@ -994,6 +1011,15 @@
   background: rgba(216, 90, 48, 0.15);
   color: #d85a30;
   border: 1px solid rgba(216, 90, 48, 0.3);
+}
+
+.system-badge {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .form-group {
@@ -1245,6 +1271,11 @@
 .form-btn.cancel {
   background: rgba(255, 255, 255, 0.08);
   color: #d4c5b2;
+}
+
+.form-btn.danger {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff6666;
 }
 
 @keyframes fadeIn {

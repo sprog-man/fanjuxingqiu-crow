@@ -118,6 +118,7 @@
 .reveal-winner { margin-bottom: 12px; }
 .reveal-bounce-in { animation: bounceIn 0.6s ease-out; }
 .rw-avatar { width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700; color: #fff; margin: 0 auto; background: #D85A30; }
+.rw-avatar-img { width: 110px; height: 110px; border-radius: 50%; }
 .golden-flash { animation: goldenFlash 0.8s ease-out, goldenGlow 2s ease-in-out 0.8s infinite; }
 .draw-name { display: block; font-size: 34px; font-weight: 800; color: #FFD700; margin-top: 10px; letter-spacing: 2px; }
 .reveal-label-wrap { margin: 6px 0; }
@@ -142,7 +143,7 @@
 .tooth.danger { background: linear-gradient(180deg,#ff4444,#D85A30); animation: explode 0.6s ease-out; }
 .croc-jaw-lower { width: 70%; height: 22px; background: linear-gradient(180deg,#238b65,#1D9E75); border-radius: 0 0 16px 16px; margin: -1px auto 0; }
 
-.barrel-section { background: rgba(255,255,255,0.06); border-radius: 20px; padding: 24px 14px; }
+.barrel-section { position: relative; background: rgba(255,255,255,0.06); border-radius: 20px; padding: 24px 14px; }
 .barrel.shake { animation: barrelShake 0.6s ease-in-out; }
 .barrel-body { background: linear-gradient(180deg, #d4a050, #a06828); border-radius: 12px; padding: 16px; border: 3px solid #8a5a20; }
 .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -152,6 +153,12 @@
 .slot.boom { background: radial-gradient(circle, #ff4444, #cc0000); animation: slotExplode 0.5s ease-out; }
 .knife { width: 6px; height: 24px; background: #888; border-radius: 1px 1px 3px 3px; }
 .boom-effect { font-size: 18px; }
+
+/* 多人在线海盗弹出（适配深色主题） */
+.pirate { position: absolute; top: -80px; left: 50%; transform: translateX(-50%) translateY(100%); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); opacity: 0; z-index: 10; }
+.pirate.pop { transform: translateX(-50%) translateY(0); opacity: 1; }
+.pirate-icon { display: block; width: 52px; height: 52px; line-height: 52px; text-align: center; background: linear-gradient(135deg, #f5d6a8, #e8c090); border-radius: 50%; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: pirateBounce 0.5s ease-in-out; }
+@keyframes pirateBounce { 0% { transform: scale(0.3) translateY(20px); } 50% { transform: scale(1.15) translateY(-5px); } 70% { transform: scale(0.95); } 100% { transform: scale(1) translateY(0); } }
 
 .waiting-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .wo-text { font-size: 16px; color: rgba(255,255,255,0.7); }
@@ -209,3 +216,15 @@
 @keyframes explode { 0% { transform: scale(1); } 20% { transform: scale(1.4); background: #ff2222; } 100% { transform: scale(1); } }
 @keyframes barrelShake { 0%,100% { transform: translateY(0); } 20% { transform: translateY(-8px) rotate(-3deg); } 40% { transform: translateY(4px) rotate(3deg); } 60% { transform: translateY(-4px) rotate(-2deg); } 80% { transform: translateY(2px) rotate(1deg); } }
 @keyframes slotExplode { 0% { transform: scale(1); } 50% { transform: scale(1.4); box-shadow: 0 0 20px rgba(255,0,0,0.6); } 100% { transform: scale(1); } }
+
+/* 离线状态 */
+.member-offline { opacity: 0.55; }
+.ma-offline-img { filter: grayscale(1); }
+.ma-offline-circle { filter: grayscale(1); }
+.ma-offline-text { color: rgba(255,255,255,0.35); }
+.ma-offline-badge { font-size: 9px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 6px; margin-top: 1px; }
+
+/* 返回房间按钮 */
+.rejoin-section { text-align: center; padding: 4px 0 12px; }
+.rejoin-btn { height: 44px; line-height: 44px; padding: 0 24px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 22px; font-size: 15px; font-weight: 600; color: #1a1a2e; border: none; width: 100%; }
+.rejoin-btn.disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }

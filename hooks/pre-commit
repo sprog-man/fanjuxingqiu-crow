@@ -1,0 +1,11 @@
+#!/bin/bash
+# Pre-commit hook — auto-runs done check before every commit
+#
+# This is the forcing function: if source files changed but docs weren't updated,
+# the commit is blocked.
+
+set -e
+
+echo "=== Pre-commit: Running harness doc sync check ==="
+bash docs/harness/done_check.sh
+echo "=== Pre-commit: All checks passed ==="

@@ -12,12 +12,13 @@
       <!-- 我的信息卡 -->
       <view class="my-card">
         <view class="my-avatar">
-          <text class="my-avatar-text">{{userTitleInfo.highestIcon ? '✦' : '😊'}}</text>
+          <image wx:if="{{myAvatar}}" class="my-avatar-img" src="{{myAvatar}}" mode="aspectFill" />
+          <text wx:else class="my-avatar-text">{{myNickname ? myNickname.slice(0,1) : '?'}}</text>
         </view>
         <view class="my-info">
-          <text class="my-name">我的</text>
+          <text class="my-name">{{myNickname}}</text>
           <text class="my-sub">饭搭子宇宙</text>
-          <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}">
+          <view class="title-badge" wx:if="{{userTitleInfo.highestTitle}}" bindtap="openTitlePicker">
             <text class="title-badge-icon">✦</text>
             <text class="title-badge-text">{{userTitleInfo.highestTitle}}</text>
           </view>
@@ -43,14 +44,10 @@
       <!-- 好友卡片网格 -->
       <view class="friend-grid">
         <view wx:for="{{friends}}" wx:key="name" class="friend-card" data-name="{{item.name}}" bindtap="showDetail">
-          <!-- 锁定遮罩 -->
-          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay">
-            <text class="lock-icon">🔒</text>
-            <text class="lock-text">{{getLockHint(item.gatherCount)}}</text>
-          </view>
           <view class="card-top">
             <view class="card-avatar" style="background:{{item.avatarBg}};color:{{item.avatarColor}}">
-              <text>{{item.initial}}</text>
+              <image wx:if="{{item.avatar}}" class="card-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <text wx:else>{{item.initial}}</text>
             </view>
             <view class="card-info">
               <text class="card-name">{{item.name}}</text>
@@ -63,8 +60,12 @@
           <view class="badge-sm" style="background:{{item.titleBg}};color:{{item.titleColor}}">
             <text>{{item.level}} {{item.title}}</text>
           </view>
-          <view wx:if="{{item.gatherCount < 2}}" class="lock-overlay-bottom"></view>
         </view>
+      </view>
+      <view wx:if="{{friends.length === 0}}" class="empty-state">
+        <text class="empty-icon">👥</text>
+        <text class="empty-text">还没有饭搭子关系</text>
+        <text class="empty-hint">去添加饭搭子或创建聚餐记录吧</text>
       </view>
     </view>
 
@@ -78,7 +79,8 @@
       <!-- Hero Card -->
       <view class="hero-card">
         <view class="hero-avatar" style="background:{{detailFriend.avatarBg}};color:{{detailFriend.avatarColor}}">
-          <text>{{detailFriend.initial}}</text>
+          <image wx:if="{{detailFriend.avatar}}" class="hero-avatar-img" src="{{detailFriend.avatar}}" mode="aspectFill" />
+          <text wx:else>{{detailFriend.initial}}</text>
         </view>
         <text class="hero-name">{{detailFriend.name}}</text>
         <text class="hero-sub">好友 · {{detailFriend.gatherCount}}次聚餐</text>
@@ -176,6 +178,9 @@
             </view>
           </view>
         </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
+        </view>
       </view>
     </view>
 
@@ -200,6 +205,9 @@
               <text class="atlas-lock-text">{{item.condition}}</text>
             </view>
           </view>
+        </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
         </view>
       </view>
     </view>
@@ -226,25 +234,53 @@
             </view>
           </view>
         </view>
+        <view wx:if="{{item.canUnlock}}" class="atlas-unlock-btn" data-title-id="{{item.id}}" bindtap="startUnlock">
+          <text>✦ 点击解锁</text>
+        </view>
       </view>
     </view>
 
-    <!-- 演示解锁弹窗 -->
-    <button class="demo-btn" bindtap="demoUnlock">演示称号解锁动画</button>
   </view>
 
   <!-- ════ 解锁弹窗 ════ -->
   <view wx:if="{{unlockModalData}}" class="modal-overlay" bindtap="hideUnlockModal">
     <view class="modal-card {{unlockModalData?'modal-show':''}}" catchtap="preventClose">
+      <!-- 传说专属粒子装饰 -->
+      <view wx:if="{{unlockModalData.rarity === '传说' && unlockModalData.animPhase >= 1}}" class="particle-container">
+        <view class="particle p1"></view><view class="particle p2"></view>
+        <view class="particle p3"></view><view class="particle p4"></view>
+        <view class="particle p5"></view><view class="particle p6"></view>
+      </view>
+
       <text class="modal-kicker">✦ 称号解锁 ✦</text>
-      <view class="modal-icon-wrap" style="background:{{unlockModalData.bg}}">
+
+      <view class="modal-icon-wrap {{unlockModalData.animPhase >= 1 ? unlockModalData.animClass : ''}}"
+        style="background:{{unlockModalData.bg}}">
         <text class="modal-icon-text" style="color:{{unlockModalData.color}}">✦</text>
       </view>
-      <text class="modal-title">{{unlockModalData.name}}</text>
-      <text class="modal-stars">{{unlockModalData.animStars || unlockModalData.level}}</text>
+
+      <text class="modal-title" style="opacity:{{unlockModalData.animPhase >= 2 ? 1 : 0}};transition:opacity 0.4s">{{unlockModalData.name}}</text>
+      <text class="modal-stars">{{unlockModalData.level}}</text>
       <text class="modal-sub">与{{unlockModalData.friendName}}的羁绊升级了！</text>
-      <text class="modal-desc">{{unlockModalData.desc}}</text>
-      <button class="modal-btn" bindtap="hideUnlockModal">知道了</button>
+      <text class="modal-desc" style="opacity:{{unlockModalData.animPhase >= 3 ? 1 : 0}};transition:opacity 0.4s">{{unlockModalData.desc}}</text>
+
+      <button wx:if="{{unlockModalData.animPhase >= 4}}" class="modal-btn" bindtap="_confirmUnlock">领取称号</button>
+    </view>
+  </view>
+
+  <!-- ════ 称号选择弹窗 ════ -->
+  <view wx:if="{{showTitlePicker}}" class="modal-overlay" bindtap="closeTitlePicker">
+    <view class="title-picker-card" catchtap="preventClose">
+      <text class="title-picker-title">选择展示称号</text>
+      <view wx:for="{{titlePickerList}}" wx:key="id" class="title-picker-item {{item.active ? 'active' : ''}}" data-title-id="{{item.id}}" bindtap="selectTitle">
+        <view class="tp-icon" style="background:{{item.bg}};color:{{item.color}}">✦</view>
+        <view class="tp-info">
+          <text class="tp-name">{{item.name}}</text>
+          <text class="tp-level">{{item.level}}</text>
+        </view>
+        <text wx:if="{{item.active}}" class="tp-check">✓</text>
+      </view>
+      <button class="title-picker-close" bindtap="closeTitlePicker">取消</button>
     </view>
   </view>
 </scroll-view>

@@ -198,13 +198,14 @@ router.get('/dishes', async (req, res) => {
   const { cuisineId, openid } = req.query;
   console.log('GET /dishes cuisineId:', cuisineId, 'openid:', openid);
   try {
-    let dishes;
     const filter = { enabled: true };
     if (cuisineId) filter.cuisineId = cuisineId;
     if (openid) {
       filter.$or = [{ openid: '' }, { openid }];
     }
-    dishes = await Dish.find(filter).lean();
+    let dishes = await Dish.find(filter).lean();
+    // 确保 type 字段存在（Mongoose lean() 有时不返回 type）
+    dishes = dishes.map(d => ({ ...d, type: d.openid ? 'user' : 'system' }));
     console.log('Dishes found:', dishes.length);
     res.json({ data: dishes });
   } catch (e) {
@@ -227,6 +228,15 @@ router.post('/dishes', async (req, res) => {
     console.error('Dish create error:', e);
     res.status(500).json({ error: '创建失败: ' + e.message });
   }
+});
+
+router.delete('/dishes/clear', async (req, res) => {
+  try {
+    const { cuisineId, openid } = req.query;
+    if (!cuisineId || !openid) return res.status(400).json({ error: '参数不全' });
+    const r = await Dish.deleteMany({ cuisineId, openid });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.delete('/dishes/:id', async (req, res) => {

@@ -11,7 +11,7 @@ Page({
     connecting: false,
     roomCode: '', members: [], isHost: false, mySocketId: '',
     gameMode: '', drawPhase: 'idle', countdown: 0,
-    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', humorLine: '',
+    spinAngle: 0, spinPhase: '', spinRadius: 80, drawWinner: '', winnerAvatar: '', humorLine: '',
     ejectStyles: [], ejectLabel: '',
     gameBoard: [], gamePhase: 'idle', currentTurnName: '',
     currentTurnId: '', isMyTurn: false, gameResult: '',
@@ -27,6 +27,10 @@ Page({
     invitationFrom: '',
     invitationRoomCode: '',
     invitationId: '',
+
+    // 离线返回房间
+    lastRoomCode: '',
+    lastRoomValid: false,
   },
 
   onLoad(opts) {
@@ -36,6 +40,16 @@ Page({
       this.data.inputRoomCode = code;
       this.setData({ inputRoomCode: code, canJoin: true });
       this._joinRoom();
+    }
+  },
+
+  onShow() {
+    const saved = wx.getStorageSync('lastRoomCode') || '';
+    if (saved && this.data.pageState === 'entry') {
+      this.setData({ lastRoomCode: saved });
+      ws.checkRoom(saved).then(valid => {
+        this.setData({ lastRoomValid: valid });
+      });
     }
   },
 
@@ -74,6 +88,7 @@ Page({
     ws.on('draw:reveal', (data) => {
       this.setData({
         drawPhase: 'reveal', drawWinner: data.winner,
+        winnerAvatar: data.winnerAvatar || '',
         humorLine: anim.randomHumor(),
       });
     });
@@ -144,6 +159,19 @@ Page({
     const avatar = userInfo.avatar_url || '';
     const openid = (app.getOpenid && app.getOpenid()) || '';
     ws.connect(code, nickname, avatar, openid);
+  },
+
+  /* ====== 返回房间 ====== */
+  _rejoinRoom() {
+    if (!this.data.lastRoomValid) return;
+    if (this.data.connecting) return;
+    this.setData({ connecting: true });
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || {};
+    const nickname = userInfo.nickname || '我';
+    const avatar = userInfo.avatar_url || '';
+    const openid = (app.getOpenid && app.getOpenid()) || '';
+    ws.connect(this.data.lastRoomCode, nickname, avatar, openid);
   },
 
   /* ====== 邀请好友 ====== */
@@ -225,11 +253,13 @@ Page({
   leaveRoom() {
     if (this._spinTimer) { clearTimeout(this._spinTimer); this._spinTimer = null; }
     if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
+    wx.removeStorageSync('lastRoomCode');
     ws.close();
     this.setData({
       pageState: 'entry', connecting: false,
       roomCode: '', members: [], isHost: false, mySocketId: '',
       gameMode: '', drawPhase: 'idle', gameResult: '',
+      lastRoomCode: '', lastRoomValid: false,
     });
   },
 
@@ -241,7 +271,7 @@ Page({
     if (this._ejectTimer) { clearTimeout(this._ejectTimer); this._ejectTimer = null; }
     this._serverWinner = '';
     this.setData({
-      gameMode: '', drawPhase: 'idle', drawWinner: '',
+      gameMode: '', drawPhase: 'idle', drawWinner: '', winnerAvatar: '',
       spinAngle: 0, spinPhase: '', spinRadius: 80, humorLine: '',
       ejectStyles: [], ejectLabel: '',
     });

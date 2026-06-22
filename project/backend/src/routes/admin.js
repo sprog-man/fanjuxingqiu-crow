@@ -7,6 +7,7 @@ const Gathering = require('../models/gathering');
 const User = require('../models/user');
 const Dish = require('../models/dish');
 const Cuisine = require('../models/cuisine');
+const oss = require('../utils/oss');
 
 // 登录
 router.post('/login', (req, res) => {
@@ -77,8 +78,11 @@ router.get('/users', async (req, res) => {
 
 router.get('/dishes', async (req, res) => {
   try {
+    // 自动修补旧数据缺失的 type 字段
+    await Dish.updateMany({ type: { $exists: false } }, { $set: { type: 'system' } });
+
     const { cuisineId } = req.query;
-    const filter = { type: 'system' };
+    const filter = { $or: [{ type: 'system' }, { type: { $exists: false } }] };
     if (cuisineId) filter.cuisineId = cuisineId;
     const items = await Dish.find(filter).sort({ cuisineId: 1, name: 1 }).lean();
     const cuisines = await Cuisine.find({ enabled: true }).lean();
@@ -102,7 +106,7 @@ router.put('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
     if (!dish) return res.status(404).json({ error: '菜品不存在' });
-    if (dish.type !== 'system') return res.status(403).json({ error: '仅可管理公共菜品' });
+    if (dish.type && dish.type !== 'system') return res.status(403).json({ error: '仅可管理公共菜品' });
     const { name, cuisineId, image, tags, description } = req.body;
     if (name) dish.name = name;
     if (cuisineId) dish.cuisineId = cuisineId;
@@ -116,7 +120,18 @@ router.put('/dishes/:id', async (req, res) => {
 
 router.delete('/dishes/clear', async (req, res) => {
   try {
-    const r = await Dish.deleteMany({ type: 'system' });
+    // 兼容旧数据：type 字段缺失也算公共菜品
+    const r = await Dish.deleteMany({
+      $or: [{ type: 'system' }, { type: { $exists: false } }]
+    });
+    res.json({ data: { deleted: r.deletedCount } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 注意：此路由必须在 /dishes/:id 之前注册，避免被 :id 捕获
+router.delete('/dishes/clear-user', async (req, res) => {
+  try {
+    const r = await Dish.deleteMany({ type: 'user' });
     res.json({ data: { deleted: r.deletedCount } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -125,10 +140,25 @@ router.delete('/dishes/:id', async (req, res) => {
   try {
     const dish = await Dish.findById(req.params.id);
     if (!dish) return res.status(404).json({ error: '菜品不存在' });
-    if (dish.type !== 'system') return res.status(403).json({ error: '仅可删除公共菜品' });
+    if (dish.type && dish.type !== 'system') return res.status(403).json({ error: '仅可删除公共菜品' });
     await Dish.findByIdAndDelete(req.params.id);
     res.json({ data: { ok: true } });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// === 菜品图片上传（使用 OSS） ===
+const adminUploadMulter = require('multer')();
+router.post('/dishes/upload', adminUploadMulter.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请选择图片' });
+  try {
+    const ossPath = `dishes/${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}.jpg`;
+    const url = await oss.uploadBuffer(req.file.buffer, ossPath);
+    res.json({ data: { url } });
+  } catch (e) {
+    console.error('[admin upload]', e);
+    if (e.code === 'OSS_MISCONFIG') return res.status(500).json({ error: e.message });
+    res.status(500).json({ error: '上传失败: ' + e.message });
+  }
 });
 
 // === 一键初始化菜系与菜品 ===
@@ -164,6 +194,15 @@ const sampleDishesByCuisine = {
 
 router.post('/dishes/init', async (req, res) => {
   try {
+    // 修复旧数据：给缺失 type 字段的菜品补上 system 类型
+    const patched = await Dish.updateMany(
+      { type: { $exists: false } },
+      { $set: { type: 'system' } }
+    );
+    if (patched.modifiedCount > 0) {
+      console.log(`[init] 修复 ${patched.modifiedCount} 道缺少 type 的菜品`);
+    }
+
     // 补齐所有缺失菜系（已有则跳过）
     for (const c of sampleCuisines) {
       const exists = await Cuisine.findOne({ id: c.id });

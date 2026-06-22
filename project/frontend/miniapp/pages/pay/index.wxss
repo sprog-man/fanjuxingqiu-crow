@@ -87,7 +87,7 @@
 .croc-jaw-lower { width: 70%; max-width: 240px; height: 22px; background: linear-gradient(180deg,#238b65,#1D9E75); border-radius: 0 0 16px 16px; margin: -1px auto 0; border-bottom: 3px solid #167a55; }
 
 /* === 海盗插刀 === */
-.barrel-wrap { background: #fff; border-radius: 20px; padding: 30px 16px 24px; margin-bottom: 12px; position: relative; overflow: hidden; min-height: 300px; }
+.barrel-wrap { background: #fff; border-radius: 20px; padding: 30px 16px 24px; margin-bottom: 12px; position: relative; overflow: visible; min-height: 360px; }
 .barrel-wrap.boomed { background: linear-gradient(180deg, #fff, #fff5f0); }
 
 .barrel { position: relative; width: 200px; margin: 0 auto; }
@@ -318,3 +318,9 @@
 @keyframes burst6 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(25px,-45px) scale(1.5); opacity: 0; } }
 @keyframes burst7 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(-35px,20px) scale(1.5); opacity: 0; } }
 @keyframes burst8 { 0% { transform: translate(0,0) scale(0); opacity: 0.8; } 100% { transform: translate(30px,35px) scale(1.5); opacity: 0; } }
+
+/* 抽签头像 */
+.dic-avatar-img { width: 32px; height: 32px; border-radius: 50%; }
+.si-avatar-img { width: 36px; height: 36px; border-radius: 50%; }
+.eject-item-img { width: 44px; height: 44px; border-radius: 50%; }
+.rw-avatar-img { width: 100px; height: 100px; border-radius: 50%; }

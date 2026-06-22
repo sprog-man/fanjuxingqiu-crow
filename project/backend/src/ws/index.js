@@ -15,6 +15,8 @@ module.exports = function attachWS(server) {
     ws.roomCode = null;
     ws.nickname = null;
     ws.openid = null;
+    ws._alive = true;
+    ws.on('pong', () => { ws._alive = true; });
 
     const send = (event, data) => {
       if (ws.readyState === 1) ws.send(JSON.stringify({ event, data }));
@@ -38,10 +40,10 @@ module.exports = function attachWS(server) {
         case 'room:create': {
           const nickname = (data && data.nickname) || '匿名';
           const avatar = (data && data.avatar) || '';
-          console.log(`[ws] room:create -> nickname=${nickname}, avatar=${avatar}`);
+          console.log(`[ws] room:create -> nickname=${nickname}, avatar=${avatar}, openid=${ws.openid || ''}`);
           ws.nickname = nickname;
           ws.avatar = avatar;
-          const room = rooms.createRoom(ws.id, nickname, avatar);
+          const room = rooms.createRoom(ws.id, nickname, avatar, ws.openid);
           ws.roomCode = room.code;
           console.log(`[ws] room:create -> code=${room.code} host=${nickname} totalRooms=${rooms.rooms.size}`);
           console.log(`[ws] room:create -> members=${JSON.stringify(room.members)}`);
@@ -50,7 +52,7 @@ module.exports = function attachWS(server) {
         }
         case 'room:join': {
           const { roomCode, nickname: joinName, avatar: joinAvatar } = data || {};
-          console.log(`[ws] room:join -> code=${roomCode} nickname=${joinName}, avatar=${joinAvatar}`);
+          console.log(`[ws] room:join -> code=${roomCode} nickname=${joinName}, avatar=${joinAvatar}, openid=${ws.openid || ''}`);
           if (!roomCode) { send('room:error', { message: '缺少房间码' }); break; }
           const room = rooms.getRoom(roomCode);
           if (!room) {
@@ -61,11 +63,49 @@ module.exports = function attachWS(server) {
           ws.nickname = joinName || '匿名';
           ws.avatar = joinAvatar || '';
           ws.roomCode = roomCode;
-          room.addMember(ws.id, ws.nickname, ws.avatar);
+          room.addMember(ws.id, ws.nickname, ws.avatar, ws.openid);
           console.log(`[ws] room:join OK -> code=${roomCode} joiner=${ws.nickname} members=${room.members.length}`);
           console.log(`[ws] room:join -> members=${JSON.stringify(room.members)}`);
           send('room:joined', { roomCode, members: room.members, isHost: false, mySocketId: ws.id });
           broadcast(roomCode, 'room:members', { members: room.members }, ws.id);
+          break;
+        }
+        case 'room:rejoin': {
+          const { roomCode: rejoinCode, nickname: rejoinName, avatar: rejoinAvatar } = data || {};
+          console.log(`[ws] room:rejoin -> code=${rejoinCode} nickname=${rejoinName} openid=${ws.openid || ''}`);
+          if (!rejoinCode) { send('room:error', { message: '缺少房间码' }); break; }
+          const rejoinRoom = rooms.getRoom(rejoinCode);
+          if (!rejoinRoom) {
+            console.log(`[ws] room:rejoin FAIL -> room not found, codes=[${Array.from(rooms.rooms.keys()).join(',')}]`);
+            send('room:error', { message: '房间不存在或已过期' });
+            break;
+          }
+          ws.nickname = rejoinName || '匿名';
+          ws.avatar = rejoinAvatar || '';
+          ws.roomCode = rejoinCode;
+
+          // 按 openid 查找已有成员（断线重连场景）
+          const existing = ws.openid ? rejoinRoom.findMemberByOpenid(ws.openid) : null;
+          if (existing) {
+            existing.id = ws.id;
+            existing.nickname = ws.nickname;
+            existing.avatar = ws.avatar;
+            existing.online = true;
+            console.log(`[ws] room:rejoin -> 已找到旧成员 openid=${ws.openid}，更新 socket id，恢复在线`);
+          } else {
+            rejoinRoom.addMember(ws.id, ws.nickname, ws.avatar, ws.openid);
+            console.log(`[ws] room:rejoin -> 未找到旧成员，作为新成员添加`);
+            // 检查是否是原始房主（close 时被移除后重连）
+            if (ws.openid && ws.openid === rejoinRoom.hostOpenid && rejoinRoom.members.length > 0) {
+              const last = rejoinRoom.members[rejoinRoom.members.length - 1];
+              last.isHost = true;
+              console.log(`[ws] room:rejoin -> 恢复 openid=${ws.openid} 的房主身份`);
+            }
+          }
+
+          const isHost = rejoinRoom.host && rejoinRoom.host.id === ws.id;
+          send('room:joined', { roomCode: rejoinCode, members: rejoinRoom.members, isHost, mySocketId: ws.id });
+          broadcast(rejoinCode, 'room:members', { members: rejoinRoom.members }, ws.id);
           break;
         }
         case 'room:invite': {
@@ -109,6 +149,13 @@ module.exports = function attachWS(server) {
           ws.roomCode = null;
           break;
         }
+        case 'room:check': {
+          const { roomCode: checkCode } = data || {};
+          if (!checkCode) { send('room:check:result', { exists: false }); break; }
+          const exists = !!rooms.getRoom(checkCode);
+          send('room:check:result', { exists, roomCode: checkCode });
+          break;
+        }
         default: {
           handleGameEvent(ws, msg, rooms, wss, send, broadcast);
         }
@@ -123,12 +170,15 @@ module.exports = function attachWS(server) {
       if (!leaveCode) return;
       const leaveRoom = rooms.getRoom(leaveCode);
       if (leaveRoom) {
-        leaveRoom.removeMember(ws.id);
-        console.log(`[ws] disconnect cleanup -> code=${leaveCode} remaining=${leaveRoom.members.length}`);
-        if (leaveRoom.members.length > 0) {
+        const member = leaveRoom.findMember(ws.id);
+        if (member) {
+          member.online = false;
+          leaveRoom.touch();
+          console.log(`[ws] disconnect -> code=${leaveCode} member=${member.nickname} 标记离线`);
           broadcast(leaveCode, 'room:members', { members: leaveRoom.members });
         }
       }
+      ws.roomCode = null;
     });
   });
 
@@ -141,4 +191,18 @@ module.exports = function attachWS(server) {
       }
     });
   }
+
+  // 心跳保活：每 30s ping，超出 1 个周期无 pong 响应则 terminate
+  const heartbeat = setInterval(() => {
+    wss.clients.forEach(ws => {
+      if (!ws._alive) {
+        console.log('[ws] 心跳超时，断开连接:', ws.nickname || ws.id);
+        return ws.terminate();
+      }
+      ws._alive = false;
+      ws.ping();
+    });
+  }, 30000);
+
+  wss.on('close', () => clearInterval(heartbeat));
 };

@@ -415,11 +415,11 @@ Page({
   },
 
   applyManageFilter() {
-    const text = this.data.filterText.trim().toLowerCase()
-    const tags = this.data.filterTags
-    let filtered = this.data.allDishes
+    const text = (this.data.filterText || '').trim().toLowerCase()
+    const tags = this.data.filterTags || []
+    let filtered = this.data.allDishes || []
     if (text) {
-      filtered = filtered.filter(d => d.name.toLowerCase().includes(text))
+      filtered = filtered.filter(d => d.name && d.name.toLowerCase().includes(text))
     }
     if (tags.length > 0) {
       filtered = filtered.filter(d => d.tags && d.tags.some(t => tags.includes(t)))
@@ -595,6 +595,31 @@ Page({
           wx.showToast({ title: '删除失败', icon: 'none' })
         }
       }
+    })
+  },
+
+  async clearCategoryDishes() {
+    const cat = this.data.selectedCategory
+    if (!cat) return
+    wx.showModal({
+      title: '清空本菜系菜品',
+      content: `确定要清空「${cat.name}」中所有你添加的菜品吗？系统预设菜品不受影响。`,
+      success: async (res) => {
+        if (!res.confirm) return
+        wx.showLoading({ title: '清空中...' })
+        try {
+          const openid = app.getOpenid()
+          const r = await request('/api/tarot/dishes/clear?cuisineId=' + cat.id + '&openid=' + encodeURIComponent(openid), 'DELETE')
+          wx.hideLoading()
+          wx.showToast({ title: `已清空 ${r.data.deleted} 道菜品`, icon: 'success' })
+          this.setData({ filterText: '', filterTags: [] })
+          await this.fetchCategoryDishes(cat.id)
+          this.applyManageFilter()
+        } catch (e) {
+          wx.hideLoading()
+          wx.showToast({ title: '清空失败', icon: 'none' })
+        }
+      },
     })
   },
 

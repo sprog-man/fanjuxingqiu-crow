@@ -23,15 +23,18 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (!room.host || room.host.id !== ws.id) {
         send('room:error', { message: '只有房主可以开始' }); break;
       }
-      const players = room.members.map(m => m.nickname);
+      const onlineMembers = room.members.filter(m => m.online !== false);
+      const players = onlineMembers.map(m => m.nickname);
       const winner = players[Math.floor(Math.random() * players.length)];
+      const winnerMember = onlineMembers.find(m => m.nickname === winner);
+      const winnerAvatar = winnerMember ? (winnerMember.avatar || '') : '';
 
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'draw:countdown', { count: 3 });
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 2 }), 1000);
       setTimeout(() => gh.broadcast(roomCode, 'draw:countdown', { count: 1 }), 2000);
       setTimeout(() => gh.broadcast(roomCode, 'draw:spinning', { candidates: players, winner }), 3000);
-      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner }), 8500);
+      setTimeout(() => gh.broadcast(roomCode, 'draw:reveal', { winner, winnerAvatar }), 8500);
       break;
     }
     case 'croc:start': {
@@ -44,15 +47,16 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       for (let i = 0; i < totalTeeth; i++) {
         board.push({ index: i, isDanger: i === dangerIdx, state: 'active' });
       }
+      const onlineMembers = room.members.filter(m => m.online !== false);
       room.gameState = {
         mode: 'croc', phase: 'playing', board,
-        turnIndex: 0, playerOrder: room.members.map(m => m.id),
+        turnIndex: 0, playerOrder: onlineMembers.map(m => m.id),
       };
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'croc:start', {
         board,
-        currentTurnName: room.members[0].nickname,
-        currentTurnId: room.members[0].id,
+        currentTurnName: onlineMembers[0].nickname,
+        currentTurnId: onlineMembers[0].id,
       });
       break;
     }
@@ -72,17 +76,20 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (tooth.isDanger) {
         tooth.state = 'danger';
         gs.phase = 'result';
+        const loser = room.findMember(currentPlayerId);
         gh.broadcast(roomCode, 'croc:result', {
-          loser: room.members[gs.turnIndex].nickname,
+          loser: loser ? loser.nickname : '未知',
           board: gs.board,
         });
       } else {
         tooth.state = 'safe';
         gs.turnIndex = (gs.turnIndex + 1) % gs.playerOrder.length;
+        const nextPlayerId = gs.playerOrder[gs.turnIndex];
+        const nextPlayer = room.findMember(nextPlayerId);
         gh.broadcast(roomCode, 'croc:state', {
           board: gs.board,
-          currentTurnName: room.members[gs.turnIndex].nickname,
-          currentTurnId: room.members[gs.turnIndex].id,
+          currentTurnName: nextPlayer ? nextPlayer.nickname : '未知',
+          currentTurnId: nextPlayerId,
           phase: 'playing',
         });
       }
@@ -98,15 +105,16 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       for (let i = 0; i < totalSlots; i++) {
         board.push({ index: i, isBoom: i === boomIdx, state: 'empty' });
       }
+      const onlineMembers = room.members.filter(m => m.online !== false);
       room.gameState = {
         mode: 'pirate', phase: 'playing', board,
-        turnIndex: 0, playerOrder: room.members.map(m => m.id),
+        turnIndex: 0, playerOrder: onlineMembers.map(m => m.id),
       };
       const gh = createGameHandler(wss, rooms);
       gh.broadcast(roomCode, 'pirate:start', {
         board,
-        currentTurnName: room.members[0].nickname,
-        currentTurnId: room.members[0].id,
+        currentTurnName: onlineMembers[0].nickname,
+        currentTurnId: onlineMembers[0].id,
       });
       break;
     }
@@ -126,17 +134,20 @@ function handleGameEvent(ws, msg, rooms, wss, send, broadcast) {
       if (slot.isBoom) {
         slot.state = 'boom';
         gs.phase = 'result';
+        const loser = room.findMember(currentPlayerId);
         gh.broadcast(roomCode, 'pirate:result', {
-          loser: room.members[gs.turnIndex].nickname,
+          loser: loser ? loser.nickname : '未知',
           board: gs.board,
         });
       } else {
         slot.state = 'stabbed';
         gs.turnIndex = (gs.turnIndex + 1) % gs.playerOrder.length;
+        const nextPlayerId = gs.playerOrder[gs.turnIndex];
+        const nextPlayer = room.findMember(nextPlayerId);
         gh.broadcast(roomCode, 'pirate:state', {
           board: gs.board,
-          currentTurnName: room.members[gs.turnIndex].nickname,
-          currentTurnId: room.members[gs.turnIndex].id,
+          currentTurnName: nextPlayer ? nextPlayer.nickname : '未知',
+          currentTurnId: nextPlayerId,
           phase: 'playing',
         });
       }

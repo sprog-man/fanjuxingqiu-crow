@@ -6,8 +6,17 @@ let currentNickname = '';
 let currentAvatar = '';
 let currentOpenid = '';
 let listenersRegistered = false;
+let connectedRoomCode = '';
+let amIHost = false;
+let reconnectAttempt = 0;
+let reconnectTimer = null;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 function connect(roomCode, nickname, avatar, openid) {
+  // 清除过期消息（防止断线期间堆积的消息在重连后被发送）
+  pendingMessages = [];
+  // 清除重连定时器（防止多次重连叠加）
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   currentRoomCode = roomCode || '';
   currentNickname = nickname || '我';
   currentAvatar = avatar || '';
@@ -31,8 +40,16 @@ function connect(roomCode, nickname, avatar, openid) {
       }
       console.log('[WS] Socket 打开，发送消息:', JSON.stringify({ roomCode: currentRoomCode, openid: currentOpenid }));
       if (currentRoomCode) {
-        send('room:join', { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar });
+        if (connectedRoomCode) {
+          // 已有房间记录 → 断线重连
+          console.log('[WS] 断线重连 -> room:rejoin', currentRoomCode);
+          send('room:rejoin', { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar });
+        } else {
+          console.log('[WS] 首次加入 -> room:join', currentRoomCode);
+          send('room:join', { roomCode: currentRoomCode, nickname: currentNickname, avatar: currentAvatar });
+        }
       } else {
+        console.log('[WS] 创建房间 -> room:create');
         send('room:create', { nickname: currentNickname, avatar: currentAvatar });
       }
     });
@@ -40,12 +57,28 @@ function connect(roomCode, nickname, avatar, openid) {
       try {
         const { event, data } = JSON.parse(res.data);
         console.log('[WS] 收到消息:', event, JSON.stringify(data));
+      // 成功加入房间后保存房间信息（用于断线重连）
+      if (event === 'room:joined' && data && data.roomCode) {
+        connectedRoomCode = data.roomCode;
+        amIHost = !!data.isHost;
+        reconnectAttempt = 0;
+        wx.setStorageSync('lastRoomCode', data.roomCode);
+      }
         if (EVENTS[event]) EVENTS[event].forEach(fn => fn(data));
       } catch (e) {}
     });
     wx.onSocketClose(() => {
       console.log('[WS] Socket 关闭');
       socketOpen = false;
+      // 自动重连：如果之前在房间中，尝试重新连接
+      if (connectedRoomCode && reconnectAttempt < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempt++;
+        const delay = Math.min(1000 * reconnectAttempt, 5000);
+        console.log(`[WS] ${delay}ms 后自动重连 (第${reconnectAttempt}次)`);
+        reconnectTimer = setTimeout(() => {
+          connect(connectedRoomCode, currentNickname, currentAvatar, currentOpenid);
+        }, delay);
+      }
     });
     wx.onSocketError((err) => { 
       console.log('[WS] Socket 错误:', err);
@@ -73,8 +106,28 @@ function off(event, callback) {
 }
 
 function close() {
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   wx.closeSocket();
   socketOpen = false;
+  connectedRoomCode = '';
+  amIHost = false;
+  reconnectAttempt = 0;
 }
 
-module.exports = { connect, send, on, off, close };
+function checkRoom(roomCode) {
+  return new Promise((resolve) => {
+    const handler = (data) => {
+      off('room:check:result', handler);
+      clearTimeout(timer);
+      resolve(data.exists);
+    };
+    on('room:check:result', handler);
+    send('room:check', { roomCode });
+    const timer = setTimeout(() => {
+      off('room:check:result', handler);
+      resolve(false);
+    }, 3000);
+  });
+}
+
+module.exports = { connect, send, on, off, close, checkRoom };
